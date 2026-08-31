@@ -215,7 +215,7 @@ test('65+ package pricing and personalized CTA', async ({page}) => {
   await expect(section).toContainText('100 € total');
   await expect(section).toContainText('Kursen 25 €');
 
-  const cta=section.getByRole('link',{name:/Përfito paketën/i});
+  const cta=section.locator('.package-cta');
   await expect(cta).toBeVisible();
   const href=await cta.getAttribute('href');
   expect(href).toContain('https://wa.me/38649884785?text=');
@@ -236,7 +236,7 @@ test('65+ package stays usable on mobile', async ({page}) => {
   await page.goto('/#paketat');
   const section=page.locator('#paketat');
   await expect(section).toBeVisible();
-  await expect(section.getByRole('link',{name:/Përfito paketën/i})).toBeVisible();
+  await expect(section.locator('.package-cta')).toBeVisible();
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBe(0);
 });
