@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const files=['index.html','styles.css','script.js','site-media.js','blog.html','blog.css','blog.js','post.html','post.js','author.html','author.js','page-shell.js','assets/branding/logo-site-light.webp','assets/branding/logo-site-dark.webp','assets/branding/favicon-64.png','docs/sanity-siteMedia.schema.ts','docs/sanity-siteMedia.singleton.ts'];
+const files=['index.html','styles.css','script.js','site-media.js','blog.html','blog.css','blog.js','post.html','post.js','author.html','author.js','page-shell.js','assets/branding/logo-site-primary-clean.webp','assets/branding/logo-site-dark.webp','assets/branding/favicon-64.png','docs/sanity-siteMedia.schema.ts','docs/sanity-siteMedia.singleton.ts'];
 const missing=files.filter(file=>!fs.existsSync(file));
 const failures=missing.map(file=>'Missing file: '+file);
 
@@ -52,7 +52,7 @@ if(!missing.length){
   if(!post.includes('rel="canonical"')||!author.includes('rel="canonical"'))failures.push('Canonical tags missing');
   // Official logo pack contract
   for(const [pageName,pageHtml] of Object.entries({index,blog,post,author})){
-    if(!pageHtml.includes('assets/branding/logo-site-light.webp'))failures.push(pageName+' missing official light logo');
+    if(!pageHtml.includes('assets/branding/logo-site-primary-clean.webp'))failures.push(pageName+' missing official light logo');
     if(!pageHtml.includes('assets/branding/favicon-64.png'))failures.push(pageName+' missing official favicon');
     if(pageHtml.includes('assets/logo-mark.svg'))failures.push(pageName+' still references legacy logo mark');
   }

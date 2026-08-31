@@ -154,7 +154,7 @@ test('official logo assets render without legacy fallback', async ({page}) => {
 
   const headerLogo=page.locator('.brand-official .official-logo');
   await expect(headerLogo).toBeVisible();
-  await expect(headerLogo).toHaveAttribute('src','assets/branding/logo-site-light.webp');
+  await expect(headerLogo).toHaveAttribute('src','assets/branding/logo-site-primary-clean.webp');
   expect(await headerLogo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
 
   await expect(page.locator('img[src*="assets/logo-mark.svg"]')).toHaveCount(0);
