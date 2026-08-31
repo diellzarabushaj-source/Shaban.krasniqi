@@ -146,3 +146,26 @@ for(const viewport of viewports){
     await page.screenshot({path:'test-results/landing-'+viewport.name+'.png',fullPage:true});
   });
 }
+
+
+test('official logo assets render without legacy fallback', async ({page}) => {
+  await page.setViewportSize({width:1440,height:900});
+  await page.goto('/');
+
+  const headerLogo=page.locator('.brand-official .official-logo');
+  await expect(headerLogo).toBeVisible();
+  await expect(headerLogo).toHaveAttribute('src','assets/branding/logo-site-light.webp');
+  expect(await headerLogo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
+
+  await expect(page.locator('img[src*="assets/logo-mark.svg"]')).toHaveCount(0);
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href','assets/branding/favicon-64.png');
+
+  const closingLogo=page.locator('.official-closing-logo');
+  await closingLogo.scrollIntoViewIfNeeded();
+  expect(await closingLogo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
+  await expect(closingLogo).toHaveAttribute('src','assets/branding/logo-site-dark.webp');
+
+  const footerLogo=page.locator('.official-footer-logo');
+  await footerLogo.scrollIntoViewIfNeeded();
+  expect(await footerLogo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
+});

@@ -140,3 +140,14 @@ test('homepage blog is Sanity-backed and landing author avatar remains compact',
   expect(avatar?.width).toBeLessThanOrEqual(32);
   expect(avatar?.height).toBeLessThanOrEqual(32);
 });
+
+
+test('official site logo is loaded on content pages',async({page})=>{
+  await page.goto('/blog.html');
+  const logo=page.locator('.brand-official .official-logo');
+  await expect(logo).toBeVisible();
+  await expect(logo).toHaveAttribute('src','assets/branding/logo-site-light.webp');
+  expect(await logo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
+  await expect(page.locator('img[src*="assets/logo-mark.svg"]')).toHaveCount(0);
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href','assets/branding/favicon-64.png');
+});
