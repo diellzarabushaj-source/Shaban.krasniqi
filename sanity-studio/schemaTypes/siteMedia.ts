@@ -7,7 +7,14 @@ const imageWithAlt = (name: string, title: string, required = false, hotspot = t
     type: 'image',
     ...(hotspot ? {options: {hotspot: true}} : {}),
     validation: required ? (Rule) => Rule.required() : undefined,
-    fields: [defineField({name: 'alt', title: 'Alt', type: 'string'})],
+    fields: [
+      defineField({
+        name: 'alt',
+        title: 'Alt text',
+        type: 'string',
+        validation: required ? (Rule) => Rule.required() : undefined,
+      }),
+    ],
   })
 
 const imageGroup = (name: string, title: string, fields: ReturnType<typeof defineField>[]) =>
@@ -52,13 +59,11 @@ export default defineType({
     ]),
   ],
   preview: {
-    select: {
-      title: 'title',
-      media: 'branding.logoPrimary',
-    },
-    prepare: () => ({
+    select: {media: 'branding.logoPrimary'},
+    prepare: ({media}) => ({
       title: 'Website Media',
       subtitle: 'Logot dhe imazhet e Fizioterapisë Shaban Krasniqi',
+      media,
     }),
   },
 })
