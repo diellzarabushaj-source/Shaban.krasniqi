@@ -72,3 +72,18 @@ test('missing siteMedia keeps stable built-in visual fallback',async({page})=>{
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBe(0);
 });
+
+
+test('partial siteMedia must fail closed and keep local logo',async({page})=>{
+  await page.route('**/data/query/production*',async route=>{
+    const query=new URL(route.request().url()).searchParams.get('query')||'';
+    if(query.includes('_type == "siteMedia"')){
+      await route.fulfill({json:{result:{_id:'siteMedia',branding:{logoPrimary:image('partial-logo','Partial')}}}});
+    }else{
+      await route.fulfill({json:{result:[]}});
+    }
+  });
+  await page.goto('/');
+  await expect.poll(()=>page.locator('html').getAttribute('data-site-media')).toBe('fallback');
+  await expect(page.locator('.brand-official .official-logo')).toHaveAttribute('src','assets/branding/logo-site-primary-clean.webp');
+});
