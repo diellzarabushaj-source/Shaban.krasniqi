@@ -1176,3 +1176,231 @@ h1,h2,h3,.brand-copy strong,.hero-portrait-caption strong{
   .service-card::before,
   .treatment-card::before{left:20px;right:20px}
 }
+
+
+/* Brand lockup + hero signature polish */
+.brand{
+  gap:13px;
+}
+.brand-mark{
+  position:relative;
+  width:46px;
+  height:46px;
+  border-radius:15px;
+  background:
+    radial-gradient(circle at 72% 22%,rgba(60,171,194,.34),transparent 30%),
+    linear-gradient(150deg,#001b36 0%,#062f4d 62%,#147892 100%);
+}
+.brand-mark svg{
+  width:34px;
+  height:34px;
+  overflow:visible;
+  fill:#fff;
+}
+.brand-mark .brand-spine{
+  fill:none;
+  stroke:#72c2d1;
+  stroke-width:2.15;
+  stroke-linecap:round;
+}
+.brand-copy{
+  gap:1px;
+  line-height:1;
+}
+.brand-copy strong{
+  display:flex;
+  align-items:baseline;
+  gap:0;
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-size:14.5px;
+  font-weight:800;
+  letter-spacing:-.045em;
+  color:var(--brand-navy);
+}
+.brand-copy .brand-surname{
+  margin:0;
+  color:var(--brand-teal-bright);
+  font-size:inherit;
+  font-weight:inherit;
+  letter-spacing:inherit;
+  text-transform:none;
+}
+.brand-copy .brand-discipline{
+  margin-top:5px;
+  color:var(--brand-navy);
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+}
+.hero-copy{
+  position:relative;
+  z-index:3;
+}
+.eyebrow{
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-weight:600;
+  letter-spacing:.105em;
+  background:rgba(255,255,255,.84);
+  box-shadow:0 8px 24px rgba(0,27,54,.04);
+}
+.hero h1{
+  margin-bottom:18px;
+}
+.hero-specialties{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px 10px;
+  margin:0 0 20px;
+  color:var(--brand-navy);
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.095em;
+  text-transform:uppercase;
+}
+.hero-specialties i{
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:var(--brand-teal-bright);
+  box-shadow:0 0 0 3px rgba(25,129,158,.08);
+}
+.hero-lede{
+  max-width:620px;
+}
+.hero-portrait-wrap{
+  isolation:isolate;
+}
+.hero-portrait-wrap::before,
+.hero-portrait-wrap::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  border-radius:50%;
+  pointer-events:none;
+  transform:rotate(18deg);
+}
+.hero-portrait-wrap::before{
+  width:560px;
+  height:560px;
+  right:-96px;
+  top:16px;
+  border:16px solid rgba(20,120,146,.07);
+  border-left-color:rgba(20,120,146,.24);
+  border-bottom-color:rgba(20,120,146,.16);
+}
+.hero-portrait-wrap::after{
+  width:610px;
+  height:610px;
+  right:-118px;
+  top:-8px;
+  border:2px solid rgba(20,120,146,.18);
+  border-right-color:transparent;
+  border-top-color:transparent;
+}
+.hero-portrait-card{
+  transition:transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .45s ease;
+}
+.hero-portrait-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 42px 110px rgba(0,27,54,.18),0 6px 18px rgba(0,27,54,.07);
+}
+.hero-proof>div{
+  color:var(--brand-slate);
+}
+.proof-icon{
+  border-color:#c3d9df;
+  background:var(--brand-teal-wash);
+}
+.proof-icon svg{
+  stroke:var(--brand-teal);
+}
+.section-heading{
+  position:relative;
+}
+.section-heading::after{
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:-23px;
+  width:72px;
+  height:2px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--brand-teal-bright),rgba(25,129,158,0));
+}
+.site-nav>a:not(.nav-cta){
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-size:11.5px;
+  font-weight:600;
+  letter-spacing:-.01em;
+}
+.nav-cta{
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-weight:600;
+}
+.button{
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-weight:600;
+}
+@media (max-width:860px){
+  .hero-portrait-wrap::before{
+    width:500px;
+    height:500px;
+    right:-80px;
+    top:60px;
+  }
+  .hero-portrait-wrap::after{
+    width:550px;
+    height:550px;
+    right:-104px;
+    top:36px;
+  }
+}
+@media (max-width:620px){
+  .brand{gap:10px}
+  .brand-mark{
+    width:40px;
+    height:40px;
+    border-radius:13px;
+  }
+  .brand-mark svg{
+    width:30px;
+    height:30px;
+  }
+  .brand-copy strong{font-size:12.5px}
+  .brand-copy .brand-discipline{
+    margin-top:4px;
+    font-size:8px;
+    letter-spacing:.18em;
+  }
+  .hero-specialties{
+    gap:7px 8px;
+    margin-bottom:18px;
+    font-size:8.4px;
+    letter-spacing:.07em;
+  }
+  .hero-specialties i{
+    width:3px;
+    height:3px;
+  }
+  .hero-portrait-wrap::before{
+    width:430px;
+    height:430px;
+    right:-150px;
+    top:16px;
+    border-width:12px;
+  }
+  .hero-portrait-wrap::after{
+    width:470px;
+    height:470px;
+    right:-168px;
+    top:-2px;
+  }
+  .section-heading::after{
+    bottom:-17px;
+    width:54px;
+  }
+}
