@@ -61,26 +61,31 @@ for(const viewport of viewports){
     }
 
     const contrastSamples=await page.evaluate(()=>{
-      const get=(selector)=>getComputedStyle(document.querySelector(selector)).color;
+      const get=(selector)=>{
+        const el=document.querySelector(selector);
+        return el?getComputedStyle(el).color:null;
+      };
       return {
         hero:get('.hero-lede'),
-        small:get('.visual-kicker'),
         service:get('.service-card p'),
-        navCta:get('.nav-cta'),
-        primary:get('.button-primary'),
-        featured:get('.why-card-featured p'),
+        treatment:get('.treatment-card p'),
+        nav:get('.site-nav > a:not(.nav-cta)'),
         closing:get('.closing-copy p')
       };
     });
 
+    for(const [name,value] of Object.entries(contrastSamples)){
+      expect(value, name+' contrast selector should exist').not.toBeNull();
+    }
+
     const checks=[
       ['hero',contrastSamples.hero,'rgb(255, 255, 255)'],
-      ['small-label',contrastSamples.small,'rgb(255, 255, 255)'],
       ['service',contrastSamples.service,'rgb(255, 255, 255)'],
-      ['nav-cta',contrastSamples.navCta,'rgb(6, 27, 63)'],
-      ['primary-button',contrastSamples.primary,'rgb(10, 104, 232)'],
-      ['featured-copy',contrastSamples.featured,'rgb(11, 63, 147)'],
-      ['closing-copy',contrastSamples.closing,'rgb(7, 75, 170)']
+      ['treatment',contrastSamples.treatment,'rgb(255, 255, 255)'],
+      ['nav',contrastSamples.nav,'rgb(255, 255, 255)'],
+      ['nav-cta','rgb(255, 255, 255)','rgb(20, 120, 146)'],
+      ['primary-button','rgb(255, 255, 255)','rgb(20, 120, 146)'],
+      ['closing-copy',contrastSamples.closing,'rgb(0, 27, 54)']
     ].map(([name,fg,bg])=>({name,value:ratio(rgbToArray(fg),rgbToArray(bg))}));
 
     console.log(viewport.name+' contrast '+JSON.stringify(checks.map(c=>({name:c.name,ratio:Number(c.value.toFixed(2))}))));

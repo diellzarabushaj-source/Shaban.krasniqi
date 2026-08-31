@@ -1000,3 +1000,179 @@ h1,h2,h3,.brand-copy strong,.hero-portrait-caption strong{
   }
   .contact-dock-primary{font-family:"Montserrat","Manrope",sans-serif}
 }
+
+
+/* Brand identity refinement — dark clinic card language */
+.section-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-weight:700;
+  letter-spacing:.12em;
+}
+.section-kicker::before{
+  content:"";
+  width:28px;
+  height:2px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--brand-teal-bright),#75bdca);
+}
+.hero-strip{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 84% 0%,rgba(25,129,158,.22),transparent 31%),
+    linear-gradient(135deg,#001b36 0%,#062b48 66%,#0b5367 100%);
+  border-color:rgba(22,106,128,.65);
+  box-shadow:0 24px 62px rgba(0,27,54,.16);
+}
+.hero-strip::after{
+  content:"";
+  position:absolute;
+  left:7%;
+  right:7%;
+  top:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,#37a6bb,transparent);
+}
+.strip-item+.strip-item{border-color:rgba(255,255,255,.11)}
+.strip-item>span{
+  background:rgba(25,129,158,.18);
+  border:1px solid rgba(119,196,210,.18);
+  color:#9bd4de;
+}
+.strip-item strong{
+  color:#fff;
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-weight:600;
+}
+.strip-item small{color:#b8ccd4}
+
+.service-card,
+.treatment-card{
+  position:relative;
+}
+.service-card::before,
+.treatment-card::before{
+  content:"";
+  position:absolute;
+  z-index:2;
+  left:26px;
+  right:26px;
+  top:0;
+  height:2px;
+  border-radius:0 0 999px 999px;
+  background:linear-gradient(90deg,transparent,var(--brand-teal-bright),transparent);
+  opacity:.42;
+  transition:opacity .25s ease,transform .25s ease;
+}
+.service-card:hover::before,
+.treatment-card:hover::before{
+  opacity:1;
+  transform:scaleX(1.05);
+}
+.service-card-rich h3,
+.treatment-copy h3{
+  font-size:clamp(19px,1.4vw,23px);
+}
+.card-whatsapp{
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-weight:600;
+  letter-spacing:-.02em;
+}
+
+.approach-panel{
+  overflow:hidden;
+  color:#fff;
+  border-color:rgba(27,118,139,.66);
+  background:
+    radial-gradient(circle at 83% 8%,rgba(25,129,158,.24),transparent 30%),
+    linear-gradient(145deg,#001b36 0%,#062b48 64%,#0c5d72 100%);
+  box-shadow:0 34px 86px rgba(0,27,54,.18);
+}
+.panel-head{
+  color:#c5dde3;
+  border-color:rgba(255,255,255,.10);
+}
+.panel-head>span:first-child{
+  color:#9bd4de;
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-weight:600;
+}
+.status-pill{
+  color:#dff4f7;
+  background:rgba(25,129,158,.20);
+  border:1px solid rgba(126,201,214,.16);
+}
+.status-pill i{
+  background:#75c4d3;
+  box-shadow:0 0 0 4px rgba(117,196,211,.12);
+}
+.panel-metric small,
+.plan-stats small{color:#8fc8d3}
+.panel-metric strong,
+.plan-stats strong{color:#fff}
+.panel-metric strong{
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-weight:600;
+}
+.plan-chart{
+  border-color:rgba(255,255,255,.08);
+  background:rgba(0,16,32,.20);
+}
+.chart-line{background:rgba(255,255,255,.07)}
+.chart-label{color:#a8c7d0}
+#chartFill stop:first-child{stop-color:#32a0b6!important;stop-opacity:.30!important}
+#chartFill stop:last-child{stop-color:#32a0b6!important;stop-opacity:0!important}
+.plan-chart .area{fill:url(#chartFill)!important}
+.plan-chart .trend{stroke:#55b7c9!important}
+.plan-chart circle{fill:#fff!important;stroke:#55b7c9!important}
+.plan-stats{
+  border-color:rgba(255,255,255,.10);
+}
+.plan-stats>div+div{border-color:rgba(255,255,255,.10)}
+
+.approach-point>span{
+  color:var(--brand-teal);
+  border-color:#c5dce2;
+  background:#f4f9fa;
+}
+.approach-point strong{
+  color:var(--brand-navy);
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-weight:600;
+}
+
+.why-card h3{
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-weight:600;
+}
+.faq-list details{
+  border-color:#d6e3e7;
+}
+.faq-list details[open]{
+  background:rgba(255,255,255,.62);
+}
+.faq-list summary{
+  font-family:"Montserrat","Manrope",sans-serif;
+  font-weight:600;
+  color:var(--brand-navy);
+}
+.site-footer{
+  border-top:1px solid #dbe6e9;
+  background:#fff;
+}
+.footer-links a{color:var(--brand-slate)}
+.footer-links a:hover{color:var(--brand-teal)}
+
+@media (max-width:620px){
+  .hero-strip{
+    border-radius:22px;
+  }
+  .strip-item{min-height:82px}
+  .section-kicker::before{width:22px}
+  .approach-panel{border-radius:24px}
+  .service-card::before,
+  .treatment-card::before{left:20px;right:20px}
+}
