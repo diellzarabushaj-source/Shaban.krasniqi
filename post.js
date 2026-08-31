@@ -18,7 +18,8 @@ const authorData=(post)=>{
     name:author.name||author.fullName||author.title||'',
     image:author.image||author.avatar||null,
     bio:author.bio||'',
-    role:author.role||''
+    role:author.role||'',
+    slug:author.slug?.current||author.slug||''
   };
 };
 const plainTextFromPortable=(value)=>{
@@ -31,7 +32,10 @@ const authorMarkup=(author,compact=false)=>{
   const avatar=imageUrl(author.image,400);
   const initials=author.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();
   const photo=avatar?`<img src="${avatar}" alt="" loading="lazy" decoding="async">`:`<span class="article-author-fallback" aria-hidden="true">${escapeHtml(initials||'A')}</span>`;
-  if(compact)return `<div class="article-author-compact">${photo}<div><small>Shkruar nga</small><strong>${escapeHtml(author.name)}</strong>${author.role?`<em>${escapeHtml(author.role)}</em>`:''}</div></div>`;
+  if(compact){
+    const href='author.html?'+(author.slug?'slug='+encodeURIComponent(author.slug):'name='+encodeURIComponent(author.name));
+    return `<a class="article-author-compact" href="${href}" aria-label="Rreth autorit ${escapeHtml(author.name)}">${photo}<div><small>Shkruar nga</small><strong>${escapeHtml(author.name)}</strong>${author.role?`<em>${escapeHtml(author.role)}</em>`:''}</div></a>`;
+  }
   const bio=plainTextFromPortable(author.bio);
   return `<div class="article-author-card-inner">${photo}<div><span class="section-kicker">Rreth autorit</span><h2>${escapeHtml(author.name)}</h2>${author.role?`<strong class="article-author-role">${escapeHtml(author.role)}</strong>`:''}${bio?`<p>${escapeHtml(bio)}</p>`:''}</div></div>`;
 };
@@ -90,7 +94,7 @@ function relatedCard(post){
     <div class="blog-card-body">
       <div class="blog-meta"><span>${escapeHtml(post.category?.title||'Fizioterapi')}</span><time>${formatDate(post.publishedAt)}</time></div>
       <h2><a href="post.html?slug=${encodeURIComponent(slug)}">${escapeHtml(post.title||'Pa titull')}</a></h2>
-      ${authorData(post)?.name?`<div class="blog-author blog-author-compact"><span class="blog-author-fallback" aria-hidden="true">${escapeHtml(authorData(post).name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase())}</span><div><small>Nga</small><strong>${escapeHtml(authorData(post).name)}</strong></div></div>`:''}
+      ${authorData(post)?.name?(()=>{const a=authorData(post);const href='author.html?'+(a.slug?'slug='+encodeURIComponent(a.slug):'name='+encodeURIComponent(a.name));const avatar=imageUrl(a.image,160);const initials=a.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();return `<a class="blog-author blog-author-compact" href="${href}" aria-label="Rreth autorit ${escapeHtml(a.name)}">${avatar?`<img src="${avatar}" alt="" width="34" height="34" loading="lazy">`:`<span class="blog-author-fallback" aria-hidden="true">${escapeHtml(initials)}</span>`}<div><small>Nga</small><strong>${escapeHtml(a.name)}</strong></div></a>`;})():''}
       <a class="blog-read" href="post.html?slug=${encodeURIComponent(slug)}">Lexo artikullin <span>→</span></a>
     </div>
   </article>`;

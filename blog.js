@@ -18,7 +18,8 @@ const authorData=(post)=>{
   return {
     name:author.name||author.fullName||author.title||'',
     image:author.image||author.avatar||null,
-    role:author.role||''
+    role:author.role||'',
+    slug:author.slug?.current||author.slug||''
   };
 };
 const authorBadge=(post,variant='compact')=>{

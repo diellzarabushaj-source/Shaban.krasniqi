@@ -9,7 +9,7 @@ const posts=[
     featured:true,
     coverImage:null,
     category:{title:'Shpinë',slug:{current:'shpine'}},
-    authorRef:{name:'Shaban Krasniqi',role:'Fizioterapist',image:{asset:{_ref:'image-authoravatar-100x100-png'}},bio:[{_type:'block',style:'normal',children:[{text:'Fizioterapist me fokus në rehabilitim funksional.',marks:[]}],markDefs:[]}]}
+    authorRef:{name:'Shaban Krasniqi',role:'Fizioterapist',slug:{current:'shaban-krasniqi'},image:{asset:{_ref:'image-authoravatar-100x100-png'}},bio:[{_type:'block',style:'normal',children:[{text:'Fizioterapist me fokus në rehabilitim funksional.',marks:[]}],markDefs:[]}]}
   },
   {
     title:'Rikthimi në aktivitet pas lëndimit',
@@ -19,7 +19,7 @@ const posts=[
     featured:false,
     coverImage:null,
     category:{title:'Rehabilitim',slug:{current:'rehabilitim'}},
-    authorRef:{name:'Shaban Krasniqi',role:'Fizioterapist',image:{asset:{_ref:'image-authoravatar-100x100-png'}}}
+    authorRef:{name:'Shaban Krasniqi',role:'Fizioterapist',slug:{current:'shaban-krasniqi'},image:{asset:{_ref:'image-authoravatar-100x100-png'}}}
   }
 ];
 
@@ -30,7 +30,18 @@ test.beforeEach(async({page})=>{
   });
   await page.route('**/data/query/production*',async route=>{
     const url=decodeURIComponent(route.request().url());
-    if(url.includes('slug.current == "dhimbja-e-shpines"')){
+    if(url.includes('_type == "author"')){
+      await route.fulfill({json:{result:{
+        _id:'author-shaban',
+        name:'Shaban Krasniqi',
+        role:'Fizioterapist',
+        slug:{current:'shaban-krasniqi'},
+        image:{asset:{_ref:'image-authoravatar-100x100-png'}},
+        bio:[{_type:'block',style:'normal',children:[{text:'Fizioterapist me fokus në rehabilitim funksional.',marks:[]}],markDefs:[]}]
+      }}});
+    }else if(url.includes('author->slug.current == "shaban-krasniqi"')){
+      await route.fulfill({json:{result:posts}});
+    }else if(url.includes('slug.current == "dhimbja-e-shpines"')){
       await route.fulfill({json:{result:{...posts[0],body:[
         {_type:'block',style:'normal',children:[{text:'Ky është paragrafi hyrës.',marks:[]}],markDefs:[]},
         {_type:'block',style:'h2',children:[{text:'Pse ndodh dhimbja?',marks:[]}],markDefs:[]},
@@ -53,6 +64,7 @@ for(const viewport of [{name:'desktop',width:1440,height:900},{name:'mobile',wid
     await expect(page.locator('.blog-card')).toHaveCount(2);
     await expect(page.locator('.featured-card .blog-author')).toContainText('Shaban Krasniqi');
     await expect(page.locator('.blog-card').first().locator('.blog-author')).toContainText('Shaban Krasniqi');
+    await expect(page.locator('.blog-card').first().locator('.blog-author')).toHaveAttribute('href','author.html?slug=shaban-krasniqi');
     const blogAvatar=await page.locator('.blog-card').first().locator('.blog-author img').boundingBox();
     expect(blogAvatar?.width).toBeLessThanOrEqual(34);
     expect(blogAvatar?.height).toBeLessThanOrEqual(34);
@@ -74,6 +86,7 @@ for(const viewport of [{name:'desktop',width:1440,height:900},{name:'mobile',wid
     await expect(page.locator('[data-article-title]')).toHaveText(posts[0].title);
     await expect(page.locator('[data-article-body] h2')).toHaveText('Pse ndodh dhimbja?');
     await expect(page.locator('[data-article-author]')).toContainText('Shaban Krasniqi');
+    await expect(page.locator('[data-article-author] a')).toHaveAttribute('href','author.html?slug=shaban-krasniqi');
     const articleAvatar=await page.locator('[data-article-author] img').boundingBox();
     expect(articleAvatar?.width).toBeLessThanOrEqual(44);
     expect(articleAvatar?.height).toBeLessThanOrEqual(44);
@@ -96,4 +109,28 @@ test('homepage author image remains a small avatar',async({page})=>{
   expect(box?.width).toBeLessThanOrEqual(32);
   expect(box?.height).toBeLessThanOrEqual(32);
   await page.screenshot({path:'test-results/home-author-avatar-mobile.png',fullPage:true});
+});
+
+
+for(const viewport of [{name:'desktop',width:1440,height:900},{name:'mobile',width:390,height:844}]){
+  test('author profile '+viewport.name,async({page})=>{
+    await page.setViewportSize({width:viewport.width,height:viewport.height});
+    await page.goto('/author.html?slug=shaban-krasniqi');
+    await expect(page.locator('[data-author-profile]')).toBeVisible();
+    await expect(page.locator('[data-author-name]')).toHaveText('Shaban Krasniqi');
+    await expect(page.locator('[data-author-role]')).toHaveText('Fizioterapist');
+    await expect(page.locator('[data-author-bio]')).toContainText('rehabilitim funksional');
+    await expect(page.locator('[data-author-posts] .blog-card')).toHaveCount(2);
+    await expect(page.locator('[data-author-post-count]')).toHaveText('2 artikuj');
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+    expect(overflow).toBe(0);
+    await page.screenshot({path:'test-results/author-'+viewport.name+'.png',fullPage:true});
+  });
+}
+
+test('blog author click opens author profile',async({page})=>{
+  await page.goto('/blog.html');
+  await page.locator('.blog-card').first().locator('.blog-author').click();
+  await expect(page).toHaveURL(/author\.html\?slug=shaban-krasniqi$/);
+  await expect(page.locator('[data-author-name]')).toHaveText('Shaban Krasniqi');
 });

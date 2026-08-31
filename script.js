@@ -157,7 +157,8 @@ if(homeForm){
     if(!author||author._ref)return null;
     return {
       name:author.name||author.fullName||author.title||'',
-      image:author.image||author.avatar||null
+      image:author.image||author.avatar||null,
+      slug:author.slug?.current||author.slug||''
     };
   };
   const authorBadge=(post)=>{
@@ -165,7 +166,8 @@ if(homeForm){
     if(!author?.name)return '';
     const avatar=imageUrl(author.image);
     const initials=author.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();
-    return `<div class="home-blog-author">${avatar?`<img src="${avatar}" alt="" loading="lazy" decoding="async">`:`<span aria-hidden="true">${escapeHtml(initials||'A')}</span>`}<small>Nga <strong>${escapeHtml(author.name)}</strong></small></div>`;
+    const href='author.html?'+(author.slug?'slug='+encodeURIComponent(author.slug):'name='+encodeURIComponent(author.name));
+    return `<a class="home-blog-author" href="${href}" aria-label="Rreth autorit ${escapeHtml(author.name)}">${avatar?`<img src="${avatar}" alt="" width="32" height="32" loading="lazy" decoding="async">`:`<span aria-hidden="true">${escapeHtml(initials||'A')}</span>`}<small>Nga <strong>${escapeHtml(author.name)}</strong></small></a>`;
   };
   fetch(endpoint)
     .then(response=>{if(!response.ok)throw new Error('Sanity request failed');return response.json();})

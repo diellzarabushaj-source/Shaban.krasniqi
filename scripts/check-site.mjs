@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const files=['index.html','styles.css','script.js','blog.html','blog.css','blog.js','post.html','post.js','page-shell.js','assets/logo-mark.svg'];
+const files=['index.html','styles.css','script.js','blog.html','blog.css','blog.js','post.html','post.js','author.html','author.js','page-shell.js','assets/logo-mark.svg'];
 const missing=files.filter(file=>!fs.existsSync(file));
 const failures=missing.map(file=>'Missing file: '+file);
 
@@ -12,6 +12,8 @@ if(!missing.length){
   const blogJs=fs.readFileSync('blog.js','utf8');
   const post=fs.readFileSync('post.html','utf8');
   const postJs=fs.readFileSync('post.js','utf8');
+  const author=fs.readFileSync('author.html','utf8');
+  const authorJs=fs.readFileSync('author.js','utf8');
 
   for(const needle of ['id="trajtimet"','wa.me/38649884785','tel:+38649884785','id="sherbimet"','id="qasja"','id="pse-ne"','id="pyetje"','data-home-blog','href="blog.html"']){
     if(!index.includes(needle))failures.push('index missing: '+needle);
@@ -21,6 +23,9 @@ if(!missing.length){
   }
   for(const needle of ['data-article-body','data-related-posts','data-article-author','a1lswl1z','renderPortableText','authorRef']){
     if(!(post+postJs).includes(needle))failures.push('post missing: '+needle);
+  }
+  for(const needle of ['data-author-profile','data-author-posts','_type == "author"','author.html?']){
+    if(!(author+authorJs+script+blogJs+postJs).includes(needle))failures.push('author flow missing: '+needle);
   }
   if(!css.includes('@media (max-width:390px)'))failures.push('Missing 390px responsive breakpoint');
   if(!css.includes('prefers-reduced-motion'))failures.push('Reduced-motion support missing');
