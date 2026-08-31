@@ -6,7 +6,13 @@ export default defineType({
   type: 'document',
   fields: [
     defineField({name: 'title', title: 'Title', type: 'string'}),
-    defineField({name: 'slug', title: 'Slug', type: 'slug', options: {source: 'title'}}),
+    defineField({
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: {source: 'title'},
+      validation: (Rule) => Rule.custom(() => true),
+    }),
     defineField({name: 'description', title: 'Description', type: 'text'}),
   ],
 })
