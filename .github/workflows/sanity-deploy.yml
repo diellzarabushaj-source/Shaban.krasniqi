@@ -36,9 +36,9 @@ jobs:
       - name: Deploy schema
         env:
           SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
-        run: npx sanity@latest schema deploy --project a1lswl1z --dataset production
+        run: npx sanity@latest schemas deploy --workspace default
 
       - name: Deploy hosted Studio
         env:
           SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
-        run: npx sanity@latest deploy --project a1lswl1z
+        run: npx sanity@latest deploy --yes --no-build --url shaban-krasniqi-blog.sanity.studio
