@@ -86,6 +86,12 @@ for(const viewport of viewports){
     console.log(viewport.name+' contrast '+JSON.stringify(checks.map(c=>({name:c.name,ratio:Number(c.value.toFixed(2))}))));
     expect(Math.min(...checks.map(c=>c.value))).toBeGreaterThanOrEqual(4.5);
 
+    const contactLinks=await page.locator('a[href^="https://wa.me/38649884785"]').count();
+    expect(contactLinks).toBeGreaterThanOrEqual(12);
+    const phoneLinks=await page.locator('a[href="tel:+38649884785"]').count();
+    expect(phoneLinks).toBeGreaterThanOrEqual(2);
+    console.log(viewport.name+' contact links '+JSON.stringify({whatsapp:contactLinks,phone:phoneLinks}));
+
     await page.screenshot({path:'test-results/landing-'+viewport.name+'.png',fullPage:true});
   });
 }

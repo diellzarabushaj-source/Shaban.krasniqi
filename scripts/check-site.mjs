@@ -5,7 +5,7 @@ const css=fs.readFileSync('styles.css','utf8');
 const js=fs.readFileSync('script.js','utf8');
 const failures=[];
 
-for(const needle of ['<html lang="sq">','Fizioterapia Shaban Krasniqi','id="sherbimet"','id="qasja"','id="pse-ne"','id="pyetje"','aria-controls="site-nav"']){
+for(const needle of ['id="trajtimet"','wa.me/38649884785','tel:+38649884785','<html lang="sq">','Fizioterapia Shaban Krasniqi','id="sherbimet"','id="qasja"','id="pse-ne"','id="pyetje"','aria-controls="site-nav"']){
   if(!html.includes(needle))failures.push('Missing: '+needle);
 }
 if(!css.includes('@media (max-width:390px)'))failures.push('Missing 390px responsive breakpoint');
