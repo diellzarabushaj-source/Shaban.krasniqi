@@ -5,10 +5,13 @@
   "scripts": {
     "dev": "sanity dev",
     "build": "sanity build",
-    "schema:extract": "sanity schema extract"
+    "schema:extract": "sanity schema extract --enforce-required-fields",
+    "check": "npm run schema:extract && npm run build"
   },
   "dependencies": {
     "@sanity/vision": "^3.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "sanity": "^3.0.0",
     "styled-components": "^6.1.0"
   },
