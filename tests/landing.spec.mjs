@@ -201,3 +201,42 @@ test('local logo wrapper has no background',async({page})=>{
   expect(css.backgroundImage).toBe('none');
   expect(css.backgroundColor).toBe('rgba(0, 0, 0, 0)');
 });
+
+
+test('65+ package pricing and personalized CTA', async ({page}) => {
+  await page.setViewportSize({width:1440,height:900});
+  await page.goto('/');
+
+  const section=page.locator('#paketat');
+  await expect(section).toBeVisible();
+  await expect(section).toContainText('65+');
+  await expect(section).toContainText('25 €');
+  await expect(section).toContainText('20 €');
+  await expect(section).toContainText('100 € total');
+  await expect(section).toContainText('Kursen 25 €');
+
+  const cta=section.getByRole('link',{name:/Përfito paketën/i});
+  await expect(cta).toBeVisible();
+  const href=await cta.getAttribute('href');
+  expect(href).toContain('https://wa.me/38649884785?text=');
+  expect(decodeURIComponent(href||'')).toContain('Pakon 65+');
+  expect(decodeURIComponent(href||'')).toContain('5 seanca');
+  expect(decodeURIComponent(href||'')).toContain('20 €');
+  expect(decodeURIComponent(href||'')).toContain('100 €');
+
+  const visibleWhatsAppButtons=await page.locator('a,button').filter({hasText:'WhatsApp'}).count();
+  expect(visibleWhatsAppButtons).toBe(0);
+
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  expect(overflow).toBe(0);
+});
+
+test('65+ package stays usable on mobile', async ({page}) => {
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#paketat');
+  const section=page.locator('#paketat');
+  await expect(section).toBeVisible();
+  await expect(section.getByRole('link',{name:/Përfito paketën/i})).toBeVisible();
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  expect(overflow).toBe(0);
+});
