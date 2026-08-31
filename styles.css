@@ -2531,3 +2531,51 @@ h1,h2,h3,.brand-copy strong,.hero-portrait-caption strong{
     background:linear-gradient(180deg,rgba(255,255,255,0),#fff 24%);
   }
 }
+
+
+/* Uploaded brand integration */
+.brand-uploaded{
+  flex:0 0 auto;
+  min-width:0;
+}
+.brand-uploaded img{
+  display:block;
+  width:auto;
+  height:52px;
+  max-width:250px;
+  object-fit:contain;
+  object-position:left center;
+  filter:drop-shadow(0 7px 18px rgba(8,68,148,.05));
+}
+.site-header.scrolled .brand-uploaded img{height:44px}
+.footer-brand-uploaded img{
+  display:block;
+  width:auto;
+  height:48px;
+  max-width:235px;
+  object-fit:contain;
+  object-position:left center;
+}
+.closing-brand-art{
+  display:grid;
+  place-items:center;
+  opacity:.92;
+}
+.closing-brand-art img{
+  width:min(100%,340px);
+  height:auto;
+  object-fit:contain;
+  filter:brightness(0) invert(1) drop-shadow(0 18px 40px rgba(0,0,0,.10));
+  opacity:.92;
+}
+@media (max-width:860px){
+  .brand-uploaded img{height:46px;max-width:220px}
+  .site-header.scrolled .brand-uploaded img{height:40px}
+}
+@media (max-width:620px){
+  .brand-uploaded img{height:39px;max-width:185px}
+  .site-header.scrolled .brand-uploaded img{height:36px}
+  .footer-brand-uploaded img{height:42px;max-width:205px}
+  .closing-brand-art{right:-54px;bottom:-34px;opacity:.20}
+  .closing-brand-art img{width:280px}
+}
