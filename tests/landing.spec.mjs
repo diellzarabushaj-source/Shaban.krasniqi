@@ -189,3 +189,15 @@ test('logo should occupy a real visible box', async ({page}) => {
   expect(await logo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
   await page.screenshot({path:'test-results/header-logo-visible.png',clip:{x:0,y:0,width:1440,height:130}});
 });
+
+
+test('local logo wrapper has no background',async({page})=>{
+  await page.goto('/');
+  const wrapper=page.locator('.brand-official');
+  const css=await wrapper.evaluate(el=>{
+    const s=getComputedStyle(el);
+    return {backgroundImage:s.backgroundImage,backgroundColor:s.backgroundColor};
+  });
+  expect(css.backgroundImage).toBe('none');
+  expect(css.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+});

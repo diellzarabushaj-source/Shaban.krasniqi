@@ -2766,15 +2766,14 @@ h1,h2,h3,.brand-copy strong{font-family:Montserrat,Manrope,sans-serif}
 }
 
 
-/* Hard logo visibility fallback */
+/* Stable transparent logo geometry */
 .brand-official{
   width:220px;
   height:62px;
   flex:0 0 220px;
-  background-image:url("assets/branding/logo-site-primary-clean.webp");
-  background-repeat:no-repeat;
-  background-position:left center;
-  background-size:contain;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
 }
 .brand-official .official-logo{
   display:block !important;
@@ -2802,10 +2801,9 @@ h1,h2,h3,.brand-copy strong{font-family:Montserrat,Manrope,sans-serif}
 .footer-brand-official{
   width:200px;
   min-height:58px;
-  background-image:url("assets/branding/logo-site-primary-clean.webp");
-  background-repeat:no-repeat;
-  background-position:left center;
-  background-size:contain;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
 }
 .footer-brand-official .official-footer-logo{
   display:block !important;
@@ -2834,8 +2832,21 @@ h1,h2,h3,.brand-copy strong{font-family:Montserrat,Manrope,sans-serif}
 }
 
 
-/* Remove local logo background fallback once Sanity branding is active */
+/* Branding assets are transparent artwork; never paint a wrapper background */
+.brand-official,
+.footer-brand-official,
+.closing-brand-art,
 .brand-official[data-sanity-bound="true"],
 .footer-brand-official[data-sanity-bound="true"]{
+  background-color:transparent !important;
   background-image:none !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+}
+.official-logo,
+.official-footer-logo,
+.official-closing-logo{
+  background:transparent !important;
+  filter:none !important;
+  box-shadow:none !important;
 }
