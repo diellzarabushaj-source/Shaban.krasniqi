@@ -169,3 +169,23 @@ test('official logo assets render without legacy fallback', async ({page}) => {
   await footerLogo.scrollIntoViewIfNeeded();
   await expect.poll(()=>footerLogo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
 });
+
+
+test('logo should occupy a real visible box', async ({page}) => {
+  await page.setViewportSize({width:1440,height:900});
+  await page.goto('/');
+  const logo=page.locator('.brand-official .official-logo');
+  await expect(logo).toBeVisible();
+  const box=await logo.boundingBox();
+  expect(box?.width).toBeGreaterThanOrEqual(180);
+  expect(box?.height).toBeGreaterThanOrEqual(50);
+  const css=await logo.evaluate((el)=>{
+    const s=getComputedStyle(el);
+    return {opacity:s.opacity,visibility:s.visibility,display:s.display};
+  });
+  expect(css.opacity).toBe('1');
+  expect(css.visibility).toBe('visible');
+  expect(css.display).not.toBe('none');
+  expect(await logo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
+  await page.screenshot({path:'test-results/header-logo-visible.png',clip:{x:0,y:0,width:1440,height:130}});
+});
