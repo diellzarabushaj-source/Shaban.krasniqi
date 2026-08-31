@@ -104,8 +104,8 @@ for(const viewport of viewports){
     await page.context().setGeolocation({latitude:42.6595,longitude:20.2887});
     await page.locator('[data-home-name]').fill('Test Pacienti');
     await page.locator('[data-home-phone]').fill('049 111 222');
-    await page.locator('input[name="problem"][value="Dhimbje të qafës dhe shpinës"]').check();
-    await page.locator('input[name="problem"][value="Dhimbje të nyjeve"]').check();
+    await page.locator('.problem-choice').filter({has:page.locator('input[value="Dhimbje të qafës dhe shpinës"]')}).click();
+    await page.locator('.problem-choice').filter({has:page.locator('input[value="Dhimbje të nyjeve"]')}).click();
     await page.locator('[data-use-location]').click();
     await expect(page.locator('[data-use-location]')).toHaveClass(/is-success/);
     await page.evaluate(()=>{window.open=(url)=>{window.__homeVisitWhatsApp=url;return null}});
