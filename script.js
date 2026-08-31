@@ -136,52 +136,46 @@ if(homeForm){
   showStep(1);
 }
 
-/* Only the Blog section is added to the landing page. Existing sections remain untouched. */
+
+/* Home blog preview — content source: Sanity project a1lswl1z */
 (()=>{
-  const mount=document.querySelector('.closing');
-  if(!mount||document.querySelector('[data-home-blog]'))return;
-  const style=document.createElement('style');
-  style.textContent=`
-    .home-blog{padding:110px 0 100px;background:#f7fbff;overflow:hidden}
-    .home-blog .blog-head{display:flex;justify-content:space-between;align-items:end;gap:40px;margin-bottom:34px}
-    .home-blog .blog-head h2{margin:8px 0 0;font-family:Montserrat,sans-serif;font-size:clamp(34px,4vw,54px);line-height:1.05;letter-spacing:-.04em;color:#06233f}
-    .home-blog .blog-head h2 span{color:#0a78a0}
-    .home-blog .blog-head p{max-width:480px;margin:0;color:#52677b;line-height:1.7;font-size:14px}
-    .home-blog .blog-kicker{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0a78a0}
-    .home-blog .blog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
-    .home-blog .blog-card{display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid #dce8f1;border-radius:24px;box-shadow:0 14px 40px rgba(2,34,59,.07);transition:transform .25s ease,box-shadow .25s ease}
-    .home-blog .blog-card:hover{transform:translateY(-5px);box-shadow:0 20px 50px rgba(2,34,59,.12)}
-    .home-blog .blog-image,.home-blog .blog-placeholder{display:block;width:100%;height:220px;object-fit:cover;background:linear-gradient(135deg,#e9f5ff,#d7ebf8)}
-    .home-blog .blog-placeholder{display:grid;place-items:center;color:#0a78a0;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
-    .home-blog .blog-body{padding:23px 24px 25px;display:flex;flex:1;flex-direction:column}
-    .home-blog .blog-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px;font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:800;color:#0a78a0}
-    .home-blog .blog-meta time{color:#718397;font-weight:600;text-transform:none;letter-spacing:0}
-    .home-blog .blog-card h3{margin:0 0 10px;font-family:Montserrat,sans-serif;font-size:21px;line-height:1.18;letter-spacing:-.025em;color:#06233f}
-    .home-blog .blog-card p{margin:0 0 20px;color:#52677b;font-size:13px;line-height:1.65}
-    .home-blog .blog-link{margin-top:auto;display:inline-flex;align-items:center;gap:8px;color:#08769c;text-decoration:none;font-size:12px;font-weight:800}
-    .home-blog .blog-link span{transition:transform .2s ease}.home-blog .blog-link:hover span{transform:translateX(4px)}
-    .home-blog .blog-more{display:inline-flex;align-items:center;gap:8px;margin-top:25px;color:#06233f;font-size:12px;font-weight:800;text-decoration:none}
-    .home-blog .blog-empty{padding:35px;border:1px dashed #bfd2df;border-radius:20px;background:#fff;color:#52677b;font-size:13px}
-    @media(max-width:900px){.home-blog .blog-grid{grid-template-columns:1fr 1fr}.home-blog .blog-head{align-items:start;flex-direction:column}}
-    @media(max-width:620px){.home-blog{padding:80px 0}.home-blog .blog-grid{grid-template-columns:1fr}.home-blog .blog-image,.home-blog .blog-placeholder{height:200px}}
-  `;
-  document.head.appendChild(style);
-  const section=document.createElement('section');
-  section.className='section home-blog';
-  section.id='blog';
-  section.setAttribute('data-home-blog','');
-  section.innerHTML=`<div class="shell"><div class="blog-head"><div><span class="blog-kicker">Shaban Krasniqi · Blog</span><h2>Njohuri për <span>lëvizjen.</span></h2></div><p>Këshilla praktike për fizioterapi, rehabilitim, dhimbje dhe rikthim në aktivitet — artikuj të rinj të publikuar direkt nga Sanity.</p></div><div class="blog-grid" data-home-blog-list><div class="blog-empty">Po ngarkohen artikujt…</div></div><a class="blog-more" href="blog.html">Shiko të gjithë artikujt <span>→</span></a></div>`;
-  mount.before(section);
+  const list=document.querySelector('[data-home-blog-list]');
+  if(!list)return;
   const project='a1lswl1z';
   const dataset='production';
   const query=encodeURIComponent('*[_type == "post" && defined(publishedAt)] | order(publishedAt desc)[0...3]{title,slug,excerpt,publishedAt,coverImage,category->{title}}');
   const endpoint=`https://${project}.api.sanity.io/v2026-08-31/data/query/${dataset}?query=${query}`;
   const escapeHtml=(value='')=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
-  const imageUrl=(ref)=>{const asset=ref?.asset?._ref||'';const match=asset.match(/^image-([^-]+)-([^-]+)-([a-z0-9]+)$/i);return match?`https://cdn.sanity.io/images/${project}/${dataset}/${match[1]}-${match[2]}.${match[3]}?auto=format&w=1000&q=82`:'';};
-  const formatDate=(date)=>new Intl.DateTimeFormat('sq-AL',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(date));
-  const list=section.querySelector('[data-home-blog-list]');
-  fetch(endpoint).then(response=>{if(!response.ok)throw new Error('Sanity request failed');return response.json();}).then(({result=[]})=>{
-    if(!result.length){list.innerHTML='<div class="blog-empty">Artikujt e parë do të shfaqen këtu së shpejti.</div>';return;}
-    list.innerHTML=result.map(post=>{const image=imageUrl(post.coverImage);const slug=post.slug?.current||'';return `<article class="blog-card">${image?`<img class="blog-image" src="${image}" alt="${escapeHtml(post.title||'')}" loading="lazy" decoding="async">`:'<div class="blog-placeholder">Fizioterapi</div>'}<div class="blog-body"><div class="blog-meta"><span>${escapeHtml(post.category?.title||'Fizioterapi')}</span><time datetime="${escapeHtml(post.publishedAt||'')}">${formatDate(post.publishedAt)}</time></div><h3>${escapeHtml(post.title||'Pa titull')}</h3><p>${escapeHtml(post.excerpt||'Lexo këshillat dhe njohuritë më të fundit për lëvizjen dhe rehabilitimin.')}</p><a class="blog-link" href="post.html?slug=${encodeURIComponent(slug)}">Lexo artikullin <span>→</span></a></div></article>`;}).join('');
-  }).catch(()=>{list.innerHTML='<div class="blog-empty">Blogu po përgatitet. Artikujt do të shfaqen sapo lidhja me Sanity të jetë aktive.</div>';});
+  const imageUrl=(ref)=>{
+    const asset=ref?.asset?._ref||'';
+    const match=asset.match(/^image-([^-]+)-([^-]+)-([a-z0-9]+)$/i);
+    return match?`https://cdn.sanity.io/images/${project}/${dataset}/${match[1]}-${match[2]}.${match[3]}?auto=format&w=1200&q=82`:'';
+  };
+  const formatDate=(date)=>date?new Intl.DateTimeFormat('sq-AL',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(date)):'';
+  fetch(endpoint)
+    .then(response=>{if(!response.ok)throw new Error('Sanity request failed');return response.json();})
+    .then(({result=[]})=>{
+      if(!result.length){
+        list.innerHTML='<div class="home-blog-empty"><strong>Artikujt e parë po përgatiten.</strong><span>Blogu do të shfaqet këtu sapo të publikohen artikujt në Sanity.</span></div>';
+        return;
+      }
+      list.innerHTML=result.map(post=>{
+        const image=imageUrl(post.coverImage);
+        const slug=post.slug?.current||'';
+        return `<article class="home-blog-card">
+          <a class="home-blog-media" href="post.html?slug=${encodeURIComponent(slug)}" aria-label="Lexo: ${escapeHtml(post.title||'Artikull')}">
+            ${image?`<img src="${image}" alt="" loading="lazy" decoding="async">`:'<span class="home-blog-placeholder" aria-hidden="true">SK</span>'}
+          </a>
+          <div class="home-blog-body">
+            <div class="home-blog-meta"><span>${escapeHtml(post.category?.title||'Fizioterapi')}</span><time datetime="${escapeHtml(post.publishedAt||'')}">${formatDate(post.publishedAt)}</time></div>
+            <h3><a href="post.html?slug=${encodeURIComponent(slug)}">${escapeHtml(post.title||'Pa titull')}</a></h3>
+            <p>${escapeHtml(post.excerpt||'Këshilla dhe njohuri praktike për lëvizjen dhe rehabilitimin.')}</p>
+            <a class="text-link" href="post.html?slug=${encodeURIComponent(slug)}">Lexo artikullin <span aria-hidden="true">→</span></a>
+          </div>
+        </article>`;
+      }).join('');
+    })
+    .catch(()=>{
+      list.innerHTML='<div class="home-blog-empty"><strong>Blogu është përkohësisht i paarritshëm.</strong><span>Provo përsëri pas pak ose hape faqen e blogut.</span><a class="text-link" href="blog.html">Hap blogun →</a></div>';
+    });
 })();
