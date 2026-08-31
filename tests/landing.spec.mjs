@@ -162,10 +162,10 @@ test('official logo assets render without legacy fallback', async ({page}) => {
 
   const closingLogo=page.locator('.official-closing-logo');
   await closingLogo.scrollIntoViewIfNeeded();
-  expect(await closingLogo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
   await expect(closingLogo).toHaveAttribute('src','assets/branding/logo-site-dark.webp');
+  await expect.poll(()=>closingLogo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
 
   const footerLogo=page.locator('.official-footer-logo');
   await footerLogo.scrollIntoViewIfNeeded();
-  expect(await footerLogo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
+  await expect.poll(()=>footerLogo.evaluate(img=>img.complete&&img.naturalWidth>0&&img.naturalHeight>0)).toBe(true);
 });
