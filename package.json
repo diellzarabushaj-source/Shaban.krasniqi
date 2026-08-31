@@ -1,13 +1,14 @@
 {
-  "name": "shaban-krasniqi-tooling",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "repomix": "repomix",
-    "tooling:check": "node scripts/check-tooling.mjs"
+  "name":"shaban-krasniqi",
+  "private":true,
+  "type":"module",
+  "scripts":{
+    "repomix":"repomix",
+    "tooling:check":"node scripts/check-tooling.mjs",
+    "site:check":"node scripts/check-site.mjs"
   },
-  "devDependencies": {
-    "@nizos/probity": "latest",
-    "repomix": "latest"
+  "devDependencies":{
+    "@nizos/probity":"latest",
+    "repomix":"latest"
   }
 }

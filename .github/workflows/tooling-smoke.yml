@@ -1,4 +1,4 @@
-name: Tooling smoke
+name: Tooling and site smoke
 
 on:
   pull_request:
@@ -14,6 +14,7 @@ jobs:
         with:
           node-version: 22
       - run: node scripts/check-tooling.mjs
+      - run: node scripts/check-site.mjs
       - run: bash -n scripts/bootstrap-agent-tools.sh
       - shell: pwsh
         run: ./scripts/bootstrap-agent-tools.ps1 -DryRun
