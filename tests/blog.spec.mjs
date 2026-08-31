@@ -59,12 +59,13 @@ test.beforeEach(async({page})=>{
   });
 
   await page.route('**/data/query/production*',async route=>{
-    const url=decodeURIComponent(route.request().url());
-    if(url.includes('_type == "author" && slug.current == $slug')){
+    const requestUrl=new URL(route.request().url());
+    const query=(requestUrl.searchParams.get('query')||'').replace(/\s+/g,' ').trim();
+    if(query.includes('_type == "author"')&&query.includes('slug.current == $slug')){
       await route.fulfill({json:{result:{...author,posts}}});
-    }else if(url.includes('_type == "post" && slug.current == $slug')){
+    }else if(query.includes('_type == "post"')&&query.includes('slug.current == $slug')){
       await route.fulfill({json:{result:article}});
-    }else if(url.includes('slug.current != $slug')){
+    }else if(query.includes('slug.current != $slug')){
       await route.fulfill({json:{result:[posts[1]]}});
     }else{
       await route.fulfill({json:{result:posts}});
