@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const files=['index.html','styles.css','script.js','blog.html','blog.css','blog.js','post.html','post.js','author.html','author.js','page-shell.js','assets/logo-mark.svg'];
+const files=['index.html','styles.css','script.js','blog.html','blog.css','blog.js','post.html','post.js','author.html','author.js','page-shell.js','assets/branding/logo-site-light.webp','assets/branding/logo-site-dark.webp','assets/branding/favicon-64.png'];
 const missing=files.filter(file=>!fs.existsSync(file));
 const failures=missing.map(file=>'Missing file: '+file);
 
@@ -50,6 +50,14 @@ if(!missing.length){
   }
   if(!post.includes('meta name="author"'))failures.push('Article author meta missing');
   if(!post.includes('rel="canonical"')||!author.includes('rel="canonical"'))failures.push('Canonical tags missing');
+  // Official logo pack contract
+  for(const [pageName,pageHtml] of Object.entries({index,blog,post,author})){
+    if(!pageHtml.includes('assets/branding/logo-site-light.webp'))failures.push(pageName+' missing official light logo');
+    if(!pageHtml.includes('assets/branding/favicon-64.png'))failures.push(pageName+' missing official favicon');
+    if(pageHtml.includes('assets/logo-mark.svg'))failures.push(pageName+' still references legacy logo mark');
+  }
+  if(!index.includes('assets/branding/logo-site-dark.webp'))failures.push('index missing official dark logo');
+  if(!css.includes('.brand-official')||!css.includes('.official-closing-logo'))failures.push('Official logo CSS missing');
   if(!css.includes('@media (max-width:390px)'))failures.push('Missing 390px responsive breakpoint');
   if(!css.includes('prefers-reduced-motion'))failures.push('Reduced-motion support missing');
   if(!script.includes('IntersectionObserver'))failures.push('Reveal behavior missing');
