@@ -2,6 +2,10 @@ name: Sanity Studio Deploy
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'sanity-studio/**'
+      - '.github/workflows/sanity-deploy.yml'
 
 jobs:
   sanity-deploy:
