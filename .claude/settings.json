@@ -1,0 +1,26 @@
+{
+  "extraKnownMarketplaces": {
+    "ecc": {
+      "source": {
+        "source": "github",
+        "repo": "affaan-m/ECC"
+      }
+    },
+    "wshobson-agents": {
+      "source": {
+        "source": "github",
+        "repo": "wshobson/agents"
+      }
+    },
+    "claude-subconscious": {
+      "source": {
+        "source": "github",
+        "repo": "letta-ai/claude-subconscious"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "ecc@ecc": true,
+    "superpowers@claude-plugins-official": true
+  }
+}

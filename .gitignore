@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.tools/
+.superdesign/tmp/
+repomix-output.*
+.DS_Store
+Thumbs.db
