@@ -5,4 +5,5 @@ export default defineCliConfig({
     projectId: 'a1lswl1z',
     dataset: 'production',
   },
+  studioHost: 'shaban-krasniqi-blog',
 })
