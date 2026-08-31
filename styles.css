@@ -2634,3 +2634,56 @@ h1,h2,h3,.brand-copy strong{font-family:Montserrat,Manrope,sans-serif}
 @media(max-width:1180px){.site-nav{gap:13px}.site-nav>a:not(.nav-cta){font-size:12px}}
 @media(max-width:900px){.home-blog-grid{grid-template-columns:1fr 1fr}.home-blog-head{align-items:flex-start;flex-direction:column;gap:20px}.home-blog-head-side{max-width:680px}}
 @media(max-width:620px){.home-blog-grid{grid-template-columns:1fr}.home-blog-media{height:205px}.home-blog-head h2{font-size:clamp(36px,10vw,46px)}}
+
+
+/* Author avatar guard — homepage */
+.home-blog-author{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-height:36px;
+  margin:0 0 15px;
+}
+.home-blog-author img,
+.home-blog-author>span{
+  width:32px !important;
+  height:32px !important;
+  min-width:32px !important;
+  min-height:32px !important;
+  max-width:32px !important;
+  max-height:32px !important;
+  flex:0 0 32px !important;
+  aspect-ratio:1/1;
+  border-radius:50% !important;
+  object-fit:cover !important;
+  object-position:center !important;
+  overflow:hidden;
+}
+.home-blog-author>span{
+  display:grid;
+  place-items:center;
+  border:1px solid #c8e3eb;
+  background:linear-gradient(145deg,#e7f7fa,#d3edf3);
+  color:#087e9f;
+  font-family:Montserrat,sans-serif;
+  font-size:9px;
+  font-weight:800;
+}
+.home-blog-author small{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0;
+  color:#7b8e9d;
+  font-size:9px;
+  line-height:1.15;
+}
+.home-blog-author strong{
+  max-width:180px;
+  overflow:hidden;
+  color:#173d58;
+  font-size:10px;
+  font-weight:800;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}

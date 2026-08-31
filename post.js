@@ -113,12 +113,9 @@ async function load(){
   document.querySelector('[data-article-excerpt]').textContent=post.excerpt||'';
   const author=authorData(post);
   const heroAuthor=document.querySelector('[data-article-author]');
-  const fullAuthor=document.querySelector('[data-article-author-card]');
   if(author?.name){
     heroAuthor.innerHTML=authorMarkup(author,true);
     heroAuthor.hidden=false;
-    fullAuthor.innerHTML=authorMarkup(author,false);
-    fullAuthor.hidden=false;
   }
   document.querySelector('[data-article-body]').innerHTML=renderPortableText(post.body||[]);
   const cover=document.querySelector('[data-article-cover]');

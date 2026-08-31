@@ -80,3 +80,45 @@
   .article-author-card-inner>img,.article-author-card-inner>.article-author-fallback{width:64px;height:64px;border-radius:18px}
   .article-author-card-inner h2{font-size:21px}
 }
+
+
+/* Author avatars only — never render author photos as card media */
+.blog-author img,
+.blog-author .blog-author-fallback{
+  width:34px !important;
+  height:34px !important;
+  min-width:34px !important;
+  min-height:34px !important;
+  max-width:34px !important;
+  max-height:34px !important;
+  flex:0 0 34px !important;
+  aspect-ratio:1/1;
+  border-radius:50% !important;
+  object-fit:cover !important;
+  object-position:center !important;
+}
+.blog-author-featured img,
+.blog-author-featured .blog-author-fallback{
+  width:38px !important;
+  height:38px !important;
+  min-width:38px !important;
+  min-height:38px !important;
+  max-width:38px !important;
+  max-height:38px !important;
+  flex:0 0 38px !important;
+}
+.article-author-compact img,
+.article-author-compact .article-author-fallback{
+  width:44px !important;
+  height:44px !important;
+  min-width:44px !important;
+  min-height:44px !important;
+  max-width:44px !important;
+  max-height:44px !important;
+  flex:0 0 44px !important;
+  aspect-ratio:1/1;
+  border-radius:50% !important;
+  object-fit:cover !important;
+  object-position:center !important;
+}
+.article-author-card{display:none !important}
