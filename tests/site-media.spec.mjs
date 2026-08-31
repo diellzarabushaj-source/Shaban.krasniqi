@@ -67,7 +67,7 @@ test('missing siteMedia keeps stable built-in visual fallback',async({page})=>{
   await page.route('**/data/query/production*',async route=>route.fulfill({json:{result:null}}));
   await page.setViewportSize({width:390,height:844});
   await page.goto('/');
-  await expect(page.locator('.brand-official .official-logo')).toHaveAttribute('src','assets/branding/logo-site-light.webp');
+  await expect(page.locator('.brand-official .official-logo')).toHaveAttribute('src','assets/branding/logo-site-primary-clean.webp');
   await expect(page.locator('.service-art svg').first()).toBeVisible();
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBe(0);
