@@ -109,8 +109,36 @@
     document.querySelectorAll('[data-site-og-image]').forEach(meta=>meta.content=url);
   }
 
+  function hasAsset(image){return Boolean(image?.asset?.url)}
+
+  function hasCompleteRequiredMedia(media){
+    if(!media||typeof media!=='object')return false;
+    const required=[
+      media.branding?.logoPrimary,
+      media.branding?.logoWhite,
+      media.branding?.logoMark,
+      media.branding?.favicon,
+      media.hero?.mainImage,
+      media.services?.fizioterapi,
+      media.services?.elektroterapi,
+      media.services?.ultraze,
+      media.services?.limfodrenazh,
+      media.services?.shockwave,
+      media.services?.hixhame,
+      media.treatments?.qafeShpine,
+      media.treatments?.nyje,
+      media.treatments?.ortopedike,
+      media.treatments?.reumatike,
+      media.treatments?.pediatrike
+    ];
+    return required.every(hasAsset);
+  }
+
   function apply(media){
-    if(!media||typeof media!=='object')return;
+    if(!hasCompleteRequiredMedia(media)){
+      document.documentElement.dataset.siteMedia='fallback';
+      return;
+    }
 
     document.querySelectorAll('[data-site-media]').forEach(node=>{
       const image=get(media,node.dataset.siteMedia);
