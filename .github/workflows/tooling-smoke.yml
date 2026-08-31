@@ -19,6 +19,20 @@ jobs:
       - shell: pwsh
         run: ./scripts/bootstrap-agent-tools.ps1 -DryRun
 
+  sanity-studio:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sanity-studio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run schema:extract
+      - run: npm run build
+
   browser-qa:
     runs-on: ubuntu-latest
     steps:
