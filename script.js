@@ -137,63 +137,98 @@ if(homeForm){
 }
 
 
-/* Home blog preview — content source: Sanity project a1lswl1z */
+/* Home blog preview — Sanity is the source of truth */
 (()=>{
   const list=document.querySelector('[data-home-blog-list]');
   if(!list)return;
-  const project='a1lswl1z';
-  const dataset='production';
-  const query=encodeURIComponent('*[_type == "post" && defined(publishedAt)] | order(publishedAt desc)[0...3]{title,slug,excerpt,publishedAt,coverImage,category->{title},"authorRef":author->{name,title,fullName,image,avatar,bio,role,slug},"authorInline":author}');
-  const endpoint=`https://${project}.api.sanity.io/v2026-08-31/data/query/${dataset}?query=${query}`;
-  const escapeHtml=(value='')=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
-  const imageUrl=(ref)=>{
-    const asset=ref?.asset?._ref||'';
-    const match=asset.match(/^image-([^-]+)-([^-]+)-([a-z0-9]+)$/i);
-    return match?`https://cdn.sanity.io/images/${project}/${dataset}/${match[1]}-${match[2]}.${match[3]}?auto=format&w=1200&q=82`:'';
+
+  const SANITY_PROJECT_ID='a1lswl1z';
+  const SANITY_DATASET='production';
+  const SANITY_API=`https://${SANITY_PROJECT_ID}.api.sanity.io/v2026-08-31/data/query/${SANITY_DATASET}`;
+  const query=`*[_type == "post"] | order(publishedAt desc)[0...3]{
+    _id,
+    title,
+    slug,
+    excerpt,
+    publishedAt,
+    featured,
+    coverImage{
+      asset->{_id,url},
+      alt
+    },
+    category->{title,slug,description},
+    author->{
+      _id,
+      name,
+      role,
+      slug,
+      image{asset->{_id,url}}
+    }
+  }`;
+
+  const escapeHtml=(value='')=>String(value)
+    .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+    .replaceAll('"','&quot;').replaceAll("'",'&#039;');
+
+  const imageUrl=(image,width)=>{
+    const src=image?.asset?.url;
+    if(!src)return '';
+    try{
+      const url=new URL(src);
+      url.searchParams.set('auto','format');
+      if(width)url.searchParams.set('w',String(width));
+      url.searchParams.set('fit','max');
+      return url.toString();
+    }catch{return src}
   };
-  const formatDate=(date)=>date?new Intl.DateTimeFormat('sq-AL',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(date)):'';
-  const authorData=(post)=>{
-    const author=post?.authorRef||post?.authorInline;
-    if(!author||author._ref)return null;
-    return {
-      name:author.name||author.fullName||author.title||'',
-      image:author.image||author.avatar||null,
-      slug:author.slug?.current||author.slug||''
-    };
-  };
+
+  const formatDate=(date)=>date
+    ?new Intl.DateTimeFormat('sq-AL',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(date))
+    :'';
+
+  const authorLink=(author)=>author?.slug?.current
+    ?'author.html?slug='+encodeURIComponent(author.slug.current)
+    :'';
+
   const authorBadge=(post)=>{
-    const author=authorData(post);
-    if(!author?.name)return '';
-    const avatar=imageUrl(author.image);
+    const author=post.author;
+    const href=authorLink(author);
+    if(!author?.name||!href)return '';
+    const avatar=imageUrl(author.image,96);
     const initials=author.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();
-    const href='author.html?'+(author.slug?'slug='+encodeURIComponent(author.slug):'name='+encodeURIComponent(author.name));
-    return `<a class="home-blog-author" href="${href}" aria-label="Rreth autorit ${escapeHtml(author.name)}">${avatar?`<img src="${avatar}" alt="" width="32" height="32" loading="lazy" decoding="async">`:`<span aria-hidden="true">${escapeHtml(initials||'A')}</span>`}<small>Nga <strong>${escapeHtml(author.name)}</strong></small></a>`;
+    return `<a class="home-blog-author" href="${href}" aria-label="Rreth autorit ${escapeHtml(author.name)}">
+      ${avatar?`<img src="${escapeHtml(avatar)}" alt="" width="32" height="32" loading="lazy" decoding="async">`:`<span aria-hidden="true">${escapeHtml(initials)}</span>`}
+      <small>Nga <strong>${escapeHtml(author.name)}</strong></small>
+    </a>`;
   };
-  fetch(endpoint)
+
+  fetch(SANITY_API+'?query='+encodeURIComponent(query))
     .then(response=>{if(!response.ok)throw new Error('Sanity request failed');return response.json();})
     .then(({result=[]})=>{
       if(!result.length){
-        list.innerHTML='<div class="home-blog-empty"><strong>Artikujt e parë po përgatiten.</strong><span>Blogu do të shfaqet këtu sapo të publikohen artikujt në Sanity.</span></div>';
+        list.innerHTML='<div class="home-blog-empty"><strong>Artikujt po përgatiten.</strong><span>Nuk ka artikuj të publikuar për t’u shfaqur.</span></div>';
         return;
       }
       list.innerHTML=result.map(post=>{
-        const image=imageUrl(post.coverImage);
+        const cover=imageUrl(post.coverImage,1000);
         const slug=post.slug?.current||'';
+        const articleHref=slug?'post.html?slug='+encodeURIComponent(slug):'#';
+        const category=post.category?.title?escapeHtml(post.category.title):'';
         return `<article class="home-blog-card">
-          <a class="home-blog-media" href="post.html?slug=${encodeURIComponent(slug)}" aria-label="Lexo: ${escapeHtml(post.title||'Artikull')}">
-            ${image?`<img src="${image}" alt="" loading="lazy" decoding="async">`:'<span class="home-blog-placeholder" aria-hidden="true">SK</span>'}
+          <a class="home-blog-media" href="${articleHref}" aria-label="Lexo: ${escapeHtml(post.title||'')}">
+            ${cover?`<img src="${escapeHtml(cover)}" alt="${escapeHtml(post.coverImage?.alt||'')}" loading="lazy" decoding="async">`:'<span class="home-blog-placeholder" aria-hidden="true"></span>'}
           </a>
           <div class="home-blog-body">
-            <div class="home-blog-meta"><span>${escapeHtml(post.category?.title||'Fizioterapi')}</span><time datetime="${escapeHtml(post.publishedAt||'')}">${formatDate(post.publishedAt)}</time></div>
-            <h3><a href="post.html?slug=${encodeURIComponent(slug)}">${escapeHtml(post.title||'Pa titull')}</a></h3>
-            <p>${escapeHtml(post.excerpt||'Këshilla dhe njohuri praktike për lëvizjen dhe rehabilitimin.')}</p>
+            <div class="home-blog-meta">${category?`<span>${category}</span>`:''}<time datetime="${escapeHtml(post.publishedAt||'')}">${formatDate(post.publishedAt)}</time></div>
+            <h3><a href="${articleHref}">${escapeHtml(post.title||'')}</a></h3>
+            ${post.excerpt?`<p>${escapeHtml(post.excerpt)}</p>`:''}
             ${authorBadge(post)}
-            <a class="text-link" href="post.html?slug=${encodeURIComponent(slug)}">Lexo artikullin <span aria-hidden="true">→</span></a>
+            <a class="text-link" href="${articleHref}">Lexo artikullin <span aria-hidden="true">→</span></a>
           </div>
         </article>`;
       }).join('');
     })
     .catch(()=>{
-      list.innerHTML='<div class="home-blog-empty"><strong>Blogu është përkohësisht i paarritshëm.</strong><span>Provo përsëri pas pak ose hape faqen e blogut.</span><a class="text-link" href="blog.html">Hap blogun →</a></div>';
+      list.innerHTML='<div class="home-blog-empty"><strong>Blogu është përkohësisht i paarritshëm.</strong><span>Provo përsëri pas pak.</span></div>';
     });
 })();
