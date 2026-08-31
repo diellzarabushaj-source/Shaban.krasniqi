@@ -58,6 +58,9 @@ for(const viewport of viewports){
         const r=el.getBoundingClientRect();return {w:r.width,h:r.height};
       }));
       expect(mobileNavTargets.every(t=>t.w>=44&&t.h>=44)).toBeTruthy();
+      await page.keyboard.press('Escape');
+      await expect(page.locator('[data-site-nav]')).not.toHaveClass(/open/);
+      await expect(page.locator('[data-menu-toggle]')).toHaveAttribute('aria-expanded','false');
     }
 
     const contrastSamples=await page.evaluate(()=>{
