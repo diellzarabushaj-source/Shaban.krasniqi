@@ -1,0 +1,13 @@
+{
+  "name": "shaban-krasniqi-tooling",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "repomix": "repomix",
+    "tooling:check": "node scripts/check-tooling.mjs"
+  },
+  "devDependencies": {
+    "@nizos/probity": "latest",
+    "repomix": "latest"
+  }
+}
