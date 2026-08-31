@@ -74,16 +74,30 @@ test('missing siteMedia keeps stable built-in visual fallback',async({page})=>{
 });
 
 
-test('partial siteMedia must fail closed and keep local logo',async({page})=>{
+test('partial siteMedia binds available branding and preserves missing visual fallbacks',async({page})=>{
+  await page.route('**/cdn.sanity.io/images/**',async route=>{
+    const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=','base64');
+    await route.fulfill({status:200,contentType:'image/png',body:png});
+  });
   await page.route('**/data/query/production*',async route=>{
     const query=new URL(route.request().url()).searchParams.get('query')||'';
     if(query.includes('_type == "siteMedia"')){
-      await route.fulfill({json:{result:{_id:'siteMedia',branding:{logoPrimary:image('partial-logo','Partial')}}}});
+      await route.fulfill({json:{result:{
+        _id:'siteMedia',
+        branding:{
+          logoPrimary:image('partial-logo','Shaban Krasniqi Fizioterapi'),
+          logoWhite:image('partial-logo-white','Shaban Krasniqi Fizioterapi'),
+          logoMark:image('partial-mark','Shaban Krasniqi'),
+          favicon:image('partial-favicon','Shaban Krasniqi')
+        }
+      }}});
     }else{
       await route.fulfill({json:{result:[]}});
     }
   });
   await page.goto('/');
-  await expect.poll(()=>page.locator('html').getAttribute('data-site-media')).toBe('fallback');
-  await expect(page.locator('.brand-official .official-logo')).toHaveAttribute('src','assets/branding/logo-site-primary-clean.webp');
+  await expect.poll(()=>page.locator('html').getAttribute('data-site-media')).toBe('partial');
+  await expect(page.locator('.brand-official .official-logo')).toHaveAttribute('src',/cdn\.sanity\.io/);
+  await expect(page.locator('.brand-official')).toHaveAttribute('data-sanity-bound','true');
+  await expect(page.locator('.service-art svg').first()).toBeVisible();
 });

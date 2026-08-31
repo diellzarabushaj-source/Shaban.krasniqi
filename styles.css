@@ -2832,3 +2832,10 @@ h1,h2,h3,.brand-copy strong{font-family:Montserrat,Manrope,sans-serif}
   .footer-brand-official{width:172px;min-height:50px}
   .footer-brand-official .official-footer-logo{width:172px !important;height:50px !important;max-width:172px !important;max-height:50px !important}
 }
+
+
+/* Remove local logo background fallback once Sanity branding is active */
+.brand-official[data-sanity-bound="true"],
+.footer-brand-official[data-sanity-bound="true"]{
+  background-image:none !important;
+}

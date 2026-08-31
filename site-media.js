@@ -72,6 +72,13 @@
       img.loading='lazy';
     }
     img.dataset.sanityBound='true';
+    if(
+      img.classList.contains('official-logo') ||
+      img.classList.contains('official-footer-logo') ||
+      img.classList.contains('official-closing-logo')
+    ){
+      img.parentElement?.setAttribute('data-sanity-bound','true');
+    }
   }
 
   function bindArt(container,image){
@@ -111,8 +118,34 @@
 
   function hasAsset(image){return Boolean(image?.asset?.url)}
 
-  function hasCompleteRequiredMedia(media){
-    if(!media||typeof media!=='object')return false;
+  function apply(media){
+    if(!media||typeof media!=='object'){
+      document.documentElement.dataset.siteMedia='fallback';
+      return;
+    }
+
+    let boundCount=0;
+
+    document.querySelectorAll('[data-site-media]').forEach(node=>{
+      const image=get(media,node.dataset.siteMedia);
+      if(!hasAsset(image))return;
+
+      if(node.tagName==='IMG'){
+        bindImg(node,image,{eager:node.classList.contains('hero-portrait')||node.classList.contains('official-logo')});
+        boundCount+=1;
+      }else if(node.classList.contains('service-art')||node.classList.contains('treatment-art')){
+        bindArt(node,image);
+        boundCount+=1;
+      }
+    });
+
+    const faviconBefore=document.querySelector('link[rel="icon"]')?.href||'';
+    bindFavicon(media);
+    const faviconAfter=document.querySelector('link[rel="icon"]')?.href||'';
+    if(faviconAfter&&faviconAfter!==faviconBefore)boundCount+=1;
+
+    bindOg(media);
+
     const required=[
       media.branding?.logoPrimary,
       media.branding?.logoWhite,
@@ -131,30 +164,15 @@
       media.treatments?.reumatike,
       media.treatments?.pediatrike
     ];
-    return required.every(hasAsset);
-  }
 
-  function apply(media){
-    if(!hasCompleteRequiredMedia(media)){
-      document.documentElement.dataset.siteMedia='fallback';
-      return;
+    const complete=required.every(hasAsset);
+    document.documentElement.dataset.siteMedia=boundCount
+      ?(complete?'ready':'partial')
+      :'fallback';
+
+    if(boundCount){
+      document.dispatchEvent(new CustomEvent('site-media:ready',{detail:{id:media._id||null,complete}}));
     }
-
-    document.querySelectorAll('[data-site-media]').forEach(node=>{
-      const image=get(media,node.dataset.siteMedia);
-      if(!image?.asset?.url)return;
-
-      if(node.tagName==='IMG'){
-        bindImg(node,image,{eager:node.classList.contains('hero-portrait')||node.classList.contains('official-logo')});
-      }else if(node.classList.contains('service-art')||node.classList.contains('treatment-art')){
-        bindArt(node,image);
-      }
-    });
-
-    bindFavicon(media);
-    bindOg(media);
-    document.documentElement.dataset.siteMedia='ready';
-    document.dispatchEvent(new CustomEvent('site-media:ready',{detail:{id:media._id||null}}));
   }
 
   const controller=new AbortController();
