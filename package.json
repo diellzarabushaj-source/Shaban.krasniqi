@@ -5,10 +5,12 @@
   "scripts":{
     "repomix":"repomix",
     "tooling:check":"node scripts/check-tooling.mjs",
-    "site:check":"node scripts/check-site.mjs"
+    "site:check":"node scripts/check-site.mjs",
+    "e2e":"playwright test"
   },
   "devDependencies":{
     "@nizos/probity":"latest",
+    "@playwright/test":"latest",
     "repomix":"latest"
   }
 }

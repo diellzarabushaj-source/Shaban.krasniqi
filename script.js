@@ -1,3 +1,7 @@
+const qualityStyle=document.createElement('style');
+qualityStyle.textContent=':root{--blue-500:#1466d9}.service-number{color:var(--blue-500)}.closing h2 span{color:var(--white)}.footer-links a{display:inline-flex;align-items:center;min-height:44px}';
+document.head.append(qualityStyle);
+
 const header=document.querySelector('[data-header]');
 const toggle=document.querySelector('[data-menu-toggle]');
 const nav=document.querySelector('[data-site-nav]');
