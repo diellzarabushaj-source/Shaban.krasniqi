@@ -97,3 +97,137 @@ if(reduceMotion||!('IntersectionObserver' in window)){
   },{threshold:.12,rootMargin:'0px 0px -40px'});
   reveals.forEach(el=>observer.observe(el));
 }
+
+
+const homeForm=document.querySelector('[data-home-form]');
+if(homeForm){
+  const nameInput=homeForm.querySelector('[data-home-name]');
+  const phoneInput=homeForm.querySelector('[data-home-phone]');
+  const addressInput=homeForm.querySelector('[data-home-address]');
+  const noteInput=homeForm.querySelector('[data-home-note]');
+  const latInput=homeForm.querySelector('[data-home-lat]');
+  const lngInput=homeForm.querySelector('[data-home-lng]');
+  const locationButton=homeForm.querySelector('[data-use-location]');
+  const locationStatus=homeForm.querySelector('[data-location-status]');
+  const locationError=homeForm.querySelector('[data-location-error]');
+  const problemError=homeForm.querySelector('[data-problem-error]');
+  const mapFrame=homeForm.querySelector('[data-home-map]');
+  const mapPlaceholder=homeForm.querySelector('[data-map-placeholder]');
+
+  const setLocationStatus=(text)=>{if(locationStatus)locationStatus.textContent=text};
+
+  const setMap=(lat,lng)=>{
+    const latitude=Number(lat);
+    const longitude=Number(lng);
+    const delta=.006;
+    const bbox=[
+      longitude-delta,
+      latitude-delta,
+      longitude+delta,
+      latitude+delta
+    ].join(',');
+    if(mapFrame){
+      mapFrame.src='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent(bbox)+'&layer=mapnik&marker='+encodeURIComponent(latitude+','+longitude);
+      mapFrame.hidden=false;
+    }
+    if(mapPlaceholder)mapPlaceholder.hidden=true;
+  };
+
+  const clearLocationError=()=>{
+    if(locationError)locationError.hidden=true;
+    addressInput?.removeAttribute('aria-invalid');
+  };
+
+  locationButton?.addEventListener('click',()=>{
+    clearLocationError();
+    if(!navigator.geolocation){
+      setLocationStatus('Shfletuesi nuk e mbështet GPS-in. Shkruaj adresën më poshtë.');
+      return;
+    }
+    locationButton.classList.remove('is-success');
+    locationButton.classList.add('is-loading');
+    locationButton.querySelector('span').textContent='Duke marrë lokacionin…';
+    navigator.geolocation.getCurrentPosition(position=>{
+      const lat=position.coords.latitude.toFixed(6);
+      const lng=position.coords.longitude.toFixed(6);
+      latInput.value=lat;
+      lngInput.value=lng;
+      setMap(lat,lng);
+      setLocationStatus('Lokacioni u mor me sukses.');
+      locationButton.classList.remove('is-loading');
+      locationButton.classList.add('is-success');
+      locationButton.querySelector('span').textContent='Lokacioni u shtua';
+    },()=>{
+      locationButton.classList.remove('is-loading');
+      locationButton.querySelector('span').textContent='Përdor lokacionin tim';
+      setLocationStatus('Nuk u mor lokacioni. Lejo GPS-in ose shkruaj adresën.');
+    },{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+  });
+
+  addressInput?.addEventListener('input',clearLocationError);
+  homeForm.querySelectorAll('input[name="problem"]').forEach(input=>{
+    input.addEventListener('change',()=>{if(problemError)problemError.hidden=true});
+  });
+
+  const validateHomeForm=()=>{
+    let valid=true;
+    for(const input of [nameInput,phoneInput]){
+      if(!input.value.trim()){
+        input.setAttribute('aria-invalid','true');
+        valid=false;
+      }else{
+        input.removeAttribute('aria-invalid');
+      }
+    }
+    const selected=[...homeForm.querySelectorAll('input[name="problem"]:checked')];
+    if(!selected.length){
+      if(problemError)problemError.hidden=false;
+      valid=false;
+    }
+    const hasCoords=Boolean(latInput.value&&lngInput.value);
+    const hasAddress=Boolean(addressInput.value.trim());
+    if(!hasCoords&&!hasAddress){
+      if(locationError)locationError.hidden=false;
+      addressInput.setAttribute('aria-invalid','true');
+      valid=false;
+    }
+    return valid;
+  };
+
+  homeForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    if(!validateHomeForm()){
+      const firstInvalid=homeForm.querySelector('[aria-invalid="true"]');
+      firstInvalid?.focus();
+      return;
+    }
+
+    const problems=[...homeForm.querySelectorAll('input[name="problem"]:checked')]
+      .map(input=>input.value)
+      .join(', ');
+
+    const hasCoords=Boolean(latInput.value&&lngInput.value);
+    const mapLink=hasCoords
+      ? 'https://maps.google.com/?q='+latInput.value+','+lngInput.value
+      : 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addressInput.value.trim());
+
+    const lines=[
+      'Përshëndetje Shaban, dua të kërkoj një vizitë fizioterapie në shtëpi.',
+      '',
+      'Emri dhe mbiemri: '+nameInput.value.trim(),
+      'Telefoni: '+phoneInput.value.trim(),
+      'Problemi: '+problems,
+      'Adresa: '+(addressInput.value.trim()||'Lokacioni i dërguar me GPS'),
+      'Harta: '+mapLink
+    ];
+
+    if(noteInput.value.trim()){
+      lines.push('Shënim: '+noteInput.value.trim());
+    }
+
+    lines.push('', 'A mund të më tregoni kur keni termin të lirë për vizitë në shtëpi?');
+
+    const url='https://wa.me/38649884785?text='+encodeURIComponent(lines.join('\n'));
+    window.open(url,'_blank','noopener,noreferrer');
+  });
+}

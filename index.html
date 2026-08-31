@@ -37,6 +37,7 @@
       </button>
 
       <nav class="site-nav" id="site-nav" aria-label="Navigimi kryesor" data-site-nav>
+        <a href="#ne-shtepi">Në shtëpi</a>
         <a href="#sherbimet">Shërbimet</a>
         <a href="#trajtimet">Trajtimet</a>
         <a href="#qasja">Qasja</a>
@@ -142,6 +143,142 @@
         <div class="strip-item">
           <span>03</span>
           <div><strong>Progres</strong><small>Rrisim gradualisht kapacitetin funksional.</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section home-visit" id="ne-shtepi">
+      <div class="shell home-visit-shell">
+        <div class="home-visit-intro reveal">
+          <span class="section-kicker home-kicker">Vizitë në shtëpi</span>
+          <h2>Thirre fizioterapeutin <span>në shtëpi.</span></h2>
+          <p>Plotëso disa të dhëna të shkurtra. Në fund hapet WhatsApp me mesazhin e përgatitur — përfshirë problemin dhe lokacionin tënd.</p>
+
+          <div class="home-visit-points" aria-label="Si funksionon">
+            <div>
+              <span>01</span>
+              <div><strong>Plotëso të dhënat</strong><small>Emër, telefon dhe problemin kryesor.</small></div>
+            </div>
+            <div>
+              <span>02</span>
+              <div><strong>Ndaje lokacionin</strong><small>Me GPS ose duke shkruar adresën.</small></div>
+            </div>
+            <div>
+              <span>03</span>
+              <div><strong>Dërgo në WhatsApp</strong><small>Mesazhi krijohet automatikisht për ty.</small></div>
+            </div>
+          </div>
+
+          <div class="home-privacy">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 9V7a5 5 0 0 1 10 0v2m-8 0h6a2 2 0 0 1 2 2v5H5v-5a2 2 0 0 1 2-2Z"/></svg>
+            <span>Të dhënat nuk ruhen në këtë faqe. Ato përdoren vetëm për ta përgatitur mesazhin në WhatsApp.</span>
+          </div>
+        </div>
+
+        <div class="home-booking-card reveal" data-delay="80">
+          <div class="home-booking-head">
+            <div>
+              <span class="home-booking-badge"><i></i> Kërkesë për vizitë</span>
+              <h3>Na trego ku të vijmë.</h3>
+            </div>
+            <span class="home-step">01—04</span>
+          </div>
+
+          <form class="home-form" data-home-form novalidate>
+            <div class="home-field-grid">
+              <label class="home-field">
+                <span>Emri dhe mbiemri</span>
+                <input type="text" name="name" autocomplete="name" placeholder="p.sh. Arben Krasniqi" required data-home-name>
+              </label>
+
+              <label class="home-field">
+                <span>Numri i telefonit</span>
+                <input type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="p.sh. 049 123 456" required data-home-phone>
+              </label>
+            </div>
+
+            <fieldset class="home-problems">
+              <legend>Çfarë problemi keni? <small>Mund të zgjidhni më shumë se një.</small></legend>
+              <div class="problem-options">
+                <label class="problem-choice">
+                  <input type="checkbox" name="problem" value="Dhimbje të qafës dhe shpinës">
+                  <span>Qafë / shpinë</span>
+                </label>
+                <label class="problem-choice">
+                  <input type="checkbox" name="problem" value="Dhimbje të nyjeve">
+                  <span>Dhimbje të nyjeve</span>
+                </label>
+                <label class="problem-choice">
+                  <input type="checkbox" name="problem" value="Problem ortopedik">
+                  <span>Problem ortopedik</span>
+                </label>
+                <label class="problem-choice">
+                  <input type="checkbox" name="problem" value="Problem reumatik">
+                  <span>Problem reumatik</span>
+                </label>
+                <label class="problem-choice">
+                  <input type="checkbox" name="problem" value="Fizioterapi pediatrike">
+                  <span>Pediatrik</span>
+                </label>
+                <label class="problem-choice">
+                  <input type="checkbox" name="problem" value="Rikuperim pas lëndimit ose operacionit">
+                  <span>Pas lëndimit / operacionit</span>
+                </label>
+                <label class="problem-choice">
+                  <input type="checkbox" name="problem" value="Tjetër">
+                  <span>Tjetër</span>
+                </label>
+              </div>
+              <p class="field-error" data-problem-error hidden>Zgjidhni së paku një problem.</p>
+            </fieldset>
+
+            <div class="home-location-block">
+              <div class="home-location-copy">
+                <div>
+                  <span class="location-label">Lokacioni</span>
+                  <strong>Ku duhet të vijë fizioterapeuti?</strong>
+                </div>
+                <button class="location-button" type="button" data-use-location>
+                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 18s6-5.1 6-10A6 6 0 1 0 4 8c0 4.9 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg>
+                  <span>Përdor lokacionin tim</span>
+                </button>
+              </div>
+
+              <label class="home-field address-field">
+                <span>Ose shkruaj adresën</span>
+                <input type="text" name="address" autocomplete="street-address" placeholder="Rruga, lagjja, qyteti" data-home-address>
+              </label>
+
+              <div class="home-map-shell">
+                <div class="map-placeholder" data-map-placeholder>
+                  <div class="map-grid" aria-hidden="true"></div>
+                  <span class="map-pin" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.4"/></svg>
+                  </span>
+                  <div>
+                    <strong>Lokacioni juaj</strong>
+                    <small data-location-status>Shtyp “Përdor lokacionin tim” ose shkruaj adresën.</small>
+                  </div>
+                </div>
+                <iframe class="home-map" title="Harta e lokacionit për vizitën në shtëpi" loading="lazy" referrerpolicy="no-referrer" data-home-map hidden></iframe>
+              </div>
+              <input type="hidden" name="latitude" data-home-lat>
+              <input type="hidden" name="longitude" data-home-lng>
+              <p class="field-error location-error" data-location-error hidden>Ndani lokacionin ose shkruani adresën.</p>
+            </div>
+
+            <label class="home-field note-field">
+              <span>Shënim i shkurtër <small>opsional</small></span>
+              <textarea name="note" rows="3" placeholder="p.sh. Dhimbja ka filluar para 3 ditësh..." data-home-note></textarea>
+            </label>
+
+            <button class="home-submit" type="submit">
+              <span>Dërgo kërkesën në WhatsApp</span>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5l5 5-5 5"/></svg>
+            </button>
+
+            <p class="home-form-note">Mesazhi do t’i dërgohet <strong>Fizioterapia Shaban Krasniqi</strong> në WhatsApp.</p>
+          </form>
         </div>
       </div>
     </section>
@@ -510,6 +647,7 @@
         </div>
       </div>
       <div class="footer-links" aria-label="Lidhje të faqes">
+        <a href="#ne-shtepi">Në shtëpi</a>
         <a href="#sherbimet">Shërbimet</a>
         <a href="#trajtimet">Trajtimet</a>
         <a href="#qasja">Qasja</a>

@@ -29,7 +29,7 @@ for(const viewport of viewports){
 
     const geometry=await page.evaluate(()=>{
       const root=document.documentElement;
-      const interactive=[...document.querySelectorAll('a[href],button,summary')]
+      const interactive=[...document.querySelectorAll('a[href],button,summary,input:not([type="hidden"]),textarea,.problem-choice')]
         .filter(el=>{
           const s=getComputedStyle(el),r=el.getBoundingClientRect();
           return !el.classList.contains('skip-link')&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity)>0.01&&s.pointerEvents!=='none'&&r.width>0&&r.height>0;
@@ -99,6 +99,22 @@ for(const viewport of viewports){
     const phoneLinks=await page.locator('a[href="tel:+38649884785"]').count();
     expect(phoneLinks).toBeGreaterThanOrEqual(2);
     console.log(viewport.name+' contact links '+JSON.stringify({whatsapp:contactLinks,phone:phoneLinks}));
+
+    await page.context().grantPermissions(['geolocation']);
+    await page.context().setGeolocation({latitude:42.6595,longitude:20.2887});
+    await page.locator('[data-home-name]').fill('Test Pacienti');
+    await page.locator('[data-home-phone]').fill('049 111 222');
+    await page.locator('input[name="problem"][value="Dhimbje të qafës dhe shpinës"]').check();
+    await page.locator('input[name="problem"][value="Dhimbje të nyjeve"]').check();
+    await page.locator('[data-use-location]').click();
+    await expect(page.locator('[data-use-location]')).toHaveClass(/is-success/);
+    await page.evaluate(()=>{window.open=(url)=>{window.__homeVisitWhatsApp=url;return null}});
+    await page.locator('[data-home-form]').evaluate(form=>form.requestSubmit());
+    const homeVisitUrl=await page.evaluate(()=>window.__homeVisitWhatsApp);
+    expect(homeVisitUrl).toContain('https://wa.me/38649884785?text=');
+    expect(decodeURIComponent(homeVisitUrl)).toContain('Test Pacienti');
+    expect(decodeURIComponent(homeVisitUrl)).toContain('Dhimbje të qafës dhe shpinës');
+    expect(decodeURIComponent(homeVisitUrl)).toContain('maps.google.com/?q=42.659500,20.288700');
 
     await page.screenshot({path:'test-results/landing-'+viewport.name+'.png',fullPage:true});
   });
