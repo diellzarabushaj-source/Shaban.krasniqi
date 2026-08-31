@@ -1,0 +1,39 @@
+name: Sanity Studio Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sanity-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sanity-studio
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: sanity-studio/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate schema and build
+        run: |
+          npm run schema:extract
+          npm run build
+
+      - name: Deploy schema
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+        run: npx sanity@latest schema deploy --project a1lswl1z --dataset production
+
+      - name: Deploy hosted Studio
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+        run: npx sanity@latest deploy --project a1lswl1z
