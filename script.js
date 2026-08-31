@@ -194,10 +194,10 @@ if(homeForm){
     const author=post.author;
     const href=authorLink(author);
     if(!author?.name||!href)return '';
-    const avatar=imageUrl(author.image,96);
+    const authorImage=imageUrl(author.image,96);
     const initials=author.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();
     return `<a class="home-blog-author" href="${href}" aria-label="Rreth autorit ${escapeHtml(author.name)}">
-      ${avatar?`<img src="${escapeHtml(avatar)}" alt="" width="32" height="32" loading="lazy" decoding="async">`:`<span aria-hidden="true">${escapeHtml(initials)}</span>`}
+      ${authorImage?`<img src="${escapeHtml(avatar)}" alt="" width="32" height="32" loading="lazy" decoding="async">`:`<span aria-hidden="true">${escapeHtml(initials)}</span>`}
       <small>Nga <strong>${escapeHtml(author.name)}</strong></small>
     </a>`;
   };

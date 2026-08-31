@@ -138,10 +138,10 @@ function renderPortableText(blocks=[]){
 function authorMarkup(author){
   if(!author?.name||!author.slug?.current)return '';
   const href='author.html?slug='+encodeURIComponent(author.slug.current);
-  const avatar=imageUrl(author.image,160);
+  const authorImage=imageUrl(author.image,160);
   const initials=author.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();
   return `<a class="article-author-compact" href="${href}" aria-label="Rreth autorit ${escapeHtml(author.name)}">
-    ${avatar?`<img src="${escapeHtml(avatar)}" alt="" width="44" height="44" loading="lazy" decoding="async">`:`<span class="article-author-fallback" aria-hidden="true">${escapeHtml(initials)}</span>`}
+    ${authorImage?`<img src="${escapeHtml(avatar)}" alt="" width="44" height="44" loading="lazy" decoding="async">`:`<span class="article-author-fallback" aria-hidden="true">${escapeHtml(initials)}</span>`}
     <div><small>Shkruar nga</small><strong>${escapeHtml(author.name)}</strong>${author.role?`<em>${escapeHtml(author.role)}</em>`:''}</div>
   </a>`;
 }
