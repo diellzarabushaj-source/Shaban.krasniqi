@@ -501,3 +501,178 @@ body{
   .contact-dock-call{width:auto;min-width:104px;min-height:50px;padding:0 16px;gap:7px}
   .contact-dock-call span{display:inline}
 }
+
+
+/* Hero portrait — Shaban Krasniqi */
+.hero-portrait-wrap{
+  position:relative;
+  min-height:620px;
+  display:grid;
+  place-items:center;
+}
+.hero-portrait-card{
+  position:relative;
+  width:min(100%,500px);
+  aspect-ratio:665/845;
+  margin:0;
+  overflow:visible;
+  border:1px solid rgba(183,216,255,.88);
+  border-radius:34px;
+  background:linear-gradient(180deg,#f8fbff,#edf6ff);
+  box-shadow:0 34px 100px rgba(7,73,165,.14),0 4px 16px rgba(7,73,165,.06);
+  isolation:isolate;
+}
+.hero-portrait-card::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  z-index:3;
+  border-radius:inherit;
+  pointer-events:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72);
+}
+.hero-portrait-halo{
+  position:absolute;
+  z-index:-1;
+  width:126%;
+  aspect-ratio:1;
+  left:-13%;
+  top:-5%;
+  border-radius:50%;
+  border:1px solid rgba(89,158,246,.15);
+  box-shadow:inset 0 0 110px rgba(89,158,246,.07);
+}
+.hero-portrait{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  object-position:50% 20%;
+  border-radius:inherit;
+}
+.hero-portrait-fade{
+  position:absolute;
+  z-index:2;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.02) 50%,rgba(4,31,74,.05) 72%,rgba(5,35,82,.78) 100%),
+    radial-gradient(circle at 76% 10%,rgba(93,168,255,.14),transparent 30%);
+}
+.hero-portrait-caption{
+  position:absolute;
+  z-index:4;
+  left:22px;
+  right:22px;
+  bottom:21px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:18px;
+  color:#fff;
+}
+.hero-portrait-caption>div{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:5px;
+  text-align:right;
+}
+.hero-portrait-caption strong{
+  font-size:18px;
+  font-weight:500;
+  letter-spacing:-.03em;
+}
+.hero-portrait-caption small{
+  color:rgba(255,255,255,.78);
+  font-size:9px;
+  line-height:1.4;
+  letter-spacing:.02em;
+}
+.portrait-status{
+  min-height:30px;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:0 11px;
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+  backdrop-filter:blur(14px);
+  color:#fff;
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+}
+.portrait-status i{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#9bc8ff;
+  box-shadow:0 0 0 4px rgba(155,200,255,.16);
+}
+.portrait-chip{
+  position:absolute;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:150px;
+  padding:10px 12px;
+  border:1px solid rgba(190,220,255,.92);
+  border-radius:15px;
+  background:rgba(255,255,255,.90);
+  backdrop-filter:blur(16px);
+  box-shadow:0 14px 38px rgba(8,70,160,.11);
+}
+.portrait-chip>span{
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+  border-radius:10px;
+  background:#eaf4ff;
+  color:#0756c9;
+  font-size:9px;
+  font-weight:800;
+}
+.portrait-chip div{display:flex;flex-direction:column;gap:2px}
+.portrait-chip small{
+  color:#1466d9;
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.portrait-chip strong{
+  color:#061b3f;
+  font-size:10px;
+  font-weight:600;
+}
+.portrait-chip-a{left:-35px;top:84px}
+.portrait-chip-b{right:-26px;top:204px}
+
+@media (max-width:1040px){
+  .hero-portrait-wrap{min-height:560px}
+  .hero-portrait-card{width:min(100%,450px)}
+}
+@media (max-width:860px){
+  .hero-portrait-wrap{min-height:610px;margin-top:16px}
+  .hero-portrait-card{width:min(86vw,500px)}
+  .portrait-chip-a{left:2%}
+  .portrait-chip-b{right:2%}
+}
+@media (max-width:620px){
+  .hero-portrait-wrap{min-height:auto;margin-top:34px;padding:0 6px}
+  .hero-portrait-card{width:100%;border-radius:28px}
+  .hero-portrait-caption{left:16px;right:16px;bottom:16px;align-items:flex-start;flex-direction:column-reverse;gap:10px}
+  .hero-portrait-caption>div{align-items:flex-start;text-align:left}
+  .hero-portrait-caption strong{font-size:16px}
+  .portrait-chip{display:none}
+}
