@@ -1,7 +1,7 @@
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {schemaTypes} from './schemaTypes'
-import {structure} from './structure'
+import {structure, singletonTypes} from './structure'
 
 export default defineConfig({
   name: 'default',
@@ -9,5 +9,15 @@ export default defineConfig({
   projectId: 'a1lswl1z',
   dataset: 'production',
   plugins: [structureTool({structure})],
-  schema: {types: schemaTypes},
+  schema: {
+    types: schemaTypes,
+    templates: (templates) =>
+      templates.filter((template) => !singletonTypes.has(template.schemaType)),
+  },
+  document: {
+    actions: (prev, context) =>
+      singletonTypes.has(context.schemaType)
+        ? prev.filter(({action}) => !['delete', 'duplicate', 'unpublish'].includes(action || ''))
+        : prev,
+  },
 })
