@@ -41,4 +41,4 @@ jobs:
       - name: Deploy hosted Studio
         env:
           SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
-        run: npx sanity@latest deploy --yes --no-build --url shaban-krasniqi-blog.sanity.studio
+        run: npx sanity deploy --yes --no-build --url shaban-krasniqi-blog.sanity.studio
