@@ -39,3 +39,7 @@ Në Studio hap `Website Media` dhe mbush:
 - General images sipas nevojës
 
 Frontend-i i website-it është tashmë i lidhur me këtë singleton.
+
+## Deploy
+
+Sanity Studio deploy kryhet nga GitHub Actions duke përdorur projektin ekzistues `a1lswl1z` dhe dataset-in `production`.
