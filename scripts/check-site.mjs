@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const files=['index.html','styles.css','script.js','blog.html','blog.css','blog.js','post.html','post.js','author.html','author.js','page-shell.js','assets/branding/logo-site-light.webp','assets/branding/logo-site-dark.webp','assets/branding/favicon-64.png'];
+const files=['index.html','styles.css','script.js','site-media.js','blog.html','blog.css','blog.js','post.html','post.js','author.html','author.js','page-shell.js','assets/branding/logo-site-light.webp','assets/branding/logo-site-dark.webp','assets/branding/favicon-64.png','docs/sanity-siteMedia.schema.ts','docs/sanity-siteMedia.singleton.ts'];
 const missing=files.filter(file=>!fs.existsSync(file));
 const failures=missing.map(file=>'Missing file: '+file);
 
@@ -58,6 +58,18 @@ if(!missing.length){
   }
   if(!index.includes('assets/branding/logo-site-dark.webp'))failures.push('index missing official dark logo');
   if(!css.includes('.brand-official')||!css.includes('.official-closing-logo'))failures.push('Official logo CSS missing');
+  // siteMedia runtime contract
+  const siteMedia=fs.readFileSync('site-media.js','utf8');
+  for(const needle of ['_type == "siteMedia"','branding{','hero{','services{','treatments{','general{','asset->{_id,url}','data-site-media']){
+    if(!(siteMedia+index).includes(needle))failures.push('siteMedia contract missing: '+needle);
+  }
+  const serviceSlots=(index.match(/data-site-media="services\./g)||[]).length;
+  const treatmentSlots=(index.match(/data-site-media="treatments\./g)||[]).length;
+  if(serviceSlots!==6)failures.push('Expected 6 Sanity service image slots, found '+serviceSlots);
+  if(treatmentSlots!==5)failures.push('Expected 5 Sanity treatment image slots, found '+treatmentSlots);
+  for(const page of [index,blog,post,author]){
+    if(!page.includes('site-media.js'))failures.push('Page missing site-media.js bootstrap');
+  }
   if(!css.includes('@media (max-width:390px)'))failures.push('Missing 390px responsive breakpoint');
   if(!css.includes('prefers-reduced-motion'))failures.push('Reduced-motion support missing');
   if(!script.includes('IntersectionObserver'))failures.push('Reveal behavior missing');
