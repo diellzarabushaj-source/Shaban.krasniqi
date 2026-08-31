@@ -2764,3 +2764,71 @@ h1,h2,h3,.brand-copy strong{font-family:Montserrat,Manrope,sans-serif}
 .treatment-art[data-sanity-bound="true"]{
   background:linear-gradient(180deg,#ffffff 0%,#f7fbff 100%);
 }
+
+
+/* Hard logo visibility fallback */
+.brand-official{
+  width:220px;
+  height:62px;
+  flex:0 0 220px;
+  background-image:url("assets/branding/logo-site-primary-clean.webp");
+  background-repeat:no-repeat;
+  background-position:left center;
+  background-size:contain;
+}
+.brand-official .official-logo{
+  display:block !important;
+  width:220px !important;
+  height:62px !important;
+  max-width:220px !important;
+  max-height:62px !important;
+  object-fit:contain !important;
+  object-position:left center !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  filter:none !important;
+}
+.site-header.scrolled .brand-official{
+  width:190px;
+  height:54px;
+  flex-basis:190px;
+}
+.site-header.scrolled .brand-official .official-logo{
+  width:190px !important;
+  height:54px !important;
+  max-width:190px !important;
+  max-height:54px !important;
+}
+.footer-brand-official{
+  width:200px;
+  min-height:58px;
+  background-image:url("assets/branding/logo-site-primary-clean.webp");
+  background-repeat:no-repeat;
+  background-position:left center;
+  background-size:contain;
+}
+.footer-brand-official .official-footer-logo{
+  display:block !important;
+  width:200px !important;
+  height:58px !important;
+  max-width:200px !important;
+  max-height:58px !important;
+  object-fit:contain !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  filter:none !important;
+}
+@media(max-width:1180px){
+  .brand-official{width:188px;height:54px;flex-basis:188px}
+  .brand-official .official-logo{width:188px !important;height:54px !important;max-width:188px !important;max-height:54px !important}
+  .site-header.scrolled .brand-official{width:174px;height:50px;flex-basis:174px}
+  .site-header.scrolled .brand-official .official-logo{width:174px !important;height:50px !important;max-width:174px !important;max-height:50px !important}
+}
+@media(max-width:860px){
+  .brand-official,
+  .site-header.scrolled .brand-official{width:164px;height:48px;flex-basis:164px}
+  .brand-official .official-logo,
+  .site-header.scrolled .brand-official .official-logo{width:164px !important;height:48px !important;max-width:164px !important;max-height:48px !important}
+  .footer-brand-official{width:172px;min-height:50px}
+  .footer-brand-official .official-footer-logo{width:172px !important;height:50px !important;max-width:172px !important;max-height:50px !important}
+}
