@@ -11,6 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <meta property="og:image" content="" data-site-og-image>
+  <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
   <a class="skip-link" href="#main">Kalo te përmbajtja</a>
@@ -18,7 +20,7 @@
   <header class="site-header" data-header>
     <div class="nav-shell">
       <a class="brand brand-official" href="#top" aria-label="Fizioterapia Shaban Krasniqi, faqja kryesore">
-        <img class="official-logo" src="assets/branding/logo-site-light.webp" width="480" height="160" alt="Shaban Krasniqi Fizioterapi" decoding="async" fetchpriority="high">
+        <img class="official-logo" data-site-media="branding.logoPrimary" src="assets/branding/logo-site-light.webp" width="480" height="160" alt="Shaban Krasniqi Fizioterapi" decoding="async" fetchpriority="high">
       </a>
 <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-menu-toggle>
         <span class="sr-only">Hap menynë</span>
@@ -315,7 +317,7 @@
         <div class="service-grid">
 
           <article class="service-card service-card-rich reveal">
-            <div class="service-art"><svg viewBox="0 0 320 180" aria-hidden="true"><defs><linearGradient id="sg1" x1="70" y1="20" x2="250" y2="170"><stop stop-color="#dcecff"/><stop offset="1" stop-color="#4f93f7"/></linearGradient></defs><circle cx="160" cy="50" r="20" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M154 72c-17 28-24 58-20 92M166 72c20 24 32 50 38 81M145 96c-29 13-50 30-64 53M169 96c29 7 52 24 70 48" fill="none" stroke="url(#sg1)" stroke-width="11" stroke-linecap="round"/><circle cx="160" cy="96" r="7" fill="#0a68e8"/><path d="M49 145c59-33 123-39 214-17" fill="none" stroke="#b9d9ff" stroke-width="2" stroke-dasharray="7 8"/></svg></div>
+            <div class="service-art" data-site-media="services.fizioterapi"><svg viewBox="0 0 320 180" aria-hidden="true"><defs><linearGradient id="sg1" x1="70" y1="20" x2="250" y2="170"><stop stop-color="#dcecff"/><stop offset="1" stop-color="#4f93f7"/></linearGradient></defs><circle cx="160" cy="50" r="20" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M154 72c-17 28-24 58-20 92M166 72c20 24 32 50 38 81M145 96c-29 13-50 30-64 53M169 96c29 7 52 24 70 48" fill="none" stroke="url(#sg1)" stroke-width="11" stroke-linecap="round"/><circle cx="160" cy="96" r="7" fill="#0a68e8"/><path d="M49 145c59-33 123-39 214-17" fill="none" stroke="#b9d9ff" stroke-width="2" stroke-dasharray="7 8"/></svg></div>
             <div class="service-number">01</div>
             <h3>Fizioterapi</h3>
             <p>Vlerësim funksional dhe plan individual rehabilitimi për rikthim gradual në lëvizje dhe aktivitet.</p>
@@ -326,7 +328,7 @@
           </article>
 
           <article class="service-card service-card-rich reveal" data-delay="60">
-            <div class="service-art"><svg viewBox="0 0 320 180" aria-hidden="true"><defs><linearGradient id="sg2" x1="80" y1="30" x2="250" y2="160"><stop stop-color="#eaf4ff"/><stop offset="1" stop-color="#61a5fb"/></linearGradient></defs><circle cx="111" cy="58" r="17" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M113 78c12 24 15 49 8 76M120 101c32 2 55 15 70 39" fill="none" stroke="url(#sg2)" stroke-width="12" stroke-linecap="round"/><rect x="185" y="83" width="66" height="45" rx="15" fill="#fff" stroke="#b9d9ff" stroke-width="2"/><path d="M198 106h10l7-12 10 25 7-13h10" fill="none" stroke="#0a68e8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M171 107c-13 0-22 6-29 17" fill="none" stroke="#79b6ff" stroke-width="2" stroke-dasharray="4 5"/></svg></div>
+            <div class="service-art" data-site-media="services.elektroterapi"><svg viewBox="0 0 320 180" aria-hidden="true"><defs><linearGradient id="sg2" x1="80" y1="30" x2="250" y2="160"><stop stop-color="#eaf4ff"/><stop offset="1" stop-color="#61a5fb"/></linearGradient></defs><circle cx="111" cy="58" r="17" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M113 78c12 24 15 49 8 76M120 101c32 2 55 15 70 39" fill="none" stroke="url(#sg2)" stroke-width="12" stroke-linecap="round"/><rect x="185" y="83" width="66" height="45" rx="15" fill="#fff" stroke="#b9d9ff" stroke-width="2"/><path d="M198 106h10l7-12 10 25 7-13h10" fill="none" stroke="#0a68e8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M171 107c-13 0-22 6-29 17" fill="none" stroke="#79b6ff" stroke-width="2" stroke-dasharray="4 5"/></svg></div>
             <div class="service-number">02</div>
             <h3>Elektroterapi</h3>
             <p>Aplikim i modaliteteve elektroterapeutike si pjesë e planit të fizioterapisë, sipas vlerësimit dhe indikacionit.</p>
@@ -337,7 +339,7 @@
           </article>
 
           <article class="service-card service-card-rich reveal" data-delay="120">
-            <div class="service-art"><svg viewBox="0 0 320 180" aria-hidden="true"><defs><linearGradient id="sg3" x1="90" y1="35" x2="240" y2="155"><stop stop-color="#d9ecff"/><stop offset="1" stop-color="#2b82f6"/></linearGradient></defs><circle cx="118" cy="54" r="17" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M119 75c10 22 12 46 6 73M127 99c25 4 45 15 59 35" fill="none" stroke="url(#sg3)" stroke-width="11" stroke-linecap="round"/><rect x="193" y="76" width="31" height="58" rx="14" fill="#fff" stroke="#0a68e8" stroke-width="2"/><path d="M209 136v17" stroke="#0a68e8" stroke-width="3" stroke-linecap="round"/><path d="M232 89c18 9 18 24 0 33M240 80c29 15 29 39 0 54" fill="none" stroke="#8fc3ff" stroke-width="3" stroke-linecap="round"/></svg></div>
+            <div class="service-art" data-site-media="services.ultraze"><svg viewBox="0 0 320 180" aria-hidden="true"><defs><linearGradient id="sg3" x1="90" y1="35" x2="240" y2="155"><stop stop-color="#d9ecff"/><stop offset="1" stop-color="#2b82f6"/></linearGradient></defs><circle cx="118" cy="54" r="17" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M119 75c10 22 12 46 6 73M127 99c25 4 45 15 59 35" fill="none" stroke="url(#sg3)" stroke-width="11" stroke-linecap="round"/><rect x="193" y="76" width="31" height="58" rx="14" fill="#fff" stroke="#0a68e8" stroke-width="2"/><path d="M209 136v17" stroke="#0a68e8" stroke-width="3" stroke-linecap="round"/><path d="M232 89c18 9 18 24 0 33M240 80c29 15 29 39 0 54" fill="none" stroke="#8fc3ff" stroke-width="3" stroke-linecap="round"/></svg></div>
             <div class="service-number">03</div>
             <h3>Ultrazë</h3>
             <p>Terapi me ultrazë e integruar në rehabilitim kur vlerësohet e përshtatshme për planin e trajtimit.</p>
@@ -348,7 +350,7 @@
           </article>
 
           <article class="service-card service-card-rich reveal">
-            <div class="service-art"><svg viewBox="0 0 320 180" aria-hidden="true"><defs><linearGradient id="sg4" x1="100" y1="20" x2="230" y2="170"><stop stop-color="#edf7ff"/><stop offset="1" stop-color="#4f93f7"/></linearGradient></defs><circle cx="160" cy="48" r="18" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M157 69c-9 22-13 48-10 79M167 70c16 20 23 43 21 71" fill="none" stroke="url(#sg4)" stroke-width="12" stroke-linecap="round"/><path d="M136 92c-26 14-43 29-53 48M184 93c26 12 43 27 52 46" fill="none" stroke="#95c7ff" stroke-width="7" stroke-linecap="round"/><circle cx="145" cy="103" r="4" fill="#0a68e8"/><circle cx="176" cy="113" r="4" fill="#0a68e8"/><circle cx="155" cy="132" r="4" fill="#0a68e8"/><path d="M90 148c20-8 39-10 55-6M229 146c-20-8-38-9-54-4" fill="none" stroke="#c5ddfb" stroke-width="2" stroke-dasharray="5 6"/></svg></div>
+            <div class="service-art" data-site-media="services.limfodrenazh"><svg viewBox="0 0 320 180" aria-hidden="true"><defs><linearGradient id="sg4" x1="100" y1="20" x2="230" y2="170"><stop stop-color="#edf7ff"/><stop offset="1" stop-color="#4f93f7"/></linearGradient></defs><circle cx="160" cy="48" r="18" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M157 69c-9 22-13 48-10 79M167 70c16 20 23 43 21 71" fill="none" stroke="url(#sg4)" stroke-width="12" stroke-linecap="round"/><path d="M136 92c-26 14-43 29-53 48M184 93c26 12 43 27 52 46" fill="none" stroke="#95c7ff" stroke-width="7" stroke-linecap="round"/><circle cx="145" cy="103" r="4" fill="#0a68e8"/><circle cx="176" cy="113" r="4" fill="#0a68e8"/><circle cx="155" cy="132" r="4" fill="#0a68e8"/><path d="M90 148c20-8 39-10 55-6M229 146c-20-8-38-9-54-4" fill="none" stroke="#c5ddfb" stroke-width="2" stroke-dasharray="5 6"/></svg></div>
             <div class="service-number">04</div>
             <h3>Limfodrenazh</h3>
             <p>Teknika të drenazhit limfatik të aplikuara sipas nevojës dhe vlerësimit individual të pacientit.</p>
@@ -359,7 +361,7 @@
           </article>
 
           <article class="service-card service-card-rich reveal" data-delay="60">
-            <div class="service-art"><svg viewBox="0 0 320 180" aria-hidden="true"><defs><linearGradient id="sg5" x1="80" y1="25" x2="240" y2="160"><stop stop-color="#e7f3ff"/><stop offset="1" stop-color="#438cf3"/></linearGradient></defs><circle cx="111" cy="55" r="17" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M111 75c15 19 21 44 17 73M127 101c26 1 47 12 65 34" fill="none" stroke="url(#sg5)" stroke-width="11" stroke-linecap="round"/><path d="M206 82l34 16-34 16-18-16 18-16Z" fill="#fff" stroke="#0a68e8" stroke-width="2"/><path d="M243 86c16 7 24 16 24 27M249 76c24 10 37 23 38 40" fill="none" stroke="#8fc3ff" stroke-width="3" stroke-linecap="round"/></svg></div>
+            <div class="service-art" data-site-media="services.shockwave"><svg viewBox="0 0 320 180" aria-hidden="true"><defs><linearGradient id="sg5" x1="80" y1="25" x2="240" y2="160"><stop stop-color="#e7f3ff"/><stop offset="1" stop-color="#438cf3"/></linearGradient></defs><circle cx="111" cy="55" r="17" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M111 75c15 19 21 44 17 73M127 101c26 1 47 12 65 34" fill="none" stroke="url(#sg5)" stroke-width="11" stroke-linecap="round"/><path d="M206 82l34 16-34 16-18-16 18-16Z" fill="#fff" stroke="#0a68e8" stroke-width="2"/><path d="M243 86c16 7 24 16 24 27M249 76c24 10 37 23 38 40" fill="none" stroke="#8fc3ff" stroke-width="3" stroke-linecap="round"/></svg></div>
             <div class="service-number">05</div>
             <h3>Shockwave</h3>
             <p>Terapia me valë goditëse përdoret si modalitet i synuar kur është e përshtatshme për gjendjen dhe objektivin funksional.</p>
@@ -370,7 +372,7 @@
           </article>
 
           <article class="service-card service-card-rich reveal" data-delay="120">
-            <div class="service-art"><svg viewBox="0 0 320 180" aria-hidden="true"><defs><linearGradient id="sg6" x1="90" y1="30" x2="235" y2="160"><stop stop-color="#eaf5ff"/><stop offset="1" stop-color="#5ba0fa"/></linearGradient></defs><circle cx="114" cy="49" r="17" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M116 70c15 21 24 46 24 77" fill="none" stroke="url(#sg6)" stroke-width="12" stroke-linecap="round"/><path d="M151 92c27 2 49 14 64 35" fill="none" stroke="#7db7fb" stroke-width="8" stroke-linecap="round"/><g fill="#fff" stroke="#0a68e8" stroke-width="2"><path d="M173 68h27l-3 34c-1 10-20 10-21 0l-3-34Z"/><path d="M207 74h25l-3 31c-1 9-18 9-19 0l-3-31Z"/></g><path d="M178 61h17M211 67h16" stroke="#8fc3ff" stroke-width="3" stroke-linecap="round"/></svg></div>
+            <div class="service-art" data-site-media="services.hixhame"><svg viewBox="0 0 320 180" aria-hidden="true"><defs><linearGradient id="sg6" x1="90" y1="30" x2="235" y2="160"><stop stop-color="#eaf5ff"/><stop offset="1" stop-color="#5ba0fa"/></linearGradient></defs><circle cx="114" cy="49" r="17" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M116 70c15 21 24 46 24 77" fill="none" stroke="url(#sg6)" stroke-width="12" stroke-linecap="round"/><path d="M151 92c27 2 49 14 64 35" fill="none" stroke="#7db7fb" stroke-width="8" stroke-linecap="round"/><g fill="#fff" stroke="#0a68e8" stroke-width="2"><path d="M173 68h27l-3 34c-1 10-20 10-21 0l-3-34Z"/><path d="M207 74h25l-3 31c-1 9-18 9-19 0l-3-31Z"/></g><path d="M178 61h17M211 67h16" stroke="#8fc3ff" stroke-width="3" stroke-linecap="round"/></svg></div>
             <div class="service-number">06</div>
             <h3>Hixhame</h3>
             <p>Hixhame e ofruar si shërbim plotësues, me vlerësim të përshtatshmërisë para aplikimit.</p>
@@ -396,7 +398,7 @@
         <div class="treatment-grid">
 
           <article class="treatment-card reveal">
-            <div class="treatment-art"><svg viewBox="0 0 280 150" aria-hidden="true"><circle cx="132" cy="32" r="15" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M130 50c-13 22-17 45-12 75M136 52c18 17 28 38 30 63" fill="none" stroke="#77b4fb" stroke-width="11" stroke-linecap="round"/><path d="M126 61c14 20 17 40 13 61" fill="none" stroke="#0a68e8" stroke-width="3" stroke-dasharray="4 5"/><circle cx="128" cy="75" r="4" fill="#0a68e8"/><circle cx="133" cy="93" r="4" fill="#0a68e8"/><circle cx="136" cy="111" r="4" fill="#0a68e8"/></svg></div>
+            <div class="treatment-art" data-site-media="treatments.qafeShpine"><svg viewBox="0 0 280 150" aria-hidden="true"><circle cx="132" cy="32" r="15" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M130 50c-13 22-17 45-12 75M136 52c18 17 28 38 30 63" fill="none" stroke="#77b4fb" stroke-width="11" stroke-linecap="round"/><path d="M126 61c14 20 17 40 13 61" fill="none" stroke="#0a68e8" stroke-width="3" stroke-dasharray="4 5"/><circle cx="128" cy="75" r="4" fill="#0a68e8"/><circle cx="133" cy="93" r="4" fill="#0a68e8"/><circle cx="136" cy="111" r="4" fill="#0a68e8"/></svg></div>
             <div class="treatment-copy">
               <h3>Dhimbje të qafës dhe shpinës</h3>
               <p>Vlerësim i lëvizjes dhe program rehabilitimi për shqetësime të qafës dhe shpinës.</p>
@@ -408,7 +410,7 @@
           </article>
 
           <article class="treatment-card reveal" data-delay="60">
-            <div class="treatment-art"><svg viewBox="0 0 280 150" aria-hidden="true"><path d="M92 35c26 20 43 42 51 67M188 37c-25 18-40 40-47 66" fill="none" stroke="#91c5ff" stroke-width="12" stroke-linecap="round"/><circle cx="141" cy="104" r="17" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M140 122c-4 12-4 20 1 26" fill="none" stroke="#5b9df7" stroke-width="10" stroke-linecap="round"/><path d="M118 104h46M141 81v46" stroke="#c6e0ff" stroke-width="2" stroke-dasharray="4 5"/></svg></div>
+            <div class="treatment-art" data-site-media="treatments.nyje"><svg viewBox="0 0 280 150" aria-hidden="true"><path d="M92 35c26 20 43 42 51 67M188 37c-25 18-40 40-47 66" fill="none" stroke="#91c5ff" stroke-width="12" stroke-linecap="round"/><circle cx="141" cy="104" r="17" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M140 122c-4 12-4 20 1 26" fill="none" stroke="#5b9df7" stroke-width="10" stroke-linecap="round"/><path d="M118 104h46M141 81v46" stroke="#c6e0ff" stroke-width="2" stroke-dasharray="4 5"/></svg></div>
             <div class="treatment-copy">
               <h3>Dhimbje të nyjeve</h3>
               <p>Trajtim dhe ushtrime të përshtatura për nyje të dhimbshme, të ngurta ose të kufizuara në lëvizje.</p>
@@ -420,7 +422,7 @@
           </article>
 
           <article class="treatment-card reveal" data-delay="120">
-            <div class="treatment-art"><svg viewBox="0 0 280 150" aria-hidden="true"><circle cx="104" cy="32" r="14" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M107 49c12 22 18 45 17 70M122 74c27 11 45 29 54 52" fill="none" stroke="#75b2fa" stroke-width="11" stroke-linecap="round"/><path d="M182 91l28 9-7 23-28-9z" fill="#fff" stroke="#0a68e8" stroke-width="2"/><path d="M184 106h20" stroke="#8fc3ff" stroke-width="3" stroke-linecap="round"/></svg></div>
+            <div class="treatment-art" data-site-media="treatments.ortopedike"><svg viewBox="0 0 280 150" aria-hidden="true"><circle cx="104" cy="32" r="14" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M107 49c12 22 18 45 17 70M122 74c27 11 45 29 54 52" fill="none" stroke="#75b2fa" stroke-width="11" stroke-linecap="round"/><path d="M182 91l28 9-7 23-28-9z" fill="#fff" stroke="#0a68e8" stroke-width="2"/><path d="M184 106h20" stroke="#8fc3ff" stroke-width="3" stroke-linecap="round"/></svg></div>
             <div class="treatment-copy">
               <h3>Probleme ortopedike</h3>
               <p>Rehabilitim funksional për shqetësime ortopedike dhe rikthim gradual pas dëmtimeve ose ndërhyrjeve.</p>
@@ -432,7 +434,7 @@
           </article>
 
           <article class="treatment-card reveal" data-delay="0">
-            <div class="treatment-art"><svg viewBox="0 0 280 150" aria-hidden="true"><circle cx="137" cy="29" r="14" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M137 47c-7 21-8 44-3 70M134 70c-24 14-40 31-48 51M137 70c26 12 43 30 53 52" fill="none" stroke="#8cc0fc" stroke-width="10" stroke-linecap="round"/><circle cx="88" cy="121" r="5" fill="#0a68e8"/><circle cx="188" cy="121" r="5" fill="#0a68e8"/><circle cx="134" cy="115" r="5" fill="#0a68e8"/></svg></div>
+            <div class="treatment-art" data-site-media="treatments.reumatike"><svg viewBox="0 0 280 150" aria-hidden="true"><circle cx="137" cy="29" r="14" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M137 47c-7 21-8 44-3 70M134 70c-24 14-40 31-48 51M137 70c26 12 43 30 53 52" fill="none" stroke="#8cc0fc" stroke-width="10" stroke-linecap="round"/><circle cx="88" cy="121" r="5" fill="#0a68e8"/><circle cx="188" cy="121" r="5" fill="#0a68e8"/><circle cx="134" cy="115" r="5" fill="#0a68e8"/></svg></div>
             <div class="treatment-copy">
               <h3>Probleme reumatike</h3>
               <p>Fizioterapi e përshtatur për ruajtjen e lëvizshmërisë, funksionit dhe tolerancës ndaj aktivitetit.</p>
@@ -444,7 +446,7 @@
           </article>
 
           <article class="treatment-card reveal" data-delay="60">
-            <div class="treatment-art"><svg viewBox="0 0 280 150" aria-hidden="true"><circle cx="138" cy="40" r="16" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M138 58c-5 20-5 38 0 58M136 72c-23 8-39 20-50 37M140 72c23 7 41 20 52 38M138 114c-18 9-28 18-35 30M138 114c19 8 31 18 38 30" fill="none" stroke="#78b6fb" stroke-width="9" stroke-linecap="round"/><path d="M74 121c16 5 30 5 43 0M176 121c16 5 29 4 40-2" fill="none" stroke="#c2ddff" stroke-width="2" stroke-dasharray="5 5"/></svg></div>
+            <div class="treatment-art" data-site-media="treatments.pediatrike"><svg viewBox="0 0 280 150" aria-hidden="true"><circle cx="138" cy="40" r="16" fill="#fff" stroke="#0a68e8" stroke-width="3"/><path d="M138 58c-5 20-5 38 0 58M136 72c-23 8-39 20-50 37M140 72c23 7 41 20 52 38M138 114c-18 9-28 18-35 30M138 114c19 8 31 18 38 30" fill="none" stroke="#78b6fb" stroke-width="9" stroke-linecap="round"/><path d="M74 121c16 5 30 5 43 0M176 121c16 5 29 4 40-2" fill="none" stroke="#c2ddff" stroke-width="2" stroke-dasharray="5 5"/></svg></div>
             <div class="treatment-copy">
               <h3>Probleme pediatrike</h3>
               <p>Qasje fizioterapeutike e përshtatur me moshën dhe nevojat funksionale të fëmijës.</p>
@@ -647,7 +649,7 @@
             </div>
           </div>
           <div class="closing-mark closing-brand-art" aria-hidden="true">
-            <img class="official-closing-logo" src="assets/branding/logo-site-dark.webp" width="480" height="160" alt="" loading="lazy" decoding="async">
+            <img class="official-closing-logo" data-site-media="branding.logoWhite" src="assets/branding/logo-site-dark.webp" width="480" height="160" alt="" loading="lazy" decoding="async">
           </div>
         </div>
       </div>
@@ -669,7 +671,7 @@
   <footer class="site-footer">
     <div class="shell footer-shell">
       <a class="footer-brand footer-brand-official" href="#top" aria-label="Fizioterapia Shaban Krasniqi">
-        <img class="official-footer-logo" src="assets/branding/logo-site-light.webp" width="480" height="160" alt="Shaban Krasniqi Fizioterapi" loading="lazy" decoding="async">
+        <img class="official-footer-logo" data-site-media="branding.logoPrimary" src="assets/branding/logo-site-light.webp" width="480" height="160" alt="Shaban Krasniqi Fizioterapi" loading="lazy" decoding="async">
       </a>
     <div class="footer-links" aria-label="Lidhje të faqes">
         <a href="#ne-shtepi">Në shtëpi</a>
@@ -684,6 +686,6 @@
     </div>
   </footer>
 
-  <script src="script.js" defer></script>
+  <script src="site-media.js" defer></script>\n  <script src="script.js" defer></script>
 </body>
 </html>
