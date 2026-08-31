@@ -25,9 +25,11 @@ const authorData=(post)=>{
 const authorBadge=(post,variant='compact')=>{
   const author=authorData(post);
   if(!author?.name)return '';
-  const avatar=imageUrl(author.image,240);
+  const avatar=imageUrl(author.image,160);
   const initials=author.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();
-  return `<div class="blog-author blog-author-${variant}">${avatar?`<img src="${avatar}" alt="" loading="lazy" decoding="async">`:`<span class="blog-author-fallback" aria-hidden="true">${escapeHtml(initials||'A')}</span>`}<div><small>Nga</small><strong>${escapeHtml(author.name)}</strong>${author.role&&variant==='featured'?`<em>${escapeHtml(author.role)}</em>`:''}</div></div>`;
+  const href='author.html?'+(author.slug?'slug='+encodeURIComponent(author.slug):'name='+encodeURIComponent(author.name));
+  const size=variant==='featured'?38:34;
+  return `<a class="blog-author blog-author-${variant}" href="${href}" aria-label="Rreth autorit ${escapeHtml(author.name)}">${avatar?`<img src="${avatar}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">`:`<span class="blog-author-fallback" aria-hidden="true">${escapeHtml(initials||'A')}</span>`}<div><small>Nga</small><strong>${escapeHtml(author.name)}</strong>${author.role&&variant==='featured'?`<em>${escapeHtml(author.role)}</em>`:''}</div></a>`;
 };
 const query=encodeURIComponent('*[_type == "post" && defined(publishedAt)] | order(publishedAt desc){title,slug,excerpt,publishedAt,featured,coverImage,category->{title,slug},"authorRef":author->{name,title,fullName,image,avatar,bio,role,slug},"authorInline":author}');
 
