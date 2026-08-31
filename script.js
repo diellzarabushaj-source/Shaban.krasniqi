@@ -143,7 +143,7 @@ if(homeForm){
   if(!list)return;
   const project='a1lswl1z';
   const dataset='production';
-  const query=encodeURIComponent('*[_type == "post" && defined(publishedAt)] | order(publishedAt desc)[0...3]{title,slug,excerpt,publishedAt,coverImage,category->{title}}');
+  const query=encodeURIComponent('*[_type == "post" && defined(publishedAt)] | order(publishedAt desc)[0...3]{title,slug,excerpt,publishedAt,coverImage,category->{title},"authorRef":author->{name,title,fullName,image,avatar,bio,role,slug},"authorInline":author}');
   const endpoint=`https://${project}.api.sanity.io/v2026-08-31/data/query/${dataset}?query=${query}`;
   const escapeHtml=(value='')=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
   const imageUrl=(ref)=>{
@@ -152,6 +152,21 @@ if(homeForm){
     return match?`https://cdn.sanity.io/images/${project}/${dataset}/${match[1]}-${match[2]}.${match[3]}?auto=format&w=1200&q=82`:'';
   };
   const formatDate=(date)=>date?new Intl.DateTimeFormat('sq-AL',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(date)):'';
+  const authorData=(post)=>{
+    const author=post?.authorRef||post?.authorInline;
+    if(!author||author._ref)return null;
+    return {
+      name:author.name||author.fullName||author.title||'',
+      image:author.image||author.avatar||null
+    };
+  };
+  const authorBadge=(post)=>{
+    const author=authorData(post);
+    if(!author?.name)return '';
+    const avatar=imageUrl(author.image);
+    const initials=author.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();
+    return `<div class="home-blog-author">${avatar?`<img src="${avatar}" alt="" loading="lazy" decoding="async">`:`<span aria-hidden="true">${escapeHtml(initials||'A')}</span>`}<small>Nga <strong>${escapeHtml(author.name)}</strong></small></div>`;
+  };
   fetch(endpoint)
     .then(response=>{if(!response.ok)throw new Error('Sanity request failed');return response.json();})
     .then(({result=[]})=>{
@@ -170,6 +185,7 @@ if(homeForm){
             <div class="home-blog-meta"><span>${escapeHtml(post.category?.title||'Fizioterapi')}</span><time datetime="${escapeHtml(post.publishedAt||'')}">${formatDate(post.publishedAt)}</time></div>
             <h3><a href="post.html?slug=${encodeURIComponent(slug)}">${escapeHtml(post.title||'Pa titull')}</a></h3>
             <p>${escapeHtml(post.excerpt||'Këshilla dhe njohuri praktike për lëvizjen dhe rehabilitimin.')}</p>
+            ${authorBadge(post)}
             <a class="text-link" href="post.html?slug=${encodeURIComponent(slug)}">Lexo artikullin <span aria-hidden="true">→</span></a>
           </div>
         </article>`;

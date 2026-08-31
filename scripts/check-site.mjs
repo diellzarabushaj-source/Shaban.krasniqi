@@ -16,10 +16,10 @@ if(!missing.length){
   for(const needle of ['id="trajtimet"','wa.me/38649884785','tel:+38649884785','id="sherbimet"','id="qasja"','id="pse-ne"','id="pyetje"','data-home-blog','href="blog.html"']){
     if(!index.includes(needle))failures.push('index missing: '+needle);
   }
-  for(const needle of ['data-blog-list','data-blog-featured','data-blog-search','a1lswl1z']){
+  for(const needle of ['data-blog-list','data-blog-featured','data-blog-search','a1lswl1z','authorRef','authorInline']){
     if(!(blog+blogJs).includes(needle))failures.push('blog missing: '+needle);
   }
-  for(const needle of ['data-article-body','data-related-posts','a1lswl1z','renderPortableText']){
+  for(const needle of ['data-article-body','data-related-posts','data-article-author','data-article-author-card','a1lswl1z','renderPortableText','authorRef']){
     if(!(post+postJs).includes(needle))failures.push('post missing: '+needle);
   }
   if(!css.includes('@media (max-width:390px)'))failures.push('Missing 390px responsive breakpoint');

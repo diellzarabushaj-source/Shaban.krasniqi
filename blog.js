@@ -12,7 +12,23 @@ const imageUrl=(ref,width=1200)=>{
   return match?`https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${match[1]}-${match[2]}.${match[3]}?auto=format&w=${width}&q=84`:'';
 };
 const formatDate=(date)=>date?new Intl.DateTimeFormat('sq-AL',{day:'2-digit',month:'short',year:'numeric'}).format(new Date(date)):'';
-const query=encodeURIComponent('*[_type == "post" && defined(publishedAt)] | order(publishedAt desc){title,slug,excerpt,publishedAt,featured,coverImage,category->{title,slug}}');
+const authorData=(post)=>{
+  const author=post?.authorRef||post?.authorInline;
+  if(!author||author._ref)return null;
+  return {
+    name:author.name||author.fullName||author.title||'',
+    image:author.image||author.avatar||null,
+    role:author.role||''
+  };
+};
+const authorBadge=(post,variant='compact')=>{
+  const author=authorData(post);
+  if(!author?.name)return '';
+  const avatar=imageUrl(author.image,240);
+  const initials=author.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();
+  return `<div class="blog-author blog-author-${variant}">${avatar?`<img src="${avatar}" alt="" loading="lazy" decoding="async">`:`<span class="blog-author-fallback" aria-hidden="true">${escapeHtml(initials||'A')}</span>`}<div><small>Nga</small><strong>${escapeHtml(author.name)}</strong>${author.role&&variant==='featured'?`<em>${escapeHtml(author.role)}</em>`:''}</div></div>`;
+};
+const query=encodeURIComponent('*[_type == "post" && defined(publishedAt)] | order(publishedAt desc){title,slug,excerpt,publishedAt,featured,coverImage,category->{title,slug},"authorRef":author->{name,title,fullName,image,avatar,bio,role,slug},"authorInline":author}');
 
 let posts=[];
 let activeFilter='all';
@@ -35,6 +51,7 @@ function card(post){
       <div class="blog-meta"><span>${escapeHtml(post.category?.title||'Fizioterapi')}</span><time datetime="${escapeHtml(post.publishedAt||'')}">${formatDate(post.publishedAt)}</time></div>
       <h2><a href="post.html?slug=${encodeURIComponent(slug)}">${escapeHtml(post.title||'Pa titull')}</a></h2>
       <p>${escapeHtml(post.excerpt||'Këshilla praktike për lëvizjen dhe rehabilitimin.')}</p>
+      ${authorBadge(post)}
       <a class="blog-read" href="post.html?slug=${encodeURIComponent(slug)}">Lexo artikullin <span aria-hidden="true">→</span></a>
     </div>
   </article>`;
@@ -53,6 +70,7 @@ function featured(post){
       <div class="blog-meta"><span>${escapeHtml(post.category?.title||'Fizioterapi')}</span><time datetime="${escapeHtml(post.publishedAt||'')}">${formatDate(post.publishedAt)}</time></div>
       <h2><a href="post.html?slug=${encodeURIComponent(slug)}">${escapeHtml(post.title||'Pa titull')}</a></h2>
       <p>${escapeHtml(post.excerpt||'Këshilla praktike për lëvizjen dhe rehabilitimin.')}</p>
+      ${authorBadge(post,'featured')}
       <a class="button button-primary featured-cta" href="post.html?slug=${encodeURIComponent(slug)}">Lexo artikullin</a>
     </div>
   </article>`;
@@ -78,7 +96,8 @@ function renderList(){
   const filtered=posts.filter(post=>{
     const category=post.category?.slug?.current||post.category?.title||'fizioterapi';
     const matchesFilter=activeFilter==='all'||category===activeFilter;
-    const haystack=(post.title+' '+(post.excerpt||'')+' '+(post.category?.title||'')).toLocaleLowerCase('sq');
+    const author=authorData(post);
+    const haystack=(post.title+' '+(post.excerpt||'')+' '+(post.category?.title||'')+' '+(author?.name||'')).toLocaleLowerCase('sq');
     return matchesFilter&&haystack.includes(searchTerm);
   });
   count.textContent=filtered.length===1?'1 artikull':filtered.length+' artikuj';

@@ -11,6 +11,30 @@ const imageUrl=(ref,width=1800)=>{
   return match?`https://cdn.sanity.io/images/${SANITY_PROJECT_ID}/${SANITY_DATASET}/${match[1]}-${match[2]}.${match[3]}?auto=format&w=${width}&q=86`:'';
 };
 const formatDate=(date)=>date?new Intl.DateTimeFormat('sq-AL',{day:'2-digit',month:'long',year:'numeric'}).format(new Date(date)):'';
+const authorData=(post)=>{
+  const author=post?.authorRef||post?.authorInline;
+  if(!author||author._ref)return null;
+  return {
+    name:author.name||author.fullName||author.title||'',
+    image:author.image||author.avatar||null,
+    bio:author.bio||'',
+    role:author.role||''
+  };
+};
+const plainTextFromPortable=(value)=>{
+  if(typeof value==='string')return value;
+  if(!Array.isArray(value))return '';
+  return value.filter(block=>block?._type==='block').map(block=>(block.children||[]).map(child=>child.text||'').join('')).join(' ');
+};
+const authorMarkup=(author,compact=false)=>{
+  if(!author?.name)return '';
+  const avatar=imageUrl(author.image,400);
+  const initials=author.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();
+  const photo=avatar?`<img src="${avatar}" alt="" loading="lazy" decoding="async">`:`<span class="article-author-fallback" aria-hidden="true">${escapeHtml(initials||'A')}</span>`;
+  if(compact)return `<div class="article-author-compact">${photo}<div><small>Shkruar nga</small><strong>${escapeHtml(author.name)}</strong>${author.role?`<em>${escapeHtml(author.role)}</em>`:''}</div></div>`;
+  const bio=plainTextFromPortable(author.bio);
+  return `<div class="article-author-card-inner">${photo}<div><span class="section-kicker">Rreth autorit</span><h2>${escapeHtml(author.name)}</h2>${author.role?`<strong class="article-author-role">${escapeHtml(author.role)}</strong>`:''}${bio?`<p>${escapeHtml(bio)}</p>`:''}</div></div>`;
+};
 
 function marks(text,markDefs=[],marks=[]){
   let output=escapeHtml(text||'');
@@ -66,6 +90,7 @@ function relatedCard(post){
     <div class="blog-card-body">
       <div class="blog-meta"><span>${escapeHtml(post.category?.title||'Fizioterapi')}</span><time>${formatDate(post.publishedAt)}</time></div>
       <h2><a href="post.html?slug=${encodeURIComponent(slug)}">${escapeHtml(post.title||'Pa titull')}</a></h2>
+      ${authorData(post)?.name?`<div class="blog-author blog-author-compact"><span class="blog-author-fallback" aria-hidden="true">${escapeHtml(authorData(post).name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase())}</span><div><small>Nga</small><strong>${escapeHtml(authorData(post).name)}</strong></div></div>`:''}
       <a class="blog-read" href="post.html?slug=${encodeURIComponent(slug)}">Lexo artikullin <span>→</span></a>
     </div>
   </article>`;
@@ -74,7 +99,7 @@ function relatedCard(post){
 async function load(){
   const slug=new URLSearchParams(location.search).get('slug')||'';
   if(!slug)throw new Error('missing slug');
-  const query=encodeURIComponent(`*[_type == "post" && slug.current == ${JSON.stringify(slug)}][0]{title,slug,excerpt,publishedAt,coverImage,category->{title,slug},body}`);
+  const query=encodeURIComponent(`*[_type == "post" && slug.current == ${JSON.stringify(slug)}][0]{title,slug,excerpt,publishedAt,coverImage,category->{title,slug},body,"authorRef":author->{name,title,fullName,image,avatar,bio,role,slug},"authorInline":author}`);
   const response=await fetch(`${SANITY_API}?query=${query}`);
   if(!response.ok)throw new Error('request failed');
   const post=(await response.json()).result;
@@ -86,12 +111,21 @@ async function load(){
   time.textContent=formatDate(post.publishedAt);time.dateTime=post.publishedAt||'';
   document.querySelector('[data-article-title]').textContent=post.title||'';
   document.querySelector('[data-article-excerpt]').textContent=post.excerpt||'';
+  const author=authorData(post);
+  const heroAuthor=document.querySelector('[data-article-author]');
+  const fullAuthor=document.querySelector('[data-article-author-card]');
+  if(author?.name){
+    heroAuthor.innerHTML=authorMarkup(author,true);
+    heroAuthor.hidden=false;
+    fullAuthor.innerHTML=authorMarkup(author,false);
+    fullAuthor.hidden=false;
+  }
   document.querySelector('[data-article-body]').innerHTML=renderPortableText(post.body||[]);
   const cover=document.querySelector('[data-article-cover]');
   const src=imageUrl(post.coverImage,2000);
   cover.innerHTML=src?`<img src="${src}" alt="" decoding="async">`:'<div class="article-cover-placeholder" aria-hidden="true"></div>';
 
-  const relatedQuery=encodeURIComponent(`*[_type == "post" && defined(publishedAt) && slug.current != ${JSON.stringify(slug)}] | order(publishedAt desc)[0...3]{title,slug,publishedAt,coverImage,category->{title}}`);
+  const relatedQuery=encodeURIComponent(`*[_type == "post" && defined(publishedAt) && slug.current != ${JSON.stringify(slug)}] | order(publishedAt desc)[0...3]{title,slug,publishedAt,coverImage,category->{title},"authorRef":author->{name,title,fullName,image,avatar,role},"authorInline":author}`);
   fetch(`${SANITY_API}?query=${relatedQuery}`).then(r=>r.ok?r.json():Promise.reject()).then(({result=[]})=>{
     document.querySelector('[data-related-posts]').innerHTML=result.map(relatedCard).join('');
   }).catch(()=>{});

@@ -8,7 +8,8 @@ const posts=[
     publishedAt:'2026-08-30T10:00:00Z',
     featured:true,
     coverImage:null,
-    category:{title:'Shpinë',slug:{current:'shpine'}}
+    category:{title:'Shpinë',slug:{current:'shpine'}},
+    authorRef:{name:'Shaban Krasniqi',role:'Fizioterapist',image:null,bio:[{_type:'block',style:'normal',children:[{text:'Fizioterapist me fokus në rehabilitim funksional.',marks:[]}],markDefs:[]}]}
   },
   {
     title:'Rikthimi në aktivitet pas lëndimit',
@@ -17,7 +18,8 @@ const posts=[
     publishedAt:'2026-08-28T10:00:00Z',
     featured:false,
     coverImage:null,
-    category:{title:'Rehabilitim',slug:{current:'rehabilitim'}}
+    category:{title:'Rehabilitim',slug:{current:'rehabilitim'}},
+    authorRef:{name:'Shaban Krasniqi',role:'Fizioterapist',image:null}
   }
 ];
 
@@ -45,6 +47,8 @@ for(const viewport of [{name:'desktop',width:1440,height:900},{name:'mobile',wid
     await expect(page.locator('[data-blog-count]')).toContainText('2 artikuj');
     await expect(page.locator('.featured-card')).toBeVisible();
     await expect(page.locator('.blog-card')).toHaveCount(2);
+    await expect(page.locator('.featured-card .blog-author')).toContainText('Shaban Krasniqi');
+    await expect(page.locator('.blog-card').first().locator('.blog-author')).toContainText('Shaban Krasniqi');
     await page.locator('[data-blog-search]').fill('shpinës');
     await expect(page.locator('.blog-card')).toHaveCount(1);
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
@@ -62,6 +66,8 @@ for(const viewport of [{name:'desktop',width:1440,height:900},{name:'mobile',wid
     await expect(page.locator('[data-article]')).toBeVisible();
     await expect(page.locator('[data-article-title]')).toHaveText(posts[0].title);
     await expect(page.locator('[data-article-body] h2')).toHaveText('Pse ndodh dhimbja?');
+    await expect(page.locator('[data-article-author]')).toContainText('Shaban Krasniqi');
+    await expect(page.locator('[data-article-author-card]')).toContainText('Fizioterapist me fokus në rehabilitim funksional.');
     await expect(page.locator('[data-related-posts] .blog-card')).toHaveCount(1);
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow).toBe(0);
