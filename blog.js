@@ -54,7 +54,7 @@ function authorBadge(author,variant='compact'){
   const initials=author.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();
   const size=variant==='featured'?38:34;
   return `<a class="blog-author blog-author-${variant}" href="${href}" aria-label="Rreth autorit ${escapeHtml(author.name)}">
-    ${authorImage?`<img src="${escapeHtml(avatar)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">`:`<span class="blog-author-fallback" aria-hidden="true">${escapeHtml(initials)}</span>`}
+    ${authorImage?`<img src="${escapeHtml(authorImage)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async">`:`<span class="blog-author-fallback" aria-hidden="true">${escapeHtml(initials)}</span>`}
     <div><small>Nga</small><strong>${escapeHtml(author.name)}</strong>${variant==='featured'&&author.role?`<em>${escapeHtml(author.role)}</em>`:''}</div>
   </a>`;
 }

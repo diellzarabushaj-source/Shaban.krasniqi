@@ -197,7 +197,7 @@ if(homeForm){
     const authorImage=imageUrl(author.image,96);
     const initials=author.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();
     return `<a class="home-blog-author" href="${href}" aria-label="Rreth autorit ${escapeHtml(author.name)}">
-      ${authorImage?`<img src="${escapeHtml(avatar)}" alt="" width="32" height="32" loading="lazy" decoding="async">`:`<span aria-hidden="true">${escapeHtml(initials)}</span>`}
+      ${authorImage?`<img src="${escapeHtml(authorImage)}" alt="" width="32" height="32" loading="lazy" decoding="async">`:`<span aria-hidden="true">${escapeHtml(initials)}</span>`}
       <small>Nga <strong>${escapeHtml(author.name)}</strong></small>
     </a>`;
   };
