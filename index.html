@@ -152,132 +152,161 @@
         <div class="home-visit-intro reveal">
           <span class="section-kicker home-kicker">Vizitë në shtëpi</span>
           <h2>Thirre fizioterapeutin <span>në shtëpi.</span></h2>
-          <p>Plotëso disa të dhëna të shkurtra. Në fund hapet WhatsApp me mesazhin e përgatitur — përfshirë problemin dhe lokacionin tënd.</p>
+          <p>Nuk ka formular të gjatë. Përgjigju vetëm një pyetjeje në çdo hap dhe në fund kërkesa përgatitet automatikisht në WhatsApp.</p>
 
           <div class="home-visit-points" aria-label="Si funksionon">
-            <div>
-              <span>01</span>
-              <div><strong>Plotëso të dhënat</strong><small>Emër, telefon dhe problemin kryesor.</small></div>
-            </div>
-            <div>
-              <span>02</span>
-              <div><strong>Ndaje lokacionin</strong><small>Me GPS ose duke shkruar adresën.</small></div>
-            </div>
-            <div>
-              <span>03</span>
-              <div><strong>Dërgo në WhatsApp</strong><small>Mesazhi krijohet automatikisht për ty.</small></div>
-            </div>
+            <div><span>01</span><div><strong>Na trego nevojën</strong><small>Emër, telefon dhe problemin kryesor.</small></div></div>
+            <div><span>02</span><div><strong>Zgjidh kohën</strong><small>Datën dhe orën që të përshtatet.</small></div></div>
+            <div><span>03</span><div><strong>Ndaje lokacionin</strong><small>Me GPS ose duke shkruar adresën.</small></div></div>
           </div>
 
           <div class="home-privacy">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 9V7a5 5 0 0 1 10 0v2m-8 0h6a2 2 0 0 1 2 2v5H5v-5a2 2 0 0 1 2-2Z"/></svg>
-            <span>Të dhënat nuk ruhen në këtë faqe. Ato përdoren vetëm për ta përgatitur mesazhin në WhatsApp.</span>
+            <span>Të dhënat nuk ruhen në server. Përdoren vetëm për ta ndërtuar mesazhin që ti dërgon në WhatsApp.</span>
           </div>
         </div>
 
-        <div class="home-booking-card reveal" data-delay="80">
-          <div class="home-booking-head">
-            <div>
-              <span class="home-booking-badge"><i></i> Kërkesë për vizitë</span>
-              <h3>Na trego ku të vijmë.</h3>
-            </div>
-            <span class="home-step">01—04</span>
+        <div class="home-booking-card home-wizard-card reveal" data-delay="80">
+          <div class="wizard-top">
+            <span class="home-booking-badge"><i></i> Vizitë në shtëpi</span>
+            <span class="wizard-counter"><b data-wizard-current>1</b> / <span data-wizard-total>8</span></span>
           </div>
 
-          <form class="home-form" data-home-form novalidate>
-            <div class="home-field-grid">
-              <label class="home-field">
-                <span>Emri dhe mbiemri</span>
-                <input type="text" name="name" autocomplete="name" placeholder="p.sh. Arben Krasniqi" required data-home-name>
-              </label>
+          <div class="wizard-progress" aria-hidden="true"><span data-wizard-progress></span></div>
 
-              <label class="home-field">
-                <span>Numri i telefonit</span>
-                <input type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="p.sh. 049 123 456" required data-home-phone>
+          <form class="home-wizard" data-home-form novalidate>
+            <section class="wizard-step is-active" data-wizard-step="1">
+              <span class="wizard-question-number">01</span>
+              <h3>Si quheni?</h3>
+              <p>Emri përdoret vetëm në kërkesën që do t’i dërgohet Shabanit.</p>
+              <label class="wizard-input">
+                <span class="sr-only">Emri dhe mbiemri</span>
+                <input type="text" name="name" autocomplete="name" placeholder="Emri dhe mbiemri" required data-home-name>
               </label>
-            </div>
+              <p class="field-error" data-name-error hidden>Shkruani emrin dhe mbiemrin.</p>
+            </section>
 
-            <fieldset class="home-problems">
-              <legend>Çfarë problemi keni? <small>Mund të zgjidhni më shumë se një.</small></legend>
-              <div class="problem-options">
-                <label class="problem-choice">
-                  <input type="checkbox" name="problem" value="Dhimbje të qafës dhe shpinës">
-                  <span>Qafë / shpinë</span>
-                </label>
-                <label class="problem-choice">
-                  <input type="checkbox" name="problem" value="Dhimbje të nyjeve">
-                  <span>Dhimbje të nyjeve</span>
-                </label>
-                <label class="problem-choice">
-                  <input type="checkbox" name="problem" value="Problem ortopedik">
-                  <span>Problem ortopedik</span>
-                </label>
-                <label class="problem-choice">
-                  <input type="checkbox" name="problem" value="Problem reumatik">
-                  <span>Problem reumatik</span>
-                </label>
-                <label class="problem-choice">
-                  <input type="checkbox" name="problem" value="Fizioterapi pediatrike">
-                  <span>Pediatrik</span>
-                </label>
-                <label class="problem-choice">
-                  <input type="checkbox" name="problem" value="Rikuperim pas lëndimit ose operacionit">
-                  <span>Pas lëndimit / operacionit</span>
-                </label>
-                <label class="problem-choice">
-                  <input type="checkbox" name="problem" value="Tjetër">
-                  <span>Tjetër</span>
-                </label>
+            <section class="wizard-step" data-wizard-step="2" hidden>
+              <span class="wizard-question-number">02</span>
+              <h3>Cili është numri juaj?</h3>
+              <p>Nëse duhet sqarim për vizitën, fizioterapeuti mund t’ju kontaktojë.</p>
+              <label class="wizard-input">
+                <span class="sr-only">Numri i telefonit</span>
+                <input type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="049 123 456" required data-home-phone>
+              </label>
+              <p class="field-error" data-phone-error hidden>Shkruani numrin e telefonit.</p>
+            </section>
+
+            <section class="wizard-step" data-wizard-step="3" hidden>
+              <span class="wizard-question-number">03</span>
+              <h3>Çfarë ju shqetëson?</h3>
+              <p>Mund të zgjidhni më shumë se një problem.</p>
+              <div class="wizard-choice-grid" data-problem-options>
+                <label class="wizard-choice"><input type="checkbox" name="problem" value="Dhimbje të qafës dhe shpinës"><span>Qafë / shpinë</span></label>
+                <label class="wizard-choice"><input type="checkbox" name="problem" value="Dhimbje të nyjeve"><span>Dhimbje të nyjeve</span></label>
+                <label class="wizard-choice"><input type="checkbox" name="problem" value="Problem ortopedik"><span>Problem ortopedik</span></label>
+                <label class="wizard-choice"><input type="checkbox" name="problem" value="Problem reumatik"><span>Problem reumatik</span></label>
+                <label class="wizard-choice"><input type="checkbox" name="problem" value="Fizioterapi pediatrike"><span>Pediatrik</span></label>
+                <label class="wizard-choice"><input type="checkbox" name="problem" value="Rikuperim pas lëndimit ose operacionit"><span>Pas lëndimit / operacionit</span></label>
+                <label class="wizard-choice"><input type="checkbox" name="problem" value="Tjetër"><span>Tjetër</span></label>
               </div>
               <p class="field-error" data-problem-error hidden>Zgjidhni së paku një problem.</p>
-            </fieldset>
+            </section>
 
-            <div class="home-location-block">
-              <div class="home-location-copy">
-                <div>
-                  <span class="location-label">Lokacioni</span>
-                  <strong>Ku duhet të vijë fizioterapeuti?</strong>
-                </div>
-                <button class="location-button" type="button" data-use-location>
-                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 18s6-5.1 6-10A6 6 0 1 0 4 8c0 4.9 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg>
-                  <span>Përdor lokacionin tim</span>
-                </button>
+            <section class="wizard-step" data-wizard-step="4" hidden>
+              <span class="wizard-question-number">04</span>
+              <h3>Cilën datë preferoni?</h3>
+              <p>Zgjidhni datën që ju përshtatet. Termini konfirmohet përfundimisht në WhatsApp.</p>
+              <label class="wizard-input wizard-date">
+                <span class="sr-only">Data e preferuar</span>
+                <input type="date" name="date" required data-home-date>
+              </label>
+              <p class="field-error" data-date-error hidden>Zgjidhni një datë.</p>
+            </section>
+
+            <section class="wizard-step" data-wizard-step="5" hidden>
+              <span class="wizard-question-number">05</span>
+              <h3>Në çfarë ore?</h3>
+              <p>Zgjidhni një orë të përafërt ose vendoseni vetë.</p>
+              <div class="wizard-time-grid">
+                <label class="wizard-time"><input type="radio" name="timePreset" value="09:00"><span>09:00</span></label>
+                <label class="wizard-time"><input type="radio" name="timePreset" value="11:00"><span>11:00</span></label>
+                <label class="wizard-time"><input type="radio" name="timePreset" value="14:00"><span>14:00</span></label>
+                <label class="wizard-time"><input type="radio" name="timePreset" value="16:00"><span>16:00</span></label>
+                <label class="wizard-time"><input type="radio" name="timePreset" value="18:00"><span>18:00</span></label>
               </div>
+              <label class="wizard-input wizard-custom-time">
+                <span>Ose orë tjetër</span>
+                <input type="time" name="time" data-home-time>
+              </label>
+              <p class="field-error" data-time-error hidden>Zgjidhni ose shkruani një orë.</p>
+            </section>
 
-              <label class="home-field address-field">
-                <span>Ose shkruaj adresën</span>
+            <section class="wizard-step" data-wizard-step="6" hidden>
+              <span class="wizard-question-number">06</span>
+              <h3>Ku duhet të vijmë?</h3>
+              <p>Përdorni lokacionin aktual ose shkruani adresën.</p>
+              <button class="wizard-location-button" type="button" data-use-location>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 18s6-5.1 6-10A6 6 0 1 0 4 8c0 4.9 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg>
+                <span>Përdor lokacionin tim</span>
+              </button>
+              <div class="wizard-divider"><span>ose</span></div>
+              <label class="wizard-input">
+                <span class="sr-only">Adresa</span>
                 <input type="text" name="address" autocomplete="street-address" placeholder="Rruga, lagjja, qyteti" data-home-address>
               </label>
 
-              <div class="home-map-shell">
+              <div class="home-map-shell wizard-map">
                 <div class="map-placeholder" data-map-placeholder>
                   <div class="map-grid" aria-hidden="true"></div>
-                  <span class="map-pin" aria-hidden="true">
-                    <svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.4"/></svg>
-                  </span>
-                  <div>
-                    <strong>Lokacioni juaj</strong>
-                    <small data-location-status>Shtyp “Përdor lokacionin tim” ose shkruaj adresën.</small>
-                  </div>
+                  <span class="map-pin" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.4"/></svg></span>
+                  <div><strong>Lokacioni i vizitës</strong><small data-location-status>Ende nuk është shtuar.</small></div>
                 </div>
                 <iframe class="home-map" title="Harta e lokacionit për vizitën në shtëpi" loading="lazy" referrerpolicy="no-referrer" data-home-map hidden></iframe>
               </div>
               <input type="hidden" name="latitude" data-home-lat>
               <input type="hidden" name="longitude" data-home-lng>
-              <p class="field-error location-error" data-location-error hidden>Ndani lokacionin ose shkruani adresën.</p>
+              <p class="field-error" data-location-error hidden>Ndani lokacionin ose shkruani adresën.</p>
+            </section>
+
+            <section class="wizard-step" data-wizard-step="7" hidden>
+              <span class="wizard-question-number">07</span>
+              <h3>Ka diçka tjetër që duhet ta dimë?</h3>
+              <p>Ky hap është opsional. Mund ta kaloni pa shkruar asgjë.</p>
+              <label class="wizard-input wizard-note">
+                <span class="sr-only">Shënim shtesë</span>
+                <textarea name="note" rows="5" placeholder="p.sh. Dhimbja ka filluar para 3 ditësh..." data-home-note></textarea>
+              </label>
+            </section>
+
+            <section class="wizard-step wizard-review-step" data-wizard-step="8" hidden>
+              <span class="wizard-question-number">08</span>
+              <h3>Gjithçka gati.</h3>
+              <p>Kontrolloni kërkesën para se ta hapim në WhatsApp.</p>
+              <div class="wizard-summary">
+                <div><small>Pacienti</small><strong data-summary-name>—</strong></div>
+                <div><small>Telefoni</small><strong data-summary-phone>—</strong></div>
+                <div><small>Problemi</small><strong data-summary-problem>—</strong></div>
+                <div><small>Data & ora</small><strong data-summary-datetime>—</strong></div>
+                <div><small>Lokacioni</small><strong data-summary-location>—</strong></div>
+              </div>
+              <button class="home-submit wizard-whatsapp" type="submit">
+                <span>Dërgo në WhatsApp</span>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5l5 5-5 5"/></svg>
+              </button>
+              <p class="home-form-note">Asgjë nuk dërgohet automatikisht. WhatsApp hapet me mesazhin gati dhe ju e dërgoni vetë.</p>
+            </section>
+
+            <div class="wizard-controls" data-wizard-controls>
+              <button class="wizard-back" type="button" data-wizard-back hidden>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m12 5-5 5 5 5"/></svg>
+                <span>Prapa</span>
+              </button>
+              <button class="wizard-next" type="button" data-wizard-next>
+                <span>Vazhdo</span>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m8 5 5 5-5 5"/></svg>
+              </button>
             </div>
-
-            <label class="home-field note-field">
-              <span>Shënim i shkurtër <small>opsional</small></span>
-              <textarea name="note" rows="3" placeholder="p.sh. Dhimbja ka filluar para 3 ditësh..." data-home-note></textarea>
-            </label>
-
-            <button class="home-submit" type="submit">
-              <span>Dërgo kërkesën në WhatsApp</span>
-              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5l5 5-5 5"/></svg>
-            </button>
-
-            <p class="home-form-note">Mesazhi do t’i dërgohet <strong>Fizioterapia Shaban Krasniqi</strong> në WhatsApp.</p>
           </form>
         </div>
       </div>

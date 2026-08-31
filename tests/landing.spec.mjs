@@ -102,18 +102,45 @@ for(const viewport of viewports){
 
     await page.context().grantPermissions(['geolocation']);
     await page.context().setGeolocation({latitude:42.6595,longitude:20.2887});
+
     await page.locator('[data-home-name]').fill('Test Pacienti');
+    await page.locator('[data-wizard-next]').click();
+    await expect(page.locator('[data-wizard-current]')).toHaveText('2');
+
     await page.locator('[data-home-phone]').fill('049 111 222');
-    await page.locator('.problem-choice').filter({has:page.locator('input[value="Dhimbje të qafës dhe shpinës"]')}).click();
-    await page.locator('.problem-choice').filter({has:page.locator('input[value="Dhimbje të nyjeve"]')}).click();
+    await page.locator('[data-wizard-next]').click();
+
+    await page.locator('.wizard-choice').filter({has:page.locator('input[value="Dhimbje të qafës dhe shpinës"]')}).click();
+    await page.locator('.wizard-choice').filter({has:page.locator('input[value="Dhimbje të nyjeve"]')}).click();
+    await page.locator('[data-wizard-next]').click();
+
+    const today=await page.evaluate(()=>{
+      const d=new Date(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+      return d.getFullYear()+'-'+m+'-'+day;
+    });
+    await page.locator('[data-home-date]').fill(today);
+    await page.locator('[data-wizard-next]').click();
+
+    await page.locator('.wizard-time').filter({has:page.locator('input[value="14:00"]')}).click();
+    await page.locator('[data-wizard-next]').click();
+
     await page.locator('[data-use-location]').click();
     await expect(page.locator('[data-use-location]')).toHaveClass(/is-success/);
+    await page.locator('[data-wizard-next]').click();
+
+    await page.locator('[data-home-note]').fill('Test shënim');
+    await page.locator('[data-wizard-next]').click();
+    await expect(page.locator('[data-wizard-current]')).toHaveText('8');
+    await expect(page.locator('[data-summary-name]')).toHaveText('Test Pacienti');
+    await expect(page.locator('[data-summary-datetime]')).toContainText('14:00');
+
     await page.evaluate(()=>{window.open=(url)=>{window.__homeVisitWhatsApp=url;return null}});
     await page.locator('[data-home-form]').evaluate(form=>form.requestSubmit());
     const homeVisitUrl=await page.evaluate(()=>window.__homeVisitWhatsApp);
     expect(homeVisitUrl).toContain('https://wa.me/38649884785?text=');
     expect(decodeURIComponent(homeVisitUrl)).toContain('Test Pacienti');
     expect(decodeURIComponent(homeVisitUrl)).toContain('Dhimbje të qafës dhe shpinës');
+    expect(decodeURIComponent(homeVisitUrl)).toContain('Ora e preferuar: 14:00');
     expect(decodeURIComponent(homeVisitUrl)).toContain('maps.google.com/?q=42.659500,20.288700');
 
     await page.screenshot({path:'test-results/landing-'+viewport.name+'.png',fullPage:true});
