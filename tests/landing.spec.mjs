@@ -257,18 +257,17 @@ test('wizard restores session state after reload', async ({page}) => {
 
 test('wizard has branded identity and mobile-safe location fallbacks', async ({page}) => {
   await page.setViewportSize({width:430,height:932});
-  await page.goto('/#ne-shtepi');
-  const logo=page.locator('.wizard-brand-logo');
-  await expect(logo).toBeVisible();
-  expect((await logo.boundingBox())?.height).toBeGreaterThanOrEqual(36);
-
-  await page.evaluate(()=>{
+  await page.addInitScript(()=>{
     sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
       step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
       timePreset:'14:00',problems:['Dhimbje të nyjeve']
     }));
   });
-  await page.reload();
+  await page.goto('/#ne-shtepi');
+  const logo=page.locator('.wizard-brand-logo');
+  await expect(logo).toBeVisible();
+  expect((await logo.boundingBox())?.height).toBeGreaterThanOrEqual(36);
+
   await expect(page.locator('[data-wizard-current]')).toHaveText('6');
   await expect(page.locator('[data-open-maps]')).toBeVisible();
   await expect(page.locator('[data-home-address]')).toBeVisible();
@@ -286,12 +285,12 @@ test('wizard personalized message contains structured patient context', async ({
   await page.locator('[data-wizard-next]').click();
   await page.locator('[data-home-phone]').fill('049123456');
   await page.locator('[data-wizard-next]').click();
-  await page.locator('input[value="Dhimbje të nyjeve"]').check();
+  await page.locator('.wizard-choice').filter({has:page.locator('input[value="Dhimbje të nyjeve"]')}).click();
   await page.locator('[data-wizard-next]').click();
 
   await page.locator('[data-home-date]').fill('2099-09-09');
   await page.locator('[data-wizard-next]').click();
-  await page.locator('input[name="timePreset"][value="14:00"]').check();
+  await page.locator('.wizard-time').filter({has:page.locator('input[name="timePreset"][value="14:00"]')}).click();
   await page.locator('[data-wizard-next]').click();
   await page.locator('[data-use-location]').click();
   await expect(page.locator('[data-use-location]')).toHaveClass(/is-success/);
