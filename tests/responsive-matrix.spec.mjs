@@ -43,7 +43,7 @@ for(const viewport of matrix){
       const r=el.getBoundingClientRect();
       return {width:r.width,height:r.height,right:r.right,left:r.left};
     }));
-    expect(navTargets.every(t=>t.width>=44&&t.height>=44&&t.left>=0&&t.right<=document.documentElement.clientWidth+1)).toBeTruthy();
+    expect(navTargets.every(t=>t.width>=44&&t.height>=44&&t.left>=0&&t.right<=viewport.width+1)).toBeTruthy();
     await page.keyboard.press('Escape');
 
     const fixedDock=page.locator('.contact-dock');
