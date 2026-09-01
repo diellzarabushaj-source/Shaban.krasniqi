@@ -51,5 +51,29 @@ for(const viewport of matrix){
     const dockBox=await fixedDock.boundingBox();
     expect(dockBox?.left||0).toBeGreaterThanOrEqual(0);
     expect((dockBox?.x||0)+(dockBox?.width||0)).toBeLessThanOrEqual(viewport.width+1);
+
+    if(viewport.width<=430){
+      const service=page.locator('.service-card-rich').first();
+      await service.scrollIntoViewIfNeeded();
+      const serviceBox=await service.boundingBox();
+      expect(serviceBox?.height||9999).toBeLessThan(560);
+      const serviceArtBox=await service.locator('.service-art').boundingBox();
+      expect(serviceArtBox?.height||9999).toBeLessThan(240);
+      expect(serviceArtBox?.height||0).toBeGreaterThan(130);
+
+      const treatment=page.locator('.treatment-card').first();
+      await treatment.scrollIntoViewIfNeeded();
+      const treatmentBox=await treatment.boundingBox();
+      expect(treatmentBox?.height||9999).toBeLessThan(520);
+
+      const localCta=treatment.locator('.card-whatsapp');
+      await localCta.scrollIntoViewIfNeeded();
+      await expect(fixedDock).toHaveClass(/is-suppressed/);
+
+      const footer=page.locator('.site-footer');
+      await footer.scrollIntoViewIfNeeded();
+      const footerBox=await footer.boundingBox();
+      expect(footerBox?.height||9999).toBeLessThan(430);
+    }
   });
 }
