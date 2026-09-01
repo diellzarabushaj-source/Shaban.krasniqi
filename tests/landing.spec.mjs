@@ -372,7 +372,8 @@ test('homepage exposes local SEO essentials for Peja', async ({page}) => {
   await expect(page).toHaveTitle(/Fizioterapi në Pejë/);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href','https://diellzarabushaj-source.github.io/Shaban.krasniqi/');
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content',/Pejë/);
-  await expect(page.locator('script[type="application/ld+json"]')).toContainText('Pejë');
+  const jsonLd=await page.locator('script[type="application/ld+json"]').evaluate(el=>el.textContent||'');
+  expect(jsonLd).toContain('Pejë');
   await expect(page.locator('.hero-copy')).toContainText('Fizioterapi në Pejë');
   await expect(page.locator('.hero-copy > .eyebrow')).toHaveCount(0);
 });

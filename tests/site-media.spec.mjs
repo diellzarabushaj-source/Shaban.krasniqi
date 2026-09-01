@@ -57,7 +57,11 @@ test('siteMedia binds all landing image slots without layout overflow',async({pa
   await expect(page.locator('.brand-official .official-logo')).toHaveAttribute('src',/cdn\.sanity\.io/);
   await expect(page.locator('.official-closing-logo')).toHaveAttribute('src',/cdn\.sanity\.io/);
   await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href',/cdn\.sanity\.io/);
-  await expect(page.locator('[data-site-og-image]')).toHaveAttribute('content',/cdn\.sanity\.io/);
+  const socialImages=page.locator('[data-site-og-image]');
+  await expect(socialImages).toHaveCount(2);
+  for(let i=0;i<await socialImages.count();i++){
+    await expect(socialImages.nth(i)).toHaveAttribute('content',/cdn\.sanity\.io/);
+  }
 
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBe(0);
