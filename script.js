@@ -884,3 +884,25 @@ if(homeForm){
       list.innerHTML='<div class="home-blog-empty"><strong>Blogu është përkohësisht i paarritshëm.</strong><span>Provo përsëri pas pak.</span></div>';
     });
 })();
+/* Mobile contact dock: hide it when an equivalent local CTA, booking card, closing CTA, or footer is visible. */
+const contactDock=document.querySelector('.contact-dock');
+if(contactDock&&'IntersectionObserver' in window){
+  const suppressors=[...document.querySelectorAll('.home-booking-card,.card-whatsapp,.package-cta,.closing-actions,.site-footer')];
+  const visibleSuppressors=new Set();
+  const syncContactDock=()=>{
+    const suppress=window.innerWidth<=620&&visibleSuppressors.size>0;
+    contactDock.classList.toggle('is-suppressed',suppress);
+    contactDock.toggleAttribute('inert',suppress);
+    if(suppress)contactDock.setAttribute('aria-hidden','true');
+    else contactDock.removeAttribute('aria-hidden');
+  };
+  const dockObserver=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting)visibleSuppressors.add(entry.target);
+      else visibleSuppressors.delete(entry.target);
+    });
+    syncContactDock();
+  },{threshold:.2,rootMargin:'0px 0px 64px 0px'});
+  suppressors.forEach(el=>dockObserver.observe(el));
+  window.addEventListener('resize',syncContactDock,{passive:true});
+}
