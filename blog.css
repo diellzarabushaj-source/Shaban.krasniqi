@@ -172,3 +172,44 @@ a.blog-author:focus-visible,a.article-author-compact:focus-visible,a.home-blog-a
   .author-details-section{grid-template-columns:1fr;padding:0 20px 66px}
   .author-detail-wide{grid-column:auto}
 }
+/* Mobile reading polish v9 */
+@media(max-width:620px){
+  .content-page .shell{width:calc(100% - 32px)!important}
+  .blog-hero{padding:112px 0 52px!important}
+  .blog-hero-copy h1{font-size:clamp(38px,11vw,50px)!important;line-height:1!important}
+  .blog-hero-note{padding:20px!important;border-radius:20px!important}
+  .blog-content-section{padding:44px 0 74px!important}
+  .blog-toolbar{gap:16px!important}
+  .blog-search{min-height:48px}
+  .blog-filters{gap:7px!important}
+  .blog-filter{min-height:44px;display:inline-flex;align-items:center}
+  .featured-card{border-radius:22px!important}
+  .featured-media{min-height:210px!important}
+  .featured-copy{padding:22px!important}
+  .blog-card{border-radius:20px}
+  .blog-card-media{height:190px!important}
+  .article-hero{padding-top:112px!important}
+  .article-hero h1{font-size:clamp(36px,10.5vw,48px)!important;line-height:1.03!important}
+  .article-excerpt{font-size:15px!important;line-height:1.7!important}
+  .article-cover{height:58vw!important;min-height:220px!important;border-radius:20px!important}
+  .article-layout{padding-top:36px!important;padding-bottom:68px!important}
+  .article-body{font-size:16px!important;line-height:1.78!important}
+  .article-body h2{font-size:25px!important;line-height:1.15!important}
+  .article-body h3{font-size:21px!important}
+  .article-body figure{margin:30px 0!important}
+  .article-body figure img{border-radius:18px!important}
+  .article-aside-card{padding:20px!important;border-radius:20px!important}
+  .related-posts{padding:58px 0 78px!important}
+}
+@media(max-width:430px){
+  .content-page .shell{width:calc(100% - 28px)!important}
+  .blog-hero{padding-top:104px!important}
+  .blog-hero-copy h1{font-size:37px!important}
+  .featured-media{min-height:190px!important}
+  .featured-copy{padding:20px!important}
+  .article-hero{padding-top:104px!important}
+  .article-hero h1{font-size:35px!important}
+  .article-cover{min-height:205px!important}
+  .article-body{font-size:15.5px!important}
+  .article-body blockquote{padding:18px!important;border-radius:0 14px 14px 0!important}
+}
