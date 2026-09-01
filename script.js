@@ -83,6 +83,8 @@ else{
 
 const homeForm=document.querySelector('[data-home-form]');
 if(homeForm){
+  const STORAGE_KEY='shaban-home-visit-v3';
+  const WHATSAPP_NUMBER='38649884785';
   const steps=[...homeForm.querySelectorAll('[data-wizard-step]')];
   const currentEl=document.querySelector('[data-wizard-current]');
   const totalEl=document.querySelector('[data-wizard-total]');
@@ -95,12 +97,18 @@ if(homeForm){
   const dateInput=homeForm.querySelector('[data-home-date]');
   const timeInput=homeForm.querySelector('[data-home-time]');
   const addressInput=homeForm.querySelector('[data-home-address]');
+  const cityInput=homeForm.querySelector('[data-home-city]');
+  const locationNoteInput=homeForm.querySelector('[data-home-location-note]');
   const noteInput=homeForm.querySelector('[data-home-note]');
   const latInput=homeForm.querySelector('[data-home-lat]');
   const lngInput=homeForm.querySelector('[data-home-lng]');
+  const accuracyInput=homeForm.querySelector('[data-home-accuracy]');
   const locationButton=homeForm.querySelector('[data-use-location]');
   const locationStatus=homeForm.querySelector('[data-location-status]');
   const locationError=homeForm.querySelector('[data-location-error]');
+  const shareLocationButton=homeForm.querySelector('[data-share-location]');
+  const copyLocationButton=homeForm.querySelector('[data-copy-location]');
+  const openMapsLink=homeForm.querySelector('[data-open-maps]');
   const problemError=homeForm.querySelector('[data-problem-error]');
   const nameError=homeForm.querySelector('[data-name-error]');
   const phoneError=homeForm.querySelector('[data-phone-error]');
@@ -109,33 +117,467 @@ if(homeForm){
   const mapFrame=homeForm.querySelector('[data-home-map]');
   const mapPlaceholder=homeForm.querySelector('[data-map-placeholder]');
   const timePresets=[...homeForm.querySelectorAll('input[name="timePreset"]')];
+  const problemInputs=[...homeForm.querySelectorAll('input[name="problem"]')];
+  const coarsePointer=window.matchMedia?.('(pointer:coarse)').matches;
   let currentStep=1;
-  const localDateString=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
-  if(dateInput)dateInput.min=localDateString();
-  const formatDate=(value)=>{if(!value)return '';const [y,m,d]=value.split('-').map(Number);return new Intl.DateTimeFormat('sq-AL',{day:'2-digit',month:'long',year:'numeric'}).format(new Date(y,m-1,d));};
-  const selectedProblems=()=>[...homeForm.querySelectorAll('input[name="problem"]:checked')].map(input=>input.value);
-  const selectedTime=()=>timeInput.value||homeForm.querySelector('input[name="timePreset"]:checked')?.value||'';
-  const updateProgress=()=>{if(currentEl)currentEl.textContent=String(currentStep);if(totalEl)totalEl.textContent=String(steps.length);if(progressEl)progressEl.style.width=((currentStep/steps.length)*100)+'%';if(backButton)backButton.hidden=currentStep===1;if(nextButton)nextButton.hidden=currentStep===steps.length;if(controls)controls.hidden=currentStep===steps.length;};
-  const showStep=(number,direction='forward')=>{currentStep=Math.min(Math.max(number,1),steps.length);steps.forEach(step=>{const active=Number(step.dataset.wizardStep)===currentStep;step.hidden=!active;step.classList.toggle('is-active',active);if(active){step.style.animationName='none';requestAnimationFrame(()=>{step.style.animationName=direction==='back'?'wizardBackIn':'wizardIn';});const focusable=step.querySelector('input:not([type="checkbox"]):not([type="radio"]),textarea,button');window.setTimeout(()=>focusable?.focus({preventScroll:true}),80);}});updateProgress();};
-  const clearError=(el,error)=>{el?.removeAttribute('aria-invalid');if(error)error.hidden=true;};
-  const validateStep=()=>{if(currentStep===1&&!nameInput.value.trim()){nameInput.setAttribute('aria-invalid','true');if(nameError)nameError.hidden=false;return false;}if(currentStep===2&&!phoneInput.value.trim()){phoneInput.setAttribute('aria-invalid','true');if(phoneError)phoneError.hidden=false;return false;}if(currentStep===3&&!selectedProblems().length){if(problemError)problemError.hidden=false;return false;}if(currentStep===4&&!dateInput.value){dateInput.setAttribute('aria-invalid','true');if(dateError)dateError.hidden=false;return false;}if(currentStep===5&&!selectedTime()){if(timeError)timeError.hidden=false;return false;}if(currentStep===6&&!latInput.value&&!lngInput.value&&!addressInput.value.trim()){addressInput.setAttribute('aria-invalid','true');if(locationError)locationError.hidden=false;return false;}return true;};
-  nameInput?.addEventListener('input',()=>clearError(nameInput,nameError));
-  phoneInput?.addEventListener('input',()=>clearError(phoneInput,phoneError));
-  dateInput?.addEventListener('change',()=>clearError(dateInput,dateError));
-  addressInput?.addEventListener('input',()=>clearError(addressInput,locationError));
-  homeForm.querySelectorAll('input[name="problem"]').forEach(input=>input.addEventListener('change',()=>{if(problemError)problemError.hidden=true;}));
-  timePresets.forEach(input=>input.addEventListener('change',()=>{if(timeInput)timeInput.value='';if(timeError)timeError.hidden=true;}));
-  timeInput?.addEventListener('input',()=>{timePresets.forEach(input=>input.checked=false);if(timeError)timeError.hidden=true;});
-  nextButton?.addEventListener('click',()=>{if(!validateStep())return;if(currentStep===7)updateSummary();showStep(currentStep+1);});
-  backButton?.addEventListener('click',()=>showStep(currentStep-1,'back'));
-  const setLocationStatus=(text)=>{if(locationStatus)locationStatus.textContent=text};
-  const setMap=(lat,lng)=>{const latitude=Number(lat),longitude=Number(lng),delta=.006;const bbox=[longitude-delta,latitude-delta,longitude+delta,latitude+delta].join(',');if(mapFrame){mapFrame.src='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent(bbox)+'&layer=mapnik&marker='+encodeURIComponent(latitude+','+longitude);mapFrame.hidden=false;}if(mapPlaceholder)mapPlaceholder.hidden=true;};
-  locationButton?.addEventListener('click',()=>{clearError(addressInput,locationError);if(!navigator.geolocation){setLocationStatus('GPS nuk mbështetet. Shkruaj adresën.');return;}locationButton.classList.remove('is-success');locationButton.classList.add('is-loading');locationButton.querySelector('span').textContent='Duke marrë lokacionin…';navigator.geolocation.getCurrentPosition(position=>{const lat=position.coords.latitude.toFixed(6);const lng=position.coords.longitude.toFixed(6);latInput.value=lat;lngInput.value=lng;setMap(lat,lng);setLocationStatus('Lokacioni u shtua.');locationButton.classList.remove('is-loading');locationButton.classList.add('is-success');locationButton.querySelector('span').textContent='Lokacioni u shtua';},()=>{locationButton.classList.remove('is-loading');locationButton.querySelector('span').textContent='Përdor lokacionin tim';setLocationStatus('Nuk u mor lokacioni. Lejo GPS-in ose shkruaj adresën.');},{enableHighAccuracy:true,timeout:10000,maximumAge:60000});});
-  function updateSummary(){const problems=selectedProblems().join(', ');const time=selectedTime();const location=addressInput.value.trim()||(latInput.value&&lngInput.value?'Lokacion GPS':'—');const set=(selector,value)=>{const el=homeForm.querySelector(selector);if(el)el.textContent=value||'—';};set('[data-summary-name]',nameInput.value.trim());set('[data-summary-phone]',phoneInput.value.trim());set('[data-summary-problem]',problems);set('[data-summary-datetime]',formatDate(dateInput.value)+' · '+time);set('[data-summary-location]',location);}
-  homeForm.addEventListener('submit',event=>{event.preventDefault();updateSummary();const problems=selectedProblems().join(', ');const time=selectedTime();const hasCoords=Boolean(latInput.value&&lngInput.value);const mapLink=hasCoords?'https://maps.google.com/?q='+latInput.value+','+lngInput.value:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addressInput.value.trim());const lines=['Përshëndetje Shaban, dua të kërkoj një vizitë fizioterapie në shtëpi.','','Emri dhe mbiemri: '+nameInput.value.trim(),'Telefoni: '+phoneInput.value.trim(),'Problemi: '+problems,'Data e preferuar: '+formatDate(dateInput.value),'Ora e preferuar: '+time,'Adresa: '+(addressInput.value.trim()||'Lokacioni i dërguar me GPS'),'Harta: '+mapLink];if(noteInput.value.trim())lines.push('Shënim: '+noteInput.value.trim());lines.push('','A mund ta konfirmoni nëse ky termin është i lirë?');window.open('https://wa.me/38649884785?text='+encodeURIComponent(lines.join('\n')),'_blank','noopener,noreferrer');});
-  showStep(1);
-}
+  let saveTimer=0;
+  let locationRequestId=0;
 
+  const safeStorage={
+    get(){try{return JSON.parse(sessionStorage.getItem(STORAGE_KEY)||'null')}catch{return null}},
+    set(value){try{sessionStorage.setItem(STORAGE_KEY,JSON.stringify(value))}catch{}},
+    clear(){try{sessionStorage.removeItem(STORAGE_KEY)}catch{}}
+  };
+
+  const localDateString=()=>{
+    const d=new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  };
+  if(dateInput)dateInput.min=localDateString();
+
+  const formatDate=(value)=>{
+    if(!value)return '';
+    const [y,m,d]=value.split('-').map(Number);
+    return new Intl.DateTimeFormat('sq-AL',{day:'2-digit',month:'long',year:'numeric'}).format(new Date(y,m-1,d));
+  };
+
+  const selectedProblems=()=>problemInputs.filter(input=>input.checked).map(input=>input.value);
+  const selectedTime=()=>timeInput?.value||homeForm.querySelector('input[name="timePreset"]:checked')?.value||'';
+  const mapLink=()=>{
+    if(latInput?.value&&lngInput?.value)return 'https://maps.google.com/?q='+latInput.value+','+lngInput.value;
+    const query=[addressInput?.value.trim(),cityInput?.value.trim()].filter(Boolean).join(', ');
+    return query?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(query):'';
+  };
+
+  const formState=()=>({
+    step:currentStep,
+    name:nameInput?.value||'',
+    phone:phoneInput?.value||'',
+    date:dateInput?.value||'',
+    time:timeInput?.value||'',
+    timePreset:homeForm.querySelector('input[name="timePreset"]:checked')?.value||'',
+    address:addressInput?.value||'',
+    city:cityInput?.value||'',
+    locationNote:locationNoteInput?.value||'',
+    note:noteInput?.value||'',
+    lat:latInput?.value||'',
+    lng:lngInput?.value||'',
+    accuracy:accuracyInput?.value||'',
+    problems:selectedProblems()
+  });
+
+  const scheduleSave=()=>{
+    window.clearTimeout(saveTimer);
+    saveTimer=window.setTimeout(()=>safeStorage.set(formState()),120);
+  };
+
+  const restoreState=()=>{
+    const state=safeStorage.get();
+    if(!state)return 1;
+    if(nameInput)nameInput.value=state.name||'';
+    if(phoneInput)phoneInput.value=state.phone||'';
+    if(dateInput&&(!state.date||state.date>=localDateString()))dateInput.value=state.date||'';
+    if(timeInput)timeInput.value=state.time||'';
+    if(addressInput)addressInput.value=state.address||'';
+    if(cityInput)cityInput.value=state.city||'';
+    if(locationNoteInput)locationNoteInput.value=state.locationNote||'';
+    if(noteInput)noteInput.value=state.note||'';
+    if(latInput)latInput.value=state.lat||'';
+    if(lngInput)lngInput.value=state.lng||'';
+    if(accuracyInput)accuracyInput.value=state.accuracy||'';
+    problemInputs.forEach(input=>input.checked=(state.problems||[]).includes(input.value));
+    timePresets.forEach(input=>input.checked=Boolean(state.timePreset&&input.value===state.timePreset));
+    if(state.lat&&state.lng)setMap(state.lat,state.lng);
+    updateLocationActions();
+    return Number(state.step)||1;
+  };
+
+  const applyUrlPrefill=()=>{
+    const params=new URLSearchParams(location.search);
+    const requested=params.get('problem')||params.get('service');
+    if(requested){
+      const normalized=requested.toLocaleLowerCase('sq-AL');
+      problemInputs.forEach(input=>{
+        if(input.value.toLocaleLowerCase('sq-AL').includes(normalized)||normalized.includes(input.value.toLocaleLowerCase('sq-AL'))){
+          input.checked=true;
+        }
+      });
+    }
+  };
+
+  const updateProgress=()=>{
+    if(currentEl)currentEl.textContent=String(currentStep);
+    if(totalEl)totalEl.textContent=String(steps.length);
+    if(progressEl)progressEl.style.width=((currentStep/steps.length)*100)+'%';
+    if(backButton)backButton.hidden=currentStep===1;
+    if(nextButton)nextButton.hidden=currentStep===steps.length;
+    if(controls)controls.hidden=currentStep===steps.length;
+  };
+
+  const maybeFocus=(step)=>{
+    if(coarsePointer)return;
+    const focusable=step.querySelector('input:not([type="checkbox"]):not([type="radio"]),textarea,button');
+    window.setTimeout(()=>focusable?.focus({preventScroll:true}),70);
+  };
+
+  const showStep=(number,direction='forward',focus=true)=>{
+    currentStep=Math.min(Math.max(Number(number)||1,1),steps.length);
+    steps.forEach(step=>{
+      const active=Number(step.dataset.wizardStep)===currentStep;
+      step.hidden=!active;
+      step.classList.toggle('is-active',active);
+      if(active){
+        step.style.animationName='none';
+        requestAnimationFrame(()=>{step.style.animationName=direction==='back'?'wizardBackIn':'wizardIn';});
+        if(focus)maybeFocus(step);
+      }
+    });
+    updateProgress();
+    scheduleSave();
+    if(currentStep===6)prepareLocationStep();
+  };
+
+  const clearError=(el,error)=>{
+    el?.removeAttribute('aria-invalid');
+    if(error)error.hidden=true;
+  };
+
+  const normalizePhone=(value)=>{
+    const raw=String(value||'').trim();
+    const plus=raw.startsWith('+');
+    const digits=raw.replace(/\D/g,'');
+    if(!digits)return '';
+    if(plus&&digits.startsWith('383')){
+      const rest=digits.slice(3);
+      return '+383'+(rest?' '+rest.slice(0,2):'')+(rest.length>2?' '+rest.slice(2,5):'')+(rest.length>5?' '+rest.slice(5,8):'')+(rest.length>8?' '+rest.slice(8):'');
+    }
+    if(digits.startsWith('00383')){
+      const rest=digits.slice(5);
+      return '00383'+(rest?' '+rest.slice(0,2):'')+(rest.length>2?' '+rest.slice(2,5):'')+(rest.length>5?' '+rest.slice(5,8):'')+(rest.length>8?' '+rest.slice(8):'');
+    }
+    if(digits.startsWith('0')){
+      return digits.slice(0,3)+(digits.length>3?' '+digits.slice(3,6):'')+(digits.length>6?' '+digits.slice(6,9):'')+(digits.length>9?' '+digits.slice(9):'');
+    }
+    return raw;
+  };
+
+  const validPhone=()=>String(phoneInput?.value||'').replace(/\D/g,'').length>=8;
+
+  const validateStep=()=>{
+    if(currentStep===1&&!nameInput?.value.trim()){
+      nameInput?.setAttribute('aria-invalid','true');
+      if(nameError)nameError.hidden=false;
+      return false;
+    }
+    if(currentStep===2&&!validPhone()){
+      phoneInput?.setAttribute('aria-invalid','true');
+      if(phoneError){
+        phoneError.textContent='Shkruani një numër telefoni të vlefshëm.';
+        phoneError.hidden=false;
+      }
+      return false;
+    }
+    if(currentStep===3&&!selectedProblems().length){
+      if(problemError)problemError.hidden=false;
+      return false;
+    }
+    if(currentStep===4&&!dateInput?.value){
+      dateInput?.setAttribute('aria-invalid','true');
+      if(dateError)dateError.hidden=false;
+      return false;
+    }
+    if(currentStep===5&&!selectedTime()){
+      if(timeError)timeError.hidden=false;
+      return false;
+    }
+    if(currentStep===6&&!latInput?.value&&!lngInput?.value&&!addressInput?.value.trim()&&!cityInput?.value.trim()){
+      addressInput?.setAttribute('aria-invalid','true');
+      cityInput?.setAttribute('aria-invalid','true');
+      if(locationError)locationError.hidden=false;
+      return false;
+    }
+    return true;
+  };
+
+  nameInput?.addEventListener('input',()=>{clearError(nameInput,nameError);scheduleSave()});
+  phoneInput?.addEventListener('input',()=>{
+    clearError(phoneInput,phoneError);
+    const caret=phoneInput.selectionStart;
+    phoneInput.value=normalizePhone(phoneInput.value);
+    try{phoneInput.setSelectionRange(phoneInput.value.length,phoneInput.value.length)}catch{}
+    scheduleSave();
+  });
+  dateInput?.addEventListener('change',()=>{clearError(dateInput,dateError);scheduleSave()});
+  [addressInput,cityInput].forEach(input=>input?.addEventListener('input',()=>{
+    clearError(addressInput,locationError);
+    clearError(cityInput,locationError);
+    updateLocationActions();
+    scheduleSave();
+  }));
+  locationNoteInput?.addEventListener('input',scheduleSave);
+  noteInput?.addEventListener('input',scheduleSave);
+
+  problemInputs.forEach(input=>input.addEventListener('change',()=>{
+    if(problemError)problemError.hidden=true;
+    scheduleSave();
+  }));
+
+  timePresets.forEach(input=>input.addEventListener('change',()=>{
+    if(timeInput)timeInput.value='';
+    if(timeError)timeError.hidden=true;
+    scheduleSave();
+  }));
+
+  timeInput?.addEventListener('input',()=>{
+    timePresets.forEach(input=>input.checked=false);
+    if(timeError)timeError.hidden=true;
+    scheduleSave();
+  });
+
+  [nameInput,phoneInput].forEach(input=>input?.addEventListener('keydown',event=>{
+    if(event.key==='Enter'&&!event.shiftKey){
+      event.preventDefault();
+      if(validateStep())showStep(currentStep+1);
+    }
+  }));
+
+  nextButton?.addEventListener('click',()=>{
+    if(!validateStep())return;
+    if(currentStep===7)updateSummary();
+    showStep(currentStep+1);
+  });
+  backButton?.addEventListener('click',()=>showStep(currentStep-1,'back'));
+
+  const setLocationStatus=(text,state='idle')=>{
+    if(locationStatus)locationStatus.textContent=text;
+    const box=locationStatus?.closest('.wizard-location-state');
+    if(box)box.dataset.state=state;
+  };
+
+  const setMap=(lat,lng)=>{
+    const latitude=Number(lat),longitude=Number(lng),delta=.006;
+    if(!Number.isFinite(latitude)||!Number.isFinite(longitude))return;
+    const bbox=[longitude-delta,latitude-delta,longitude+delta,latitude+delta].join(',');
+    if(mapFrame){
+      mapFrame.src='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent(bbox)+'&layer=mapnik&marker='+encodeURIComponent(latitude+','+longitude);
+      mapFrame.hidden=false;
+    }
+    if(mapPlaceholder)mapPlaceholder.hidden=true;
+  };
+
+  const updateLocationActions=()=>{
+    const link=mapLink();
+    const hasLink=Boolean(link);
+    if(openMapsLink)openMapsLink.href=link||'https://maps.google.com/';
+    if(shareLocationButton)shareLocationButton.disabled=!hasLink;
+    if(copyLocationButton)copyLocationButton.disabled=!hasLink;
+  };
+
+  const applyPosition=(position,label='Lokacioni u shtua')=>{
+    const lat=Number(position.coords.latitude).toFixed(6);
+    const lng=Number(position.coords.longitude).toFixed(6);
+    const accuracy=Math.round(Number(position.coords.accuracy)||0);
+    if(latInput)latInput.value=lat;
+    if(lngInput)lngInput.value=lng;
+    if(accuracyInput)accuracyInput.value=String(accuracy||'');
+    setMap(lat,lng);
+    updateLocationActions();
+    clearError(addressInput,locationError);
+    clearError(cityInput,locationError);
+    setLocationStatus(label+(accuracy?' · saktësi rreth '+accuracy+' m':''),'success');
+    locationButton?.classList.remove('is-loading');
+    locationButton?.classList.add('is-success');
+    const labelEl=locationButton?.querySelector('span');
+    if(labelEl)labelEl.textContent='Lokacioni u shtua';
+    scheduleSave();
+  };
+
+  const geoAttempt=(options)=>new Promise((resolve,reject)=>{
+    if(!navigator.geolocation)return reject(new Error('unsupported'));
+    navigator.geolocation.getCurrentPosition(resolve,reject,options);
+  });
+
+  const requestLocation=async({silent=false}={})=>{
+    const requestId=++locationRequestId;
+    clearError(addressInput,locationError);
+    clearError(cityInput,locationError);
+    if(!navigator.geolocation){
+      setLocationStatus('GPS nuk mbështetet në këtë pajisje. Shkruaj adresën.','error');
+      return false;
+    }
+
+    if(!silent){
+      locationButton?.classList.remove('is-success');
+      locationButton?.classList.add('is-loading');
+      const label=locationButton?.querySelector('span');
+      if(label)label.textContent='Duke marrë lokacionin…';
+    }
+    setLocationStatus('Po provojmë lokacionin më të shpejtë…','loading');
+
+    try{
+      const quick=await geoAttempt({enableHighAccuracy:false,timeout:6000,maximumAge:120000});
+      if(requestId!==locationRequestId)return false;
+      applyPosition(quick,'Lokacioni u mor shpejt');
+
+      if(Number(quick.coords.accuracy)>120){
+        geoAttempt({enableHighAccuracy:true,timeout:10000,maximumAge:0})
+          .then(precise=>{
+            if(requestId===locationRequestId&&Number(precise.coords.accuracy)<Number(quick.coords.accuracy)){
+              applyPosition(precise,'Lokacioni u përmirësua');
+            }
+          })
+          .catch(()=>{});
+      }
+      return true;
+    }catch(firstError){
+      if(requestId!==locationRequestId)return false;
+      setLocationStatus('Po provojmë GPS me saktësi më të lartë…','loading');
+      try{
+        const precise=await geoAttempt({enableHighAccuracy:true,timeout:10000,maximumAge:0});
+        if(requestId!==locationRequestId)return false;
+        applyPosition(precise,'Lokacioni u mor');
+        return true;
+      }catch(error){
+        if(requestId!==locationRequestId)return false;
+        locationButton?.classList.remove('is-loading','is-success');
+        const label=locationButton?.querySelector('span');
+        if(label)label.textContent='Provo GPS përsëri';
+
+        const denied=error?.code===1;
+        setLocationStatus(
+          denied
+            ?'Lokacioni është i bllokuar. Aktivizo Location për browser-in ose shkruaj adresën.'
+            :'GPS nuk u përgjigj. Shkruaj adresën ose hape hartën — mund të vazhdosh normalisht.',
+          'error'
+        );
+        return false;
+      }
+    }
+  };
+
+  locationButton?.addEventListener('click',()=>requestLocation());
+
+  shareLocationButton?.addEventListener('click',async()=>{
+    const link=mapLink();
+    if(!link)return;
+    try{
+      if(navigator.share){
+        await navigator.share({title:'Lokacioni për vizitën',text:'Lokacioni i vizitës së fizioterapisë',url:link});
+        setLocationStatus('Lokacioni u hap për ndarje.','success');
+      }else{
+        await navigator.clipboard.writeText(link);
+        setLocationStatus('Linku i lokacionit u kopjua.','success');
+      }
+    }catch{}
+  });
+
+  copyLocationButton?.addEventListener('click',async()=>{
+    const link=mapLink();
+    if(!link)return;
+    try{
+      await navigator.clipboard.writeText(link);
+      setLocationStatus('Linku i lokacionit u kopjua.','success');
+    }catch{
+      setLocationStatus('Hape hartën dhe kopjo linkun e lokacionit.','error');
+    }
+  });
+
+  async function prepareLocationStep(){
+    updateLocationActions();
+    if(latInput?.value&&lngInput?.value){
+      setLocationStatus('Lokacioni është gati'+(accuracyInput?.value?' · saktësi rreth '+accuracyInput.value+' m':''),'success');
+      return;
+    }
+    if(!navigator.permissions?.query)return;
+    try{
+      const permission=await navigator.permissions.query({name:'geolocation'});
+      if(permission.state==='granted'){
+        setLocationStatus('Leja e GPS është aktive. Po marrim lokacionin…','loading');
+        requestLocation({silent:true});
+      }else if(permission.state==='denied'){
+        setLocationStatus('GPS është i bllokuar për këtë faqe. Shkruaj adresën ose aktivizo Location.','error');
+      }
+    }catch{}
+  }
+
+  function updateSummary(){
+    const problems=selectedProblems().join(', ');
+    const time=selectedTime();
+    const locationText=[
+      addressInput?.value.trim(),
+      cityInput?.value.trim(),
+      locationNoteInput?.value.trim()
+    ].filter(Boolean).join(', ')||(latInput?.value&&lngInput?.value?'Lokacion GPS':'—');
+    const set=(selector,value)=>{
+      const el=homeForm.querySelector(selector);
+      if(el)el.textContent=value||'—';
+    };
+    set('[data-summary-name]',nameInput?.value.trim());
+    set('[data-summary-phone]',phoneInput?.value.trim());
+    set('[data-summary-problem]',problems);
+    set('[data-summary-datetime]',formatDate(dateInput?.value)+' · '+time);
+    set('[data-summary-location]',locationText);
+  }
+
+  const buildMessage=()=>{
+    const name=nameInput?.value.trim()||'';
+    const problems=selectedProblems();
+    const time=selectedTime();
+    const address=[addressInput?.value.trim(),cityInput?.value.trim()].filter(Boolean).join(', ');
+    const detail=locationNoteInput?.value.trim();
+    const link=mapLink();
+    const accuracy=accuracyInput?.value;
+    const note=noteInput?.value.trim();
+    const firstName=name.split(/\s+/)[0]||name;
+
+    const lines=[
+      'Përshëndetje Shaban 👋',
+      '',
+      'Jam *'+name+'* dhe dua të kërkoj një *vizitë fizioterapie në shtëpi*.',
+      '',
+      '*Arsyeja e vizitës*',
+      ...problems.map(problem=>'• '+problem),
+      '',
+      '*Termini i preferuar*',
+      '• Data e preferuar: '+formatDate(dateInput?.value),
+      '• Ora e preferuar: '+time,
+      '',
+      '*Kontakti*',
+      '• Emri: '+name,
+      '• Telefoni: '+phoneInput?.value.trim(),
+      '',
+      '*Lokacioni*'
+    ];
+
+    if(address)lines.push('• Adresa: '+address);
+    if(detail)lines.push('• Detaj hyrjeje: '+detail);
+    if(link)lines.push('• Harta: '+link);
+    if(accuracy&&latInput?.value&&lngInput?.value)lines.push('• Saktësia GPS: rreth '+accuracy+' m');
+    if(note)lines.push('','*Shënim shtesë*','• '+note);
+
+    lines.push(
+      '',
+      'A mund të më konfirmoni nëse ky termin është i lirë?',
+      '',
+      'Faleminderit'+(firstName?' — '+firstName:'')+'.'
+    );
+    return lines.join('\n');
+  };
+
+  homeForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    updateSummary();
+    if(!validateStep()&&currentStep!==steps.length)return;
+    safeStorage.set({...formState(),submittedAt:Date.now()});
+    const url='https://wa.me/'+WHATSAPP_NUMBER+'?text='+encodeURIComponent(buildMessage());
+    window.open(url,'_blank','noopener,noreferrer');
+  });
+
+  const restoredStep=restoreState();
+  applyUrlPrefill();
+  showStep(restoredStep,'forward',false);
+  window.addEventListener('pagehide',()=>safeStorage.set(formState()));
+}
 
 /* Home blog preview — Sanity is the source of truth */
 (()=>{

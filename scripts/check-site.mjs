@@ -70,6 +70,13 @@ if(!missing.length){
   for(const page of [index,blog,post,author]){
     if(!page.includes('site-media.js'))failures.push('Page missing site-media.js bootstrap');
   }
+  // Advanced home-visit wizard contract
+  for(const needle of ['data-home-city','data-home-location-note','data-home-accuracy','data-share-location','data-copy-location','wizard-brand-logo']){
+    if(!index.includes(needle))failures.push('Advanced home-visit wizard missing: '+needle);
+  }
+  for(const needle of ['shaban-home-visit-v3','enableHighAccuracy:false','enableHighAccuracy:true','sessionStorage','navigator.share','*Arsyeja e vizitës*']){
+    if(!script.includes(needle))failures.push('Advanced home-visit behavior missing: '+needle);
+  }
   if(!css.includes('@media (max-width:390px)'))failures.push('Missing 390px responsive breakpoint');
   if(!css.includes('prefers-reduced-motion'))failures.push('Reduced-motion support missing');
   if(!script.includes('IntersectionObserver'))failures.push('Reveal behavior missing');

@@ -240,3 +240,79 @@ test('65+ package stays usable on mobile', async ({page}) => {
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBe(0);
 });
+
+
+test('wizard restores session state after reload', async ({page}) => {
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+  await page.locator('[data-home-name]').fill('Arta Test');
+  await page.locator('[data-wizard-next]').click();
+  await page.locator('[data-home-phone]').fill('+38349123456');
+  await page.waitForTimeout(180);
+  await page.reload();
+  await expect(page.locator('[data-wizard-current]')).toHaveText('2');
+  await expect(page.locator('[data-home-name]')).toHaveValue('Arta Test');
+  await expect(page.locator('[data-home-phone]')).toHaveValue('+383 49 123 456');
+});
+
+test('wizard has branded identity and mobile-safe location fallbacks', async ({page}) => {
+  await page.setViewportSize({width:430,height:932});
+  await page.goto('/#ne-shtepi');
+  const logo=page.locator('.wizard-brand-logo');
+  await expect(logo).toBeVisible();
+  expect((await logo.boundingBox())?.height).toBeGreaterThanOrEqual(36);
+
+  await page.evaluate(()=>{
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.reload();
+  await expect(page.locator('[data-wizard-current]')).toHaveText('6');
+  await expect(page.locator('[data-open-maps]')).toBeVisible();
+  await expect(page.locator('[data-home-address]')).toBeVisible();
+  await expect(page.locator('[data-home-city]')).toBeVisible();
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  expect(overflow).toBe(0);
+});
+
+test('wizard personalized message contains structured patient context', async ({page,context}) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({latitude:42.6595,longitude:20.2887});
+  await page.goto('/#ne-shtepi');
+
+  await page.locator('[data-home-name]').fill('Arta Berisha');
+  await page.locator('[data-wizard-next]').click();
+  await page.locator('[data-home-phone]').fill('049123456');
+  await page.locator('[data-wizard-next]').click();
+  await page.locator('input[value="Dhimbje të nyjeve"]').check();
+  await page.locator('[data-wizard-next]').click();
+
+  await page.locator('[data-home-date]').fill('2099-09-09');
+  await page.locator('[data-wizard-next]').click();
+  await page.locator('input[name="timePreset"][value="14:00"]').check();
+  await page.locator('[data-wizard-next]').click();
+  await page.locator('[data-use-location]').click();
+  await expect(page.locator('[data-use-location]')).toHaveClass(/is-success/);
+  await page.locator('[data-home-address]').fill('Rruga Test');
+  await page.locator('[data-home-city]').fill('Deçan');
+  await page.locator('[data-home-location-note]').fill('Hyrja B, kati 2');
+  await page.locator('[data-wizard-next]').click();
+  await page.locator('[data-home-note]').fill('Dhimbja është më e fortë gjatë ecjes.');
+  await page.locator('[data-wizard-next]').click();
+
+  await page.evaluate(()=>{window.open=(url)=>{window.__personalizedVisit=url;return null}});
+  await page.locator('[data-home-form]').evaluate(form=>form.requestSubmit());
+  const url=await page.evaluate(()=>window.__personalizedVisit);
+  const decoded=decodeURIComponent(url||'');
+  expect(decoded).toContain('Përshëndetje Shaban');
+  expect(decoded).toContain('*Arsyeja e vizitës*');
+  expect(decoded).toContain('Arta Berisha');
+  expect(decoded).toContain('Dhimbje të nyjeve');
+  expect(decoded).toContain('Ora e preferuar: 14:00');
+  expect(decoded).toContain('Rruga Test, Deçan');
+  expect(decoded).toContain('Hyrja B, kati 2');
+  expect(decoded).toContain('maps.google.com/?q=42.659500,20.288700');
+  expect(decoded).toContain('Dhimbja është më e fortë gjatë ecjes.');
+});

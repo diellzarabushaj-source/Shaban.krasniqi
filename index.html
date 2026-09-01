@@ -157,14 +157,18 @@
 
           <div class="home-privacy">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 9V7a5 5 0 0 1 10 0v2m-8 0h6a2 2 0 0 1 2 2v5H5v-5a2 2 0 0 1 2-2Z"/></svg>
-            <span>Të dhënat nuk ruhen në server. Përdoren vetëm për ta ndërtuar mesazhin që ti dërgon në WhatsApp.</span>
+            <span>Të dhënat nuk ruhen në server. Gjatë plotësimit mbahen vetëm përkohësisht në këtë pajisje që të mos humbin nëse kthehesh mbrapa.</span>
           </div>
         </div>
 
         <div class="home-booking-card home-wizard-card reveal" data-delay="80">
+          <div class="wizard-brand-row">
+            <img class="wizard-brand-logo" data-site-media="branding.logoPrimary" src="assets/branding/logo-site-primary-clean.webp" width="480" height="160" alt="Shaban Krasniqi Fizioterapi" decoding="async">
+            <span class="wizard-counter" aria-label="Progresi"><b data-wizard-current>1</b> / <span data-wizard-total>8</span></span>
+          </div>
           <div class="wizard-top">
             <span class="home-booking-badge"><i></i> Vizitë në shtëpi</span>
-            <span class="wizard-counter"><b data-wizard-current>1</b> / <span data-wizard-total>8</span></span>
+            <span class="wizard-speed-hint">Rreth 1 minute · pa llogari</span>
           </div>
 
           <div class="wizard-progress" aria-hidden="true"><span data-wizard-progress></span></div>
@@ -176,7 +180,7 @@
               <p>Emri përdoret vetëm në kërkesën që do t’i dërgohet Shabanit.</p>
               <label class="wizard-input">
                 <span class="sr-only">Emri dhe mbiemri</span>
-                <input type="text" name="name" autocomplete="name" placeholder="Emri dhe mbiemri" required data-home-name>
+                <input type="text" name="name" autocomplete="name" autocapitalize="words" enterkeyhint="next" placeholder="Emri dhe mbiemri" required data-home-name>
               </label>
               <p class="field-error" data-name-error hidden>Shkruani emrin dhe mbiemrin.</p>
             </section>
@@ -187,7 +191,7 @@
               <p>Nëse duhet sqarim për vizitën, fizioterapeuti mund t’ju kontaktojë.</p>
               <label class="wizard-input">
                 <span class="sr-only">Numri i telefonit</span>
-                <input type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="049 123 456" required data-home-phone>
+                <input type="tel" name="phone" autocomplete="tel" inputmode="tel" enterkeyhint="next" spellcheck="false" placeholder="049 123 456" required data-home-phone>
               </label>
               <p class="field-error" data-phone-error hidden>Shkruani numrin e telefonit.</p>
             </section>
@@ -214,7 +218,7 @@
               <p>Zgjidhni datën që ju përshtatet. Termini konfirmohet përfundimisht në WhatsApp.</p>
               <label class="wizard-input wizard-date">
                 <span class="sr-only">Data e preferuar</span>
-                <input type="date" name="date" required data-home-date>
+                <input type="date" name="date" autocomplete="off" required data-home-date>
               </label>
               <p class="field-error" data-date-error hidden>Zgjidhni një datë.</p>
             </section>
@@ -232,7 +236,7 @@
               </div>
               <label class="wizard-input wizard-custom-time">
                 <span>Ose orë tjetër</span>
-                <input type="time" name="time" data-home-time>
+                <input type="time" name="time" autocomplete="off" data-home-time>
               </label>
               <p class="field-error" data-time-error hidden>Zgjidhni ose shkruani një orë.</p>
             </section>
@@ -240,28 +244,61 @@
             <section class="wizard-step" data-wizard-step="6" hidden>
               <span class="wizard-question-number">06</span>
               <h3>Ku duhet të vijmë?</h3>
-              <p>Përdorni lokacionin aktual ose shkruani adresën.</p>
+              <p>Merre lokacionin me një prekje. Nëse GPS nuk përgjigjet, adresa manuale funksionon gjithmonë.</p>
+
               <button class="wizard-location-button" type="button" data-use-location>
                 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 18s6-5.1 6-10A6 6 0 1 0 4 8c0 4.9 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg>
                 <span>Përdor lokacionin tim</span>
               </button>
-              <div class="wizard-divider"><span>ose</span></div>
-              <label class="wizard-input">
-                <span class="sr-only">Adresa</span>
-                <input type="text" name="address" autocomplete="street-address" placeholder="Rruga, lagjja, qyteti" data-home-address>
+
+              <div class="wizard-location-state" role="status" aria-live="polite">
+                <span class="wizard-location-dot" aria-hidden="true"></span>
+                <span data-location-status>GPS ose adresë manuale — ti zgjedh.</span>
+              </div>
+
+              <div class="wizard-divider"><span>ose shkruaje</span></div>
+
+              <div class="wizard-location-fields">
+                <label class="wizard-input">
+                  <span>Adresa</span>
+                  <input type="text" name="address" autocomplete="street-address" autocapitalize="words" enterkeyhint="next" placeholder="Rruga, lagjja, numri" data-home-address>
+                </label>
+                <label class="wizard-input">
+                  <span>Qyteti</span>
+                  <input type="text" name="city" autocomplete="address-level2" autocapitalize="words" enterkeyhint="next" placeholder="p.sh. Deçan" data-home-city>
+                </label>
+              </div>
+
+              <label class="wizard-input wizard-location-note">
+                <span>Detaj i hyrjes <small>opsional</small></span>
+                <input type="text" name="locationNote" autocomplete="off" autocapitalize="sentences" placeholder="p.sh. kati 2, hyrja B" data-home-location-note>
               </label>
+
+              <div class="wizard-location-actions" aria-label="Opsione alternative të lokacionit">
+                <a class="wizard-location-secondary" href="https://maps.google.com/" target="_blank" rel="noopener noreferrer" data-open-maps>
+                  <span>Hap hartën</span>
+                </a>
+                <button class="wizard-location-secondary" type="button" data-share-location disabled>
+                  <span>Ndaj lokacionin</span>
+                </button>
+                <button class="wizard-location-secondary" type="button" data-copy-location disabled>
+                  <span>Kopjo linkun</span>
+                </button>
+              </div>
 
               <div class="home-map-shell wizard-map">
                 <div class="map-placeholder" data-map-placeholder>
                   <div class="map-grid" aria-hidden="true"></div>
                   <span class="map-pin" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.4"/></svg></span>
-                  <div><strong>Lokacioni i vizitës</strong><small data-location-status>Ende nuk është shtuar.</small></div>
+                  <div><strong>Lokacioni i vizitës</strong><small>Kur GPS të merret, harta shfaqet këtu.</small></div>
                 </div>
                 <iframe class="home-map" title="Harta e lokacionit për vizitën në shtëpi" loading="lazy" referrerpolicy="no-referrer" data-home-map hidden></iframe>
               </div>
+
               <input type="hidden" name="latitude" data-home-lat>
               <input type="hidden" name="longitude" data-home-lng>
-              <p class="field-error" data-location-error hidden>Ndani lokacionin ose shkruani adresën.</p>
+              <input type="hidden" name="accuracy" data-home-accuracy>
+              <p class="field-error" data-location-error hidden>Shto lokacionin me GPS ose shkruaj së paku adresën/qytetin.</p>
             </section>
 
             <section class="wizard-step" data-wizard-step="7" hidden>
@@ -289,7 +326,7 @@
                 <span>Dërgo kërkesën</span>
                 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5l5 5-5 5"/></svg>
               </button>
-              <p class="home-form-note">Asgjë nuk dërgohet automatikisht. WhatsApp hapet me mesazhin gati dhe ju e dërgoni vetë.</p>
+              <p class="home-form-note">Asgjë nuk dërgohet automatikisht. Mesazhi përgatitet gati dhe ju vendosni kur ta dërgoni.</p>
             </section>
 
             <div class="wizard-controls" data-wizard-controls>
