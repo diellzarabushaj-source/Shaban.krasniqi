@@ -149,6 +149,217 @@ if(homeForm){
     return query?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(query):'';
   };
 
+  const addressBox=homeForm.querySelector('[data-address-autocomplete]');
+  const addressSuggestions=homeForm.querySelector('[data-address-suggestions]');
+  const addressSource=homeForm.querySelector('[data-address-source]');
+  const OFFICIAL_WFS='https://geoportal.rks-gov.net/wms/ows';
+  const SERVICE_BBOX='20.10,42.45,20.60,42.85,EPSG:4326';
+  const OFFICIAL_LAYERS=['KG_DEV_WS:RoadNameView','AR_DEV_WS:v_findAddresses','KG_DEV_WS:Addresses_in_geopoertal'];
+  let officialAddressPromise=null;
+  let addressDebounce=0;
+  let activeAddressIndex=-1;
+  let currentAddressMatches=[];
+
+  const normalizeSearch=(value)=>String(value||'')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLocaleLowerCase('sq-AL').trim();
+
+  const featureCoordinate=(geometry)=>{
+    const coords=geometry?.coordinates;
+    if(!Array.isArray(coords))return null;
+    if(typeof coords[0]==='number'&&typeof coords[1]==='number')return [coords[1],coords[0]];
+    let node=coords;
+    while(Array.isArray(node)&&Array.isArray(node[0]))node=node[0];
+    return Array.isArray(node)&&typeof node[0]==='number'&&typeof node[1]==='number'?[node[1],node[0]]:null;
+  };
+
+  const extractOfficialRecord=(feature)=>{
+    const props=feature?.properties||{};
+    const entries=Object.entries(props)
+      .filter(([,value])=>['string','number'].includes(typeof value)&&String(value).trim());
+    const pick=(regex)=>entries.find(([key])=>regex.test(key))?.[1];
+    const road=pick(/road.?name|street|rrug|adresa|address|name/i);
+    if(!road)return null;
+    const municipality=pick(/municip|komun|city|qytet/i);
+    const settlement=pick(/settle|vendban|village|fshat|place/i);
+    const number=pick(/house.?no|address.?no|num(ber|ri)?|nr[_-]?/i);
+    const pieces=[road,number,settlement,municipality]
+      .map(value=>String(value||'').trim())
+      .filter(Boolean)
+      .filter((value,i,array)=>array.findIndex(other=>normalizeSearch(other)===normalizeSearch(value))===i);
+    const label=pieces.join(', ');
+    const coord=featureCoordinate(feature.geometry);
+    return {
+      label,
+      road:String(road).trim(),
+      city:String(municipality||settlement||'').trim(),
+      lat:coord?.[0]||null,
+      lng:coord?.[1]||null,
+      search:normalizeSearch(label)
+    };
+  };
+
+  const fetchOfficialLayer=async(layer)=>{
+    const url=new URL(OFFICIAL_WFS);
+    url.search=new URLSearchParams({
+      service:'WFS',
+      version:'1.0.0',
+      request:'GetFeature',
+      typeName:layer,
+      outputFormat:'application/json',
+      srsName:'EPSG:4326',
+      bbox:SERVICE_BBOX,
+      maxFeatures:'2500'
+    }).toString();
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),6500);
+    try{
+      const response=await fetch(url,{signal:controller.signal,headers:{Accept:'application/json'}});
+      if(!response.ok)throw new Error('official-address-http-'+response.status);
+      const payload=await response.json();
+      const records=(payload.features||[]).map(extractOfficialRecord).filter(Boolean);
+      const unique=new Map();
+      records.forEach(record=>{
+        const key=normalizeSearch(record.label);
+        if(key&&!unique.has(key))unique.set(key,record);
+      });
+      if(!unique.size)throw new Error('official-address-empty');
+      return [...unique.values()];
+    }finally{
+      clearTimeout(timeout);
+    }
+  };
+
+  const ensureOfficialAddresses=()=>{
+    if(officialAddressPromise)return officialAddressPromise;
+    officialAddressPromise=(async()=>{
+      if(addressSource)addressSource.textContent='Po lidhemi me Geoportalin zyrtar të Kosovës…';
+      let lastError=null;
+      for(const layer of OFFICIAL_LAYERS){
+        try{
+          const records=await fetchOfficialLayer(layer);
+          if(addressSource)addressSource.textContent='Burim zyrtar: Geoportali i Kosovës (AKK) · fokus Pejë / Deçan';
+          return records;
+        }catch(error){lastError=error}
+      }
+      if(addressSource)addressSource.textContent='Shërbimi zyrtar i adresave nuk u përgjigj. Mund ta shkruash adresën manualisht pa u bllokuar.';
+      throw lastError||new Error('official-address-unavailable');
+    })();
+    return officialAddressPromise;
+  };
+
+  const closeAddressSuggestions=()=>{
+    if(!addressSuggestions||!addressInput)return;
+    addressSuggestions.hidden=true;
+    addressSuggestions.replaceChildren();
+    addressInput.setAttribute('aria-expanded','false');
+    addressInput.removeAttribute('aria-activedescendant');
+    activeAddressIndex=-1;
+    currentAddressMatches=[];
+  };
+
+  const setActiveSuggestion=(index)=>{
+    if(!addressSuggestions||!currentAddressMatches.length)return;
+    activeAddressIndex=(index+currentAddressMatches.length)%currentAddressMatches.length;
+    [...addressSuggestions.querySelectorAll('[role="option"]')].forEach((item,itemIndex)=>{
+      const active=itemIndex===activeAddressIndex;
+      item.classList.toggle('is-active',active);
+      item.setAttribute('aria-selected',String(active));
+      if(active){
+        addressInput?.setAttribute('aria-activedescendant',item.id);
+        item.scrollIntoView({block:'nearest'});
+      }
+    });
+  };
+
+  const chooseAddress=(record)=>{
+    if(!record||!addressInput)return;
+    addressInput.value=record.road||record.label;
+    if(cityInput&&!cityInput.value.trim())cityInput.value=record.city||'Pejë';
+    if(record.lat&&record.lng&&latInput&&lngInput){
+      latInput.value=Number(record.lat).toFixed(6);
+      lngInput.value=Number(record.lng).toFixed(6);
+      if(accuracyInput)accuracyInput.value='';
+      setMap(latInput.value,lngInput.value);
+      setLocationStatus('Adresa u zgjodh nga burimi zyrtar.','success');
+    }
+    clearError(addressInput,locationError);
+    updateLocationActions();
+    scheduleSave();
+    closeAddressSuggestions();
+  };
+
+  const renderAddressSuggestions=(records)=>{
+    if(!addressSuggestions||!addressInput)return;
+    currentAddressMatches=records.slice(0,7);
+    if(!currentAddressMatches.length){
+      closeAddressSuggestions();
+      return;
+    }
+    const fragment=document.createDocumentFragment();
+    currentAddressMatches.forEach((record,index)=>{
+      const button=document.createElement('button');
+      button.type='button';
+      button.id='official-address-option-'+index;
+      button.className='wizard-address-option';
+      button.setAttribute('role','option');
+      button.setAttribute('aria-selected','false');
+      button.innerHTML='<span></span><small>Geoportali AKK</small>';
+      button.querySelector('span').textContent=record.label;
+      button.addEventListener('pointerdown',event=>event.preventDefault());
+      button.addEventListener('click',()=>chooseAddress(record));
+      fragment.append(button);
+    });
+    addressSuggestions.replaceChildren(fragment);
+    addressSuggestions.hidden=false;
+    addressInput.setAttribute('aria-expanded','true');
+    activeAddressIndex=-1;
+  };
+
+  const searchOfficialAddresses=async()=>{
+    const query=normalizeSearch(addressInput?.value);
+    if(query.length<2){closeAddressSuggestions();return}
+    try{
+      const records=await ensureOfficialAddresses();
+      const tokens=query.split(/\s+/).filter(Boolean);
+      const ranked=records
+        .filter(record=>tokens.every(token=>record.search.includes(token)))
+        .map(record=>({
+          record,
+          score:record.search.startsWith(query)?0:record.search.includes(' '+query)?1:2
+        }))
+        .sort((a,b)=>a.score-b.score||a.record.label.localeCompare(b.record.label,'sq'))
+        .slice(0,7)
+        .map(item=>item.record);
+      renderAddressSuggestions(ranked);
+    }catch{
+      closeAddressSuggestions();
+    }
+  };
+
+  addressInput?.addEventListener('focus',()=>{
+    if(addressInput.value.trim().length>=2)searchOfficialAddresses();
+    else ensureOfficialAddresses().catch(()=>{});
+  });
+  addressInput?.addEventListener('input',()=>{
+    clearTimeout(addressDebounce);
+    addressDebounce=setTimeout(searchOfficialAddresses,140);
+  });
+  addressInput?.addEventListener('keydown',event=>{
+    if(addressSuggestions?.hidden)return;
+    if(event.key==='ArrowDown'){event.preventDefault();setActiveSuggestion(activeAddressIndex+1)}
+    else if(event.key==='ArrowUp'){event.preventDefault();setActiveSuggestion(activeAddressIndex-1)}
+    else if(event.key==='Enter'&&activeAddressIndex>=0){
+      event.preventDefault();
+      chooseAddress(currentAddressMatches[activeAddressIndex]);
+    }else if(event.key==='Escape'){
+      closeAddressSuggestions();
+    }
+  });
+  document.addEventListener('pointerdown',event=>{
+    if(addressBox&&!addressBox.contains(event.target))closeAddressSuggestions();
+  });
+
   const formState=()=>({
     step:currentStep,
     name:nameInput?.value||'',
@@ -357,9 +568,8 @@ if(homeForm){
   const setMap=(lat,lng)=>{
     const latitude=Number(lat),longitude=Number(lng),delta=.006;
     if(!Number.isFinite(latitude)||!Number.isFinite(longitude))return;
-    const bbox=[longitude-delta,latitude-delta,longitude+delta,latitude+delta].join(',');
     if(mapFrame){
-      mapFrame.src='https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent(bbox)+'&layer=mapnik&marker='+encodeURIComponent(latitude+','+longitude);
+      mapFrame.src='https://www.google.com/maps?q='+encodeURIComponent(latitude+','+longitude)+'&z=16&output=embed';
       mapFrame.hidden=false;
     }
     if(mapPlaceholder)mapPlaceholder.hidden=true;
@@ -368,7 +578,7 @@ if(homeForm){
   const updateLocationActions=()=>{
     const link=mapLink();
     const hasLink=Boolean(link);
-    if(openMapsLink)openMapsLink.href=link||'https://maps.google.com/';
+    if(openMapsLink)openMapsLink.href=link||'https://www.google.com/maps/search/?api=1&query=Pej%C3%AB%2C%20Kosovo';
     if(shareLocationButton)shareLocationButton.disabled=!hasLink;
     if(copyLocationButton)copyLocationButton.disabled=!hasLink;
   };

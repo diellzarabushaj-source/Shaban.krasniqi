@@ -315,3 +315,64 @@ test('wizard personalized message contains structured patient context', async ({
   expect(decoded).toContain('maps.google.com/?q=42.659500,20.288700');
   expect(decoded).toContain('Dhimbja është më e fortë gjatë ecjes.');
 });
+
+
+test('official Peja address autocomplete is keyboard and mobile friendly', async ({page}) => {
+  await page.route('https://geoportal.rks-gov.net/wms/ows**', async route => {
+    await route.fulfill({
+      status:200,
+      contentType:'application/json',
+      json:{
+        type:'FeatureCollection',
+        features:[
+          {type:'Feature',properties:{RoadName:'Rruga Mbretëresha Teutë',Municipality:'Pejë'},geometry:{type:'Point',coordinates:[20.2895,42.6601]}},
+          {type:'Feature',properties:{RoadName:'Rruga Adem Jashari',Municipality:'Pejë'},geometry:{type:'Point',coordinates:[20.2920,42.6610]}},
+          {type:'Feature',properties:{RoadName:'Rruga Luan Haradinaj',Municipality:'Deçan'},geometry:{type:'Point',coordinates:[20.2870,42.5400]}}
+        ]
+      }
+    });
+  });
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+  const input=page.locator('[data-home-address]');
+  await input.fill('Mbret');
+  await expect(page.locator('[data-address-suggestions]')).toBeVisible();
+  await expect(page.locator('.wizard-address-option')).toHaveCount(1);
+  await input.press('ArrowDown');
+  await input.press('Enter');
+  await expect(input).toHaveValue('Rruga Mbretëresha Teutë');
+  await expect(page.locator('[data-home-city]')).toHaveValue('Pejë');
+  await expect(page.locator('[data-address-source]')).toContainText('Geoportali');
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  expect(overflow).toBe(0);
+});
+
+test('navbar geometry stays fixed between top and deep section', async ({page}) => {
+  await page.setViewportSize({width:1440,height:900});
+  await page.goto('/');
+  const shell=page.locator('.nav-shell');
+  const logo=page.locator('.brand-official');
+  const before={shell:await shell.boundingBox(),logo:await logo.boundingBox()};
+  await page.locator('#pyetje').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(120);
+  const after={shell:await shell.boundingBox(),logo:await logo.boundingBox()};
+  expect(Math.round(after.shell?.height||0)).toBe(Math.round(before.shell?.height||0));
+  expect(Math.round(after.logo?.width||0)).toBe(Math.round(before.logo?.width||0));
+  expect(Math.round(after.logo?.height||0)).toBe(Math.round(before.logo?.height||0));
+});
+
+test('homepage exposes local SEO essentials for Peja', async ({page}) => {
+  await page.goto('/');
+  await expect(page).toHaveTitle(/Fizioterapi në Pejë/);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href','https://diellzarabushaj-source.github.io/Shaban.krasniqi/');
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content',/Pejë/);
+  await expect(page.locator('script[type="application/ld+json"]')).toContainText('Pejë');
+  await expect(page.locator('.hero-copy')).toContainText('Fizioterapi në Pejë');
+  await expect(page.locator('.hero-copy > .eyebrow')).toHaveCount(0);
+});

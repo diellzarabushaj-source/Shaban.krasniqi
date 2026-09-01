@@ -77,6 +77,15 @@ if(!missing.length){
   for(const needle of ['shaban-home-visit-v3','enableHighAccuracy:false','enableHighAccuracy:true','sessionStorage','navigator.share','*Arsyeja e vizitës*']){
     if(!script.includes(needle))failures.push('Advanced home-visit behavior missing: '+needle);
   }
+  // Local SEO contract
+  for(const needle of ['Fizioterapi në Pejë','rel="canonical"','sq-XK','LocalBusiness','MedicalBusiness','areaServed']){
+    if(!index.includes(needle))failures.push('Local SEO missing: '+needle);
+  }
+  for(const needle of ['geoportal.rks-gov.net/wms/ows','KG_DEV_WS:RoadNameView','AR_DEV_WS:v_findAddresses','data-address-suggestions']){
+    if(!(script+index).includes(needle))failures.push('Official Peja address autocomplete missing: '+needle);
+  }
+  if(index.includes('Shaban Krasniqi · Fizioterapi'))failures.push('Legacy hero eyebrow must stay removed');
+  if(!css.includes('Stability + Local UX v8'))failures.push('Stable navbar/mobile override missing');
   if(!css.includes('@media (max-width:390px)'))failures.push('Missing 390px responsive breakpoint');
   if(!css.includes('prefers-reduced-motion'))failures.push('Reduced-motion support missing');
   if(!script.includes('IntersectionObserver'))failures.push('Reveal behavior missing');

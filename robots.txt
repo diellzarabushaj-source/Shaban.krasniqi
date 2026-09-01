@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://diellzarabushaj-source.github.io/Shaban.krasniqi/sitemap.xml
