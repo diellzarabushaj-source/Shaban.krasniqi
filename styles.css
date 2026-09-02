@@ -4608,3 +4608,8 @@ section[id]{
 @media(prefers-reduced-motion:reduce){
   .wizard-address-source[data-state="loading"]::before{animation:none}
 }
+/* Hidden map states must override component display rules. */
+.home-map[hidden],
+.map-placeholder[hidden]{
+  display:none!important;
+}
