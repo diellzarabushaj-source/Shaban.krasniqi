@@ -1,12 +1,10 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
-import {CogIcon} from '@sanity/icons/Cog'
 
 // Canonical website copy model. The public site and Admin Frontend both read/write this singleton.
 export default defineType({
   name: 'siteSettings',
   title: 'Website Content',
   type: 'document',
-  icon: CogIcon,
   fields: [
     defineField({
       name: 'seo',
