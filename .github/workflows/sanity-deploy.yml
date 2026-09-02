@@ -29,4 +29,4 @@ jobs:
           SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
         run: npx sanity@latest deploy --yes --schema-required
 
-# Trigger Studio/schema deployment from the main branch.
+# Deployment workflow intentionally kept separate from frontend CI.
