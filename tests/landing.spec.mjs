@@ -317,20 +317,18 @@ test('wizard personalized message contains structured patient context', async ({
 });
 
 
-test('official Peja address autocomplete is keyboard and mobile friendly', async ({page}) => {
-  await page.route('https://geoportal.rks-gov.net/wms/ows**', async route => {
-    await route.fulfill({
-      status:200,
-      contentType:'application/json',
-      json:{
-        type:'FeatureCollection',
-        features:[
-          {type:'Feature',properties:{RoadName:'Rruga Mbretëresha Teutë',Municipality:'Pejë'},geometry:{type:'Point',coordinates:[20.2895,42.6601]}},
-          {type:'Feature',properties:{RoadName:'Rruga Adem Jashari',Municipality:'Pejë'},geometry:{type:'Point',coordinates:[20.2920,42.6610]}},
-          {type:'Feature',properties:{RoadName:'Rruga Luan Haradinaj',Municipality:'Deçan'},geometry:{type:'Point',coordinates:[20.2870,42.5400]}}
-        ]
-      }
-    });
+test('Peja and Decan street autocomplete is keyboard and mobile friendly', async ({page}) => {
+  await page.route('**/api/addresses**', async route => {
+    const url=new URL(route.request().url());
+    const q=(url.searchParams.get('q')||'').toLowerCase();
+    const all=[
+      {label:'Rruga Mbretëresha Teutë, Pejë',road:'Rruga Mbretëresha Teutë',city:'Pejë',lat:42.6601,lng:20.2895,source:'AKK'},
+      {label:'Rruga Adem Jashari, Pejë',road:'Rruga Adem Jashari',city:'Pejë',lat:42.661,lng:20.292,source:'AKK'},
+      {label:'Rruga Luan Haradinaj, Deçan',road:'Rruga Luan Haradinaj',city:'Deçan',lat:42.54,lng:20.287,source:'AKK'},
+      {label:'Rruga e Testit, Istog',road:'Rruga e Testit',city:'Istog',lat:42.78,lng:20.48,source:'AKK'}
+    ];
+    const records=q.includes('mbret')?all.filter(x=>x.road.includes('Mbret')):q.includes('luan')?all.filter(x=>x.road.includes('Luan')):all;
+    await route.fulfill({status:200,contentType:'application/json',json:{records,source:'AKK'}});
   });
   await page.addInitScript(()=>{
     sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
@@ -340,6 +338,7 @@ test('official Peja address autocomplete is keyboard and mobile friendly', async
   });
   await page.setViewportSize({width:390,height:844});
   await page.goto('/#ne-shtepi');
+
   const input=page.locator('[data-home-address]');
   await input.fill('Mbret');
   await expect(page.locator('[data-address-suggestions]')).toBeVisible();
@@ -349,8 +348,61 @@ test('official Peja address autocomplete is keyboard and mobile friendly', async
   await expect(input).toHaveValue('Rruga Mbretëresha Teutë');
   await expect(page.locator('[data-home-city]')).toHaveValue('Pejë');
   await expect(page.locator('[data-address-source]')).toContainText('Geoportali');
+
+  await input.fill('Luan');
+  await expect(page.locator('.wizard-address-option')).toHaveCount(1);
+  await page.locator('.wizard-address-option').click();
+  await expect(input).toHaveValue('Rruga Luan Haradinaj');
+  await expect(page.locator('[data-home-city]')).toHaveValue('Deçan');
+
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBe(0);
+});
+
+test('denied GPS falls through to street search instead of a dead end', async ({page}) => {
+  await page.route('**/api/addresses**', async route => {
+    await route.fulfill({
+      status:200,
+      contentType:'application/json',
+      json:{
+        source:'AKK',
+        records:[
+          {label:'Rruga Luan Haradinaj, Deçan',road:'Rruga Luan Haradinaj',city:'Deçan',lat:42.54,lng:20.287,source:'AKK'}
+        ]
+      }
+    });
+  });
+  await page.addInitScript(()=>{
+    Object.defineProperty(navigator,'geolocation',{
+      configurable:true,
+      value:{
+        getCurrentPosition(success,error){
+          error({code:1,message:'permission denied'});
+        }
+      }
+    });
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+
+  const gps=page.locator('[data-use-location]');
+  const address=page.locator('[data-home-address]');
+  await gps.click();
+
+  await expect(gps).toHaveClass(/is-manual/);
+  await expect(gps).toContainText('Shkruaj adresën');
+  await expect(page.locator('[data-location-status]')).toContainText('Pejë dhe Deçan');
+  await expect(address).toBeFocused();
+
+  await address.fill('Luan');
+  await expect(page.locator('.wizard-address-option')).toHaveCount(1);
+  await page.locator('.wizard-address-option').click();
+  await expect(page.locator('[data-home-city]')).toHaveValue('Deçan');
+  await expect(page.locator('[data-location-status]')).toContainText('Lokacioni është gati');
 });
 
 test('navbar geometry stays fixed between top and deep section', async ({page}) => {
