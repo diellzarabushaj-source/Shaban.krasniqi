@@ -153,6 +153,8 @@ if(homeForm){
   const addressSuggestions=homeForm.querySelector('[data-address-suggestions]');
   const addressSource=homeForm.querySelector('[data-address-source]');
   const ADDRESS_API='/api/addresses';
+  const REVERSE_LOCATION_API='/api/reverse-location';
+  const smartMobileLocation=Boolean(coarsePointer||window.matchMedia?.('(max-width:860px)').matches);
   let addressDebounce=0;
   let addressAbortController=null;
   let addressRequestId=0;
@@ -613,8 +615,68 @@ if(homeForm){
     locationButton?.classList.remove('is-loading','is-manual');
     locationButton?.classList.add('is-success');
     const labelEl=locationButton?.querySelector('span');
-    if(labelEl)labelEl.textContent='Lokacioni u shtua';
+    if(labelEl)labelEl.textContent=smartMobileLocation?'Lokacioni u gjet':'Lokacioni u shtua';
     scheduleSave();
+    return {lat,lng,accuracy};
+  };
+
+  const reverseResolveMobileLocation=async({lat,lng,accuracy},requestId)=>{
+    if(!smartMobileLocation)return true;
+    const controller=new AbortController();
+    const timeout=window.setTimeout(()=>controller.abort(),6000);
+    try{
+      setLocationStatus('GPS u gjet · po identifikojmë rrugën…','loading');
+      const response=await fetch(
+        REVERSE_LOCATION_API+'?lat='+encodeURIComponent(lat)+'&lng='+encodeURIComponent(lng),
+        {signal:controller.signal,headers:{Accept:'application/json'}}
+      );
+      if(!response.ok)throw new Error('reverse-location-'+response.status);
+      const location=await response.json();
+      if(requestId!==locationRequestId)return false;
+
+      if(location.road&&addressInput)addressInput.value=location.road;
+      if(location.city&&VALID_HOME_CITIES.has(location.city)&&cityInput)cityInput.value=location.city;
+
+      const place=[
+        location.road,
+        location.locality&&location.locality!==location.road?location.locality:'',
+        location.city
+      ].filter(Boolean).join(', ');
+      const accuracyText=accuracy?' · ±'+accuracy+' m':'';
+
+      if(location.inServiceArea&&location.city){
+        setLocationStatus('Je këtu: '+(place||location.city)+accuracyText,'success');
+        setAddressSource('Adresa u gjet automatikisht nga GPS. Mund ta ndryshosh vetëm nëse duhet.','success');
+      }else{
+        setLocationStatus(
+          place
+            ?'Lokacioni u gjet: '+place+accuracyText+' · kontrollo nëse është brenda Pejë/Deçan.'
+            :'Lokacioni u gjet në hartë'+accuracyText+' · kontrollo adresën.',
+          'success'
+        );
+        setAddressSource('GPS u gjet, por rruga/qyteti nuk u konfirmua automatikisht. Mund ta plotësosh manualisht.','fallback');
+      }
+
+      updateLocationActions();
+      scheduleSave();
+      return true;
+    }catch(error){
+      if(requestId!==locationRequestId)return false;
+      setLocationStatus(
+        'Lokacioni GPS u gjet'+(accuracy?' · ±'+accuracy+' m':'')+'. Harta është gati; rruga mund të plotësohet manualisht nëse duhet.',
+        'success'
+      );
+      setAddressSource('GPS është aktiv. Rruga nuk u lexua automatikisht këtë herë.','fallback');
+      return false;
+    }finally{
+      window.clearTimeout(timeout);
+    }
+  };
+
+  const applySmartPosition=async(position,label,requestId)=>{
+    const resolved=applyPosition(position,label);
+    if(smartMobileLocation)await reverseResolveMobileLocation(resolved,requestId);
+    return resolved;
   };
 
   const geoAttempt=(options)=>new Promise((resolve,reject)=>{
@@ -640,20 +702,27 @@ if(homeForm){
       locationButton?.classList.remove('is-success','is-manual');
       locationButton?.classList.add('is-loading');
       const label=locationButton?.querySelector('span');
-      if(label)label.textContent='Duke marrë lokacionin…';
+      if(label)label.textContent=smartMobileLocation?'Po gjej ku je…':'Duke marrë lokacionin…';
     }
-    setLocationStatus('Po marrim lokacionin nga telefoni…','loading');
+    setLocationStatus(
+      smartMobileLocation?'Po marrim GPS-in dhe adresën nga telefoni…':'Po marrim lokacionin nga pajisja…',
+      'loading'
+    );
 
     try{
-      const quick=await geoAttempt({enableHighAccuracy:false,timeout:6500,maximumAge:120000});
+      const quick=await geoAttempt({
+        enableHighAccuracy:smartMobileLocation,
+        timeout:smartMobileLocation?8500:6500,
+        maximumAge:smartMobileLocation?30000:120000
+      });
       if(requestId!==locationRequestId)return false;
-      applyPosition(quick,'Lokacioni u mor');
+      await applySmartPosition(quick,'Lokacioni u mor',requestId);
 
-      if(Number(quick.coords.accuracy)>120){
+      if(Number(quick.coords.accuracy)>(smartMobileLocation?60:120)){
         geoAttempt({enableHighAccuracy:true,timeout:10000,maximumAge:0})
-          .then(precise=>{
+          .then(async precise=>{
             if(requestId===locationRequestId&&Number(precise.coords.accuracy)<Number(quick.coords.accuracy)){
-              applyPosition(precise,'Lokacioni u përmirësua');
+              await applySmartPosition(precise,'Lokacioni u përmirësua',requestId);
             }
           })
           .catch(()=>{});
@@ -674,7 +743,7 @@ if(homeForm){
       try{
         const precise=await geoAttempt({enableHighAccuracy:true,timeout:10000,maximumAge:0});
         if(requestId!==locationRequestId)return false;
-        applyPosition(precise,'Lokacioni u mor');
+        await applySmartPosition(precise,'Lokacioni u mor',requestId);
         return true;
       }catch(error){
         if(requestId!==locationRequestId)return false;
@@ -741,8 +810,11 @@ if(homeForm){
       }else{
         locationButton?.classList.remove('is-manual','is-success');
         const label=locationButton?.querySelector('span');
-        if(label)label.textContent='Përdor lokacionin tim';
-        setLocationStatus('Prek butonin për GPS, ose shkruaj rrugën poshtë.','idle');
+        if(label)label.textContent=smartMobileLocation?'Gjej ku jam':'Përdor lokacionin tim';
+        setLocationStatus(
+          smartMobileLocation?'Një prekje — gjejmë automatikisht GPS-in, rrugën dhe qytetin.':'Prek butonin për GPS, ose shkruaj rrugën poshtë.',
+          'idle'
+        );
       }
     }catch{}
   }
