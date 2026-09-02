@@ -2,18 +2,13 @@ const PROJECT_ID = 'a1lswl1z'
 const DATASET = 'production'
 const MUTATE = `https://${PROJECT_ID}.api.sanity.io/v2026-08-31/data/mutate/${DATASET}`
 
-function unauthorized(res) {
-  return res.status(401).json({error: 'Unauthorized'})
-}
+function unauthorized(res) { return res.status(401).json({error: 'Unauthorized'}) }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST')
-    return res.status(405).json({error: 'Method not allowed'})
-  }
-
+  if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({error: 'Method not allowed'}) }
   const adminKey = process.env.ADMIN_KEY
-  if (!adminKey || req.headers['x-admin-key'] !== adminKey) return unauthorized(res)
+  const sanityToken = process.env.SANITY_WRITE_TOKEN
+  if (!adminKey || !sanityToken || req.headers['x-admin-key'] !== adminKey) return unauthorized(res)
 
   const body = req.body || {}
   const contentItems = Array.isArray(body.contentItems) ? body.contentItems : []
@@ -28,30 +23,17 @@ export default async function handler(req, res) {
     value: String(item.value ?? ''),
   }))
 
-  const document = {
-    _id: 'siteSettings',
-    _type: 'siteSettings',
-    seo: body.seo || {},
-    site: body.site || {},
-    contentItems: cleanItems,
-  }
+  const document = {_id: 'siteSettings', _type: 'siteSettings', seo: body.seo || {}, site: body.site || {}, contentItems: cleanItems}
 
   try {
     const response = await fetch(MUTATE, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${adminKey}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      headers: {Authorization: `Bearer ${sanityToken}`, 'Content-Type': 'application/json', Accept: 'application/json'},
       body: JSON.stringify({mutations: [{createOrReplace: document}]}),
     })
     const payload = await response.json()
     if (!response.ok) return res.status(response.status).json({error: payload?.message || 'Sanity save failed'})
-
     res.setHeader('Cache-Control', 'no-store')
-    return res.status(200).json({ok: true, result: payload})
-  } catch (error) {
-    return res.status(500).json({error: 'Unable to save website content'})
-  }
+    return res.status(200).json({ok: true})
+  } catch (error) { return res.status(500).json({error: 'Unable to save website content'}) }
 }
