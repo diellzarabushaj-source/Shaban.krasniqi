@@ -15,6 +15,7 @@ test('floating navbar effect activates without changing geometry',async({page})=
   await page.locator('#qasja').scrollIntoViewIfNeeded();
   await page.waitForTimeout(180);
   await expect(page.locator('[data-header]')).toHaveClass(/scrolled/);
+  await expect(shell).toHaveCSS('border-radius','22px');
 
   const after=await shell.boundingBox();
   const scrolledCss=await shell.evaluate(el=>{
