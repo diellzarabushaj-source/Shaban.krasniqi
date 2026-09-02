@@ -295,7 +295,7 @@ test('wizard personalized message contains structured patient context', async ({
   await page.locator('[data-use-location]').click();
   await expect(page.locator('[data-use-location]')).toHaveClass(/is-success/);
   await page.locator('[data-home-address]').fill('Rruga Test');
-  await page.locator('[data-home-city]').fill('Deçan');
+  await page.locator('[data-home-city]').selectOption('Deçan');
   await page.locator('[data-home-location-note]').fill('Hyrja B, kati 2');
   await page.locator('[data-wizard-next]').click();
   await page.locator('[data-home-note]').fill('Dhimbja është më e fortë gjatë ecjes.');
@@ -403,6 +403,96 @@ test('denied GPS falls through to street search instead of a dead end', async ({
   await page.locator('.wizard-address-option').click();
   await expect(page.locator('[data-home-city]')).toHaveValue('Deçan');
   await expect(page.locator('[data-location-status]')).toContainText('Lokacioni është gati');
+});
+
+
+test('manual location requires both a street and Peja or Decan', async ({page}) => {
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+
+  const address=page.locator('[data-home-address]');
+  const city=page.locator('[data-home-city]');
+  const next=page.locator('[data-wizard-next]');
+
+  await address.fill('Rruga Test');
+  await next.click();
+  await expect(page.locator('[data-wizard-current]')).toHaveText('6');
+  await expect(city).toHaveAttribute('aria-invalid','true');
+
+  await city.selectOption('Pejë');
+  await next.click();
+  await expect(page.locator('[data-wizard-current]')).toHaveText('7');
+});
+
+test('editing a manual address clears stale GPS coordinates and map', async ({page,context}) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({latitude:42.6595,longitude:20.2887});
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+
+  await page.locator('[data-use-location]').click();
+  await expect(page.locator('[data-use-location]')).toHaveClass(/is-success/);
+  await expect(page.locator('[data-home-lat]')).not.toHaveValue('');
+  await expect(page.locator('[data-home-map]')).toBeVisible();
+
+  await page.locator('[data-home-address]').fill('Rruga Test');
+  await page.locator('[data-home-city]').selectOption('Deçan');
+
+  await expect(page.locator('[data-home-lat]')).toHaveValue('');
+  await expect(page.locator('[data-home-lng]')).toHaveValue('');
+  await expect(page.locator('[data-home-map]')).toBeHidden();
+  await expect(page.locator('[data-map-placeholder]')).toBeVisible();
+  await expect(page.locator('[data-location-status]')).toContainText('adresën e shkruar');
+  await expect(page.locator('[data-open-maps]')).toHaveAttribute('href',/Rruga%20Test%2C%20De%C3%A7an/);
+});
+
+test('street autocomplete ignores stale slower responses', async ({page}) => {
+  await page.route('**/api/addresses**', async route => {
+    const url=new URL(route.request().url());
+    const q=url.searchParams.get('q')||'';
+    if(q.includes('ad')){
+      await new Promise(resolve=>setTimeout(resolve,350));
+      await route.fulfill({
+        status:200,contentType:'application/json',
+        json:{source:'AKK',records:[{road:'Rruga Adem Jashari',city:'Pejë',source:'AKK'}]}
+      });
+      return;
+    }
+    await route.fulfill({
+      status:200,contentType:'application/json',
+      json:{source:'AKK',records:[{road:'Rruga Luan Haradinaj',city:'Deçan',source:'AKK'}]}
+    });
+  });
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+
+  const address=page.locator('[data-home-address]');
+  await address.fill('Ad');
+  await page.waitForTimeout(210);
+  await address.fill('Luan');
+
+  await expect(page.locator('.wizard-address-option')).toHaveCount(1);
+  await expect(page.locator('.wizard-address-option')).toContainText('Luan Haradinaj');
+  await page.waitForTimeout(450);
+  await expect(page.locator('.wizard-address-option')).toContainText('Luan Haradinaj');
 });
 
 test('navbar geometry stays fixed between top and deep section', async ({page}) => {
