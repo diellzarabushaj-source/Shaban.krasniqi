@@ -137,4 +137,9 @@
   contentScript.src='/site-content.js';
   contentScript.defer=true;
   document.head.append(contentScript);
+
+  const contactScript=document.createElement('script');
+  contactScript.src='/site-contact.js';
+  contactScript.defer=true;
+  document.head.append(contactScript);
 })();
