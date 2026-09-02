@@ -16,7 +16,14 @@ test('official address parser keeps Peja municipality and rejects other municipa
     geometry:{type:'Point',coordinates:[20.48,42.78]}
   });
 
+  const surrounding=extractOfficialRecord({
+    properties:{RoadName:'Rruga e Rugovës',Municipality:'Pejë',Settlement:'Vitomiricë'},
+    geometry:{type:'Point',coordinates:[20.31,42.70]}
+  });
+
   expect(peja?.city).toBe('Pejë');
+  expect(surrounding?.city).toBe('Pejë');
+  expect(surrounding?.locality).toBe('Vitomiricë');
   expect(decan).toBeNull();
   expect(istog).toBeNull();
   expect(normalizeSearch('Mbretëresha')).toBe('mbreteresha');
@@ -123,4 +130,41 @@ test('reverse location API validates coordinates and returns parsed address',asy
   }finally{
     globalThis.fetch=previousFetch;
   }
+});
+
+
+test('fallback search rejects results whose own metadata is outside Peja',async()=>{
+  const previousFetch=globalThis.fetch;
+  globalThis.fetch=async(input)=>{
+    const url=String(input);
+    if(url.includes('geoportal.rks-gov.net')){
+      return {ok:false,status:503,async json(){return {}}};
+    }
+    return {
+      ok:true,
+      status:200,
+      async json(){
+        return [{
+          display_name:'Rruga Luan Haradinaj, Deçan, Kosovo',
+          lat:'42.54',
+          lon:'20.287',
+          address:{road:'Rruga Luan Haradinaj',municipality:'Deçan'}
+        }];
+      }
+    };
+  };
+  const res={
+    headers:{},code:200,payload:null,
+    setHeader(name,value){this.headers[name]=value},
+    status(code){this.code=code;return this},
+    json(payload){this.payload=payload;return this}
+  };
+  try{
+    await handler({method:'GET',query:{q:'Luan'}},res);
+  }finally{
+    globalThis.fetch=previousFetch;
+  }
+  expect(res.code).toBe(200);
+  expect(res.payload.records).toEqual([]);
+  expect(res.payload.source).toBe('none');
 });
