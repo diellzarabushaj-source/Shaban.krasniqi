@@ -4487,7 +4487,7 @@ section[id]{
     transition:none!important;
   }
 }
-/* ===== GPS + Peja/Decan street autocomplete v12 ===== */
+/* ===== GPS + Peja street autocomplete v12 ===== */
 .wizard-location-state[data-state="manual"]{
   border-color:#bcdbe2;
   background:#f3fafb;
@@ -4612,4 +4612,33 @@ section[id]{
 .home-map[hidden],
 .map-placeholder[hidden]{
   display:none!important;
+}
+/* ===== Peja-only service area v15 ===== */
+.wizard-service-area{
+  min-height:58px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:3px;
+  padding:10px 14px;
+  border:1px solid #cfe4e9;
+  border-radius:14px;
+  background:linear-gradient(180deg,#f8fcfd,#eef8fa);
+}
+.wizard-service-area small{
+  color:#6d8993;
+  font:700 9px/1.2 "Montserrat","Manrope",sans-serif;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.wizard-service-area strong{
+  color:var(--brand-teal,#147892);
+  font:800 13px/1.25 "Montserrat","Manrope",sans-serif;
+}
+@media(max-width:620px){
+  .wizard-service-area{
+    min-height:52px;
+    padding:9px 12px;
+  }
+  .wizard-service-area strong{font-size:12px}
 }

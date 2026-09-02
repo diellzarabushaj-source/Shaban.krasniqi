@@ -100,6 +100,12 @@ for(const viewport of viewports){
     expect(phoneLinks).toBeGreaterThanOrEqual(2);
     console.log(viewport.name+' contact links '+JSON.stringify({whatsapp:contactLinks,phone:phoneLinks}));
 
+    await page.route('**/api/reverse-location**', async route => {
+      await route.fulfill({
+        status:200,contentType:'application/json',
+        json:{road:'Rruga Adem Jashari',city:'Pejë',locality:'Pejë',inServiceArea:true,source:'OpenStreetMap'}
+      });
+    });
     await page.context().grantPermissions(['geolocation']);
     await page.context().setGeolocation({latitude:42.6595,longitude:20.2887});
 
@@ -271,14 +277,22 @@ test('wizard has branded identity and mobile-safe location fallbacks', async ({p
   await expect(page.locator('[data-wizard-current]')).toHaveText('6');
   await expect(page.locator('[data-open-maps]')).toBeVisible();
   await expect(page.locator('[data-home-address]')).toBeVisible();
-  await expect(page.locator('[data-home-city]')).toBeVisible();
+  await expect(page.locator('[data-home-city]')).toHaveValue('Pejë');
+  await expect(page.locator('.wizard-service-area')).toContainText('Pejë dhe rrethinë');
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBe(0);
 });
 
+
 test('wizard personalized message contains structured patient context', async ({page,context}) => {
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({latitude:42.6595,longitude:20.2887});
+  await page.route('**/api/reverse-location**', async route => {
+    await route.fulfill({
+      status:200,contentType:'application/json',
+      json:{road:'Rruga Mbretëresha Teutë',city:'Pejë',locality:'Pejë',inServiceArea:true,source:'OpenStreetMap'}
+    });
+  });
   await page.goto('/#ne-shtepi');
 
   await page.locator('[data-home-name]').fill('Arta Berisha');
@@ -287,15 +301,14 @@ test('wizard personalized message contains structured patient context', async ({
   await page.locator('[data-wizard-next]').click();
   await page.locator('.wizard-choice').filter({has:page.locator('input[value="Dhimbje të nyjeve"]')}).click();
   await page.locator('[data-wizard-next]').click();
-
   await page.locator('[data-home-date]').fill('2099-09-09');
   await page.locator('[data-wizard-next]').click();
   await page.locator('.wizard-time').filter({has:page.locator('input[name="timePreset"][value="14:00"]')}).click();
   await page.locator('[data-wizard-next]').click();
+
   await page.locator('[data-use-location]').click();
   await expect(page.locator('[data-use-location]')).toHaveClass(/is-success/);
   await page.locator('[data-home-address]').fill('Rruga Test');
-  await page.locator('[data-home-city]').selectOption('Deçan');
   await page.locator('[data-home-location-note]').fill('Hyrja B, kati 2');
   await page.locator('[data-wizard-next]').click();
   await page.locator('[data-home-note]').fill('Dhimbja është më e fortë gjatë ecjes.');
@@ -310,25 +323,26 @@ test('wizard personalized message contains structured patient context', async ({
   expect(decoded).toContain('Arta Berisha');
   expect(decoded).toContain('Dhimbje të nyjeve');
   expect(decoded).toContain('Ora e preferuar: 14:00');
-  expect(decoded).toContain('Rruga Test, Deçan');
+  expect(decoded).toContain('Rruga Test, Pejë');
   expect(decoded).toContain('Hyrja B, kati 2');
   expect(decoded).toContain('google.com/maps/search/?api=1');
-  expect(decoded).toContain('Rruga%20Test%2C%20De%C3%A7an');
+  expect(decoded).toContain('Rruga%20Test%2C%20Pej%C3%AB');
   expect(decoded).toContain('Dhimbja është më e fortë gjatë ecjes.');
 });
 
 
-test('Peja and Decan street autocomplete is keyboard and mobile friendly', async ({page}) => {
+test('Peja-only street autocomplete is keyboard and mobile friendly', async ({page}) => {
   await page.route('**/api/addresses**', async route => {
     const url=new URL(route.request().url());
     const q=(url.searchParams.get('q')||'').toLowerCase();
-    const all=[
-      {label:'Rruga Mbretëresha Teutë, Pejë',road:'Rruga Mbretëresha Teutë',city:'Pejë',lat:42.6601,lng:20.2895,source:'AKK'},
-      {label:'Rruga Adem Jashari, Pejë',road:'Rruga Adem Jashari',city:'Pejë',lat:42.661,lng:20.292,source:'AKK'},
-      {label:'Rruga Luan Haradinaj, Deçan',road:'Rruga Luan Haradinaj',city:'Deçan',lat:42.54,lng:20.287,source:'AKK'},
-      {label:'Rruga e Testit, Istog',road:'Rruga e Testit',city:'Istog',lat:42.78,lng:20.48,source:'AKK'}
-    ];
-    const records=q.includes('mbret')?all.filter(x=>x.road.includes('Mbret')):q.includes('luan')?all.filter(x=>x.road.includes('Luan')):all;
+    const records=q.includes('mbret')
+      ?[{label:'Rruga Mbretëresha Teutë, Pejë',road:'Rruga Mbretëresha Teutë',city:'Pejë',locality:'Pejë',lat:42.6601,lng:20.2895,source:'AKK'}]
+      :q.includes('luan')
+        ?[{label:'Rruga Luan Haradinaj, Deçan',road:'Rruga Luan Haradinaj',city:'Deçan',lat:42.54,lng:20.287,source:'AKK'}]
+        :[
+          {label:'Rruga Adem Jashari, Pejë',road:'Rruga Adem Jashari',city:'Pejë',locality:'Pejë',lat:42.661,lng:20.292,source:'AKK'},
+          {label:'Rruga e Testit, Istog',road:'Rruga e Testit',city:'Istog',lat:42.78,lng:20.48,source:'AKK'}
+        ];
     await route.fulfill({status:200,contentType:'application/json',json:{records,source:'AKK'}});
   });
   await page.addInitScript(()=>{
@@ -344,22 +358,18 @@ test('Peja and Decan street autocomplete is keyboard and mobile friendly', async
   await input.fill('Mbret');
   await expect(page.locator('[data-address-suggestions]')).toBeVisible();
   await expect(page.locator('.wizard-address-option')).toHaveCount(1);
-  await input.press('ArrowDown');
   await input.press('Enter');
   await expect(input).toHaveValue('Rruga Mbretëresha Teutë');
   await expect(page.locator('[data-home-city]')).toHaveValue('Pejë');
   await expect(page.locator('[data-address-source]')).toContainText('Geoportali');
 
   await input.fill('Luan');
-  await expect(page.locator('.wizard-address-option')).toHaveCount(1);
-  await page.locator('.wizard-address-option').click();
-  await expect(input).toHaveValue('Rruga Luan Haradinaj');
-  await expect(page.locator('[data-home-city]')).toHaveValue('Deçan');
+  await expect(page.locator('.wizard-address-option')).toHaveCount(0);
+  await expect(page.locator('[data-address-suggestions]')).toContainText('Pejë dhe rrethinë');
 
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBe(0);
 });
-
 
 test('mobile one tap GPS fills street and city automatically', async ({page,context}) => {
   await context.grantPermissions(['geolocation']);
@@ -403,13 +413,17 @@ test('mobile one tap GPS fills street and city automatically', async ({page,cont
   await expect(gps).toHaveClass(/is-success/);
 });
 
-test('desktop GPS keeps existing behavior and skips reverse lookup', async ({page,context}) => {
+
+test('desktop GPS keeps existing UX but verifies Peja service area', async ({page,context}) => {
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({latitude:42.6595,longitude:20.2887});
   let reverseCalls=0;
   await page.route('**/api/reverse-location**', async route => {
     reverseCalls++;
-    await route.abort();
+    await route.fulfill({
+      status:200,contentType:'application/json',
+      json:{road:'Rruga Adem Jashari',city:'Pejë',locality:'Pejë',inServiceArea:true,source:'OpenStreetMap'}
+    });
   });
   await page.addInitScript(()=>{
     sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
@@ -422,10 +436,12 @@ test('desktop GPS keeps existing behavior and skips reverse lookup', async ({pag
 
   await expect(page.locator('[data-use-location]')).not.toHaveAttribute('data-smart-location','true');
   await expect(page.locator('[data-home-lat]')).toHaveValue('42.659500');
-  expect(reverseCalls).toBe(0);
+  await expect(page.locator('[data-location-status]')).toContainText('verifikua në Pejë');
+  expect(reverseCalls).toBeGreaterThan(0);
 });
 
-test('mobile keeps GPS coordinates when reverse address lookup fails', async ({page,context}) => {
+
+test('mobile rejects unverified GPS and falls back to Peja address entry', async ({page,context}) => {
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({latitude:42.6595,longitude:20.2887});
   await page.route('**/api/reverse-location**', async route => {
@@ -441,32 +457,27 @@ test('mobile keeps GPS coordinates when reverse address lookup fails', async ({p
   await page.goto('/#ne-shtepi');
 
   await page.locator('[data-use-location]').click();
-  await expect(page.locator('[data-home-lat]')).toHaveValue('42.659500');
-  await expect(page.locator('[data-home-map]')).toBeVisible();
-  await expect(page.locator('[data-location-status]')).toContainText('Harta është gati');
+  await expect(page.locator('[data-home-lat]')).toHaveValue('');
+  await expect(page.locator('[data-home-lng]')).toHaveValue('');
+  await expect(page.locator('[data-home-map]')).toBeHidden();
+  await expect(page.locator('[data-use-location]')).toHaveClass(/is-manual/);
+  await expect(page.locator('[data-location-status]')).toContainText('Pejës dhe rrethinës');
 });
 
-test('denied GPS falls through to street search instead of a dead end', async ({page}) => {
+
+test('denied GPS falls through to Peja-only street search instead of a dead end', async ({page}) => {
   await page.route('**/api/addresses**', async route => {
     await route.fulfill({
-      status:200,
-      contentType:'application/json',
-      json:{
-        source:'AKK',
-        records:[
-          {label:'Rruga Luan Haradinaj, Deçan',road:'Rruga Luan Haradinaj',city:'Deçan',lat:42.54,lng:20.287,source:'AKK'}
-        ]
-      }
+      status:200,contentType:'application/json',
+      json:{source:'AKK',records:[
+        {label:'Rruga Adem Jashari, Pejë',road:'Rruga Adem Jashari',city:'Pejë',locality:'Pejë',lat:42.661,lng:20.292,source:'AKK'}
+      ]}
     });
   });
   await page.addInitScript(()=>{
     Object.defineProperty(navigator,'geolocation',{
       configurable:true,
-      value:{
-        getCurrentPosition(success,error){
-          error({code:1,message:'permission denied'});
-        }
-      }
+      value:{getCurrentPosition(success,error){error({code:1,message:'permission denied'});}}
     });
     sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
       step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
@@ -482,18 +493,46 @@ test('denied GPS falls through to street search instead of a dead end', async ({
 
   await expect(gps).toHaveClass(/is-manual/);
   await expect(gps).toContainText('Shkruaj adresën');
-  await expect(page.locator('[data-location-status]')).toContainText('Pejë dhe Deçan');
+  await expect(page.locator('[data-location-status]')).toContainText('Pejë');
   await expect(address).toBeFocused();
 
-  await address.fill('Luan');
+  await address.fill('Adem');
   await expect(page.locator('.wizard-address-option')).toHaveCount(1);
   await page.locator('.wizard-address-option').click();
-  await expect(page.locator('[data-home-city]')).toHaveValue('Deçan');
+  await expect(page.locator('[data-home-city]')).toHaveValue('Pejë');
   await expect(page.locator('[data-location-status]')).toContainText('Lokacioni është gati');
 });
 
 
-test('manual location requires both a street and Peja or Decan', async ({page}) => {
+
+test('GPS outside Peja is rejected even when coordinates are valid', async ({page,context}) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({latitude:42.5400,longitude:20.2870});
+  await page.route('**/api/reverse-location**', async route => {
+    await route.fulfill({
+      status:200,contentType:'application/json',
+      json:{road:'Rruga Luan Haradinaj',city:'Deçan',locality:'Deçan',inServiceArea:false,source:'OpenStreetMap'}
+    });
+  });
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+
+  await page.locator('[data-use-location]').click();
+  await expect(page.locator('[data-home-lat]')).toHaveValue('');
+  await expect(page.locator('[data-home-lng]')).toHaveValue('');
+  await expect(page.locator('[data-home-map]')).toBeHidden();
+  await expect(page.locator('[data-location-status]')).toContainText('jashtë zonës së shërbimit');
+  await expect(page.locator('[data-location-status]')).toContainText('Pejë dhe rrethinë');
+  await expect(page.locator('[data-location-error]')).toBeVisible();
+});
+
+test('manual location requires a street inside the fixed Peja service area', async ({page}) => {
   await page.addInitScript(()=>{
     sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
       step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
@@ -504,22 +543,28 @@ test('manual location requires both a street and Peja or Decan', async ({page}) 
   await page.goto('/#ne-shtepi');
 
   const address=page.locator('[data-home-address]');
-  const city=page.locator('[data-home-city]');
   const next=page.locator('[data-wizard-next]');
+  await expect(page.locator('[data-home-city]')).toHaveValue('Pejë');
 
-  await address.fill('Rruga Test');
   await next.click();
   await expect(page.locator('[data-wizard-current]')).toHaveText('6');
-  await expect(city).toHaveAttribute('aria-invalid','true');
+  await expect(address).toHaveAttribute('aria-invalid','true');
 
-  await city.selectOption('Pejë');
+  await address.fill('Rruga Test');
   await next.click();
   await expect(page.locator('[data-wizard-current]')).toHaveText('7');
 });
 
-test('editing a manual address clears stale GPS coordinates and map', async ({page,context}) => {
+
+test('editing a manual Peja address clears stale GPS coordinates and map', async ({page,context}) => {
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({latitude:42.6595,longitude:20.2887});
+  await page.route('**/api/reverse-location**', async route => {
+    await route.fulfill({
+      status:200,contentType:'application/json',
+      json:{road:'Rruga Adem Jashari',city:'Pejë',locality:'Pejë',inServiceArea:true,source:'OpenStreetMap'}
+    });
+  });
   await page.addInitScript(()=>{
     sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
       step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
@@ -535,31 +580,31 @@ test('editing a manual address clears stale GPS coordinates and map', async ({pa
   await expect(page.locator('[data-home-map]')).toBeVisible();
 
   await page.locator('[data-home-address]').fill('Rruga Test');
-  await page.locator('[data-home-city]').selectOption('Deçan');
 
   await expect(page.locator('[data-home-lat]')).toHaveValue('');
   await expect(page.locator('[data-home-lng]')).toHaveValue('');
   await expect(page.locator('[data-home-map]')).toBeHidden();
   await expect(page.locator('[data-map-placeholder]')).toBeVisible();
   await expect(page.locator('[data-location-status]')).toContainText('adresën e shkruar');
-  await expect(page.locator('[data-open-maps]')).toHaveAttribute('href',/Rruga%20Test%2C%20De%C3%A7an/);
+  await expect(page.locator('[data-open-maps]')).toHaveAttribute('href',/Rruga%20Test%2C%20Pej%C3%AB/);
 });
+
 
 test('street autocomplete ignores stale slower responses', async ({page}) => {
   await page.route('**/api/addresses**', async route => {
     const url=new URL(route.request().url());
     const q=url.searchParams.get('q')||'';
-    if(q.includes('ad')){
+    if(q.toLowerCase().includes('ad')){
       await new Promise(resolve=>setTimeout(resolve,350));
       await route.fulfill({
         status:200,contentType:'application/json',
-        json:{source:'AKK',records:[{road:'Rruga Adem Jashari',city:'Pejë',source:'AKK'}]}
+        json:{source:'AKK',records:[{road:'Rruga Adem Jashari',city:'Pejë',locality:'Pejë',source:'AKK'}]}
       });
       return;
     }
     await route.fulfill({
       status:200,contentType:'application/json',
-      json:{source:'AKK',records:[{road:'Rruga Luan Haradinaj',city:'Deçan',source:'AKK'}]}
+      json:{source:'AKK',records:[{road:'Rruga UÇK',city:'Pejë',locality:'Pejë',source:'AKK'}]}
     });
   });
   await page.addInitScript(()=>{
@@ -574,12 +619,12 @@ test('street autocomplete ignores stale slower responses', async ({page}) => {
   const address=page.locator('[data-home-address]');
   await address.fill('Ad');
   await page.waitForTimeout(210);
-  await address.fill('Luan');
+  await address.fill('UÇK');
 
   await expect(page.locator('.wizard-address-option')).toHaveCount(1);
-  await expect(page.locator('.wizard-address-option')).toContainText('Luan Haradinaj');
+  await expect(page.locator('.wizard-address-option')).toContainText('Rruga UÇK');
   await page.waitForTimeout(450);
-  await expect(page.locator('.wizard-address-option')).toContainText('Luan Haradinaj');
+  await expect(page.locator('.wizard-address-option')).toContainText('Rruga UÇK');
 });
 
 test('navbar geometry stays fixed between top and deep section', async ({page}) => {
