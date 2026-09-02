@@ -6,7 +6,7 @@ const QUERY = `*[_id == "siteSettings"][0]{
   _id,
   _updatedAt,
   seo{title,description,ogTitle,ogDescription,twitterTitle,twitterDescription,canonicalUrl,noIndex},
-  site{name,phone,whatsappUrl,location,language},
+  site{name,phone,whatsappUrl,email,address,location,mapUrl,language},
   contentItems[]{_key,key,label,section,kind,attribute,value}
 }`
 
