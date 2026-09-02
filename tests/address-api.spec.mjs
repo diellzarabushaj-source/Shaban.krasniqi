@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import handler,{extractOfficialRecord,normalizeSearch} from '../api/addresses.js';
+import handler,{extractOfficialRecord,normalizeSearch,scoreRecords} from '../api/addresses.js';
 import reverseHandler,{parseReverseAddress} from '../api/reverse-location.js';
 
 test('official address parser keeps Peja municipality and rejects other municipalities',()=>{
@@ -27,6 +27,23 @@ test('official address parser keeps Peja municipality and rejects other municipa
   expect(decan).toBeNull();
   expect(istog).toBeNull();
   expect(normalizeSearch('Mbretëresha')).toBe('mbreteresha');
+});
+
+
+test('Peja street matching tolerates small realistic typos without becoming broad',()=>{
+  const records=[
+    {road:'Rruga Adem Jashari',city:'Pejë',search:normalizeSearch('Rruga Adem Jashari Pejë')},
+    {road:'Rruga Mbretëresha Teutë',city:'Pejë',search:normalizeSearch('Rruga Mbretëresha Teutë Pejë')},
+    {road:'Rruga UÇK',city:'Pejë',search:normalizeSearch('Rruga UÇK Pejë')},
+    {road:'Rruga Bill Clinton',city:'Pejë',search:normalizeSearch('Rruga Bill Clinton Pejë')}
+  ];
+
+  expect(scoreRecords(records,'Adme Jashari')[0]?.road).toBe('Rruga Adem Jashari');
+  expect(scoreRecords(records,'Mbretersha Teute')[0]?.road).toBe('Rruga Mbretëresha Teutë');
+  expect(scoreRecords(records,'Adem Jasharii')[0]?.road).toBe('Rruga Adem Jashari');
+
+  expect(scoreRecords(records,'zxqv')).toEqual([]);
+  expect(scoreRecords(records,'Bi')).toEqual([{...records[3]}]);
 });
 
 test('address API returns filtered local roads from AKK',async()=>{

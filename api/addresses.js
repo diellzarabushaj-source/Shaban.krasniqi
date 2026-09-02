@@ -96,17 +96,73 @@ const fetchOfficialLayer=async(layer)=>{
   }
 };
 
-const scoreRecords=(records,query)=>{
-  const q=normalizeSearch(query);
+const tokenDistance=(a,b)=>{
+  if(a===b)return 0;
+  const al=a.length,bl=b.length;
+  if(!al)return bl;
+  if(!bl)return al;
+  const previous=Array.from({length:bl+1},(_,i)=>i);
+  let beforePrevious=null;
+  for(let i=1;i<=al;i++){
+    const current=[i];
+    for(let j=1;j<=bl;j++){
+      let value=Math.min(
+        current[j-1]+1,
+        previous[j]+1,
+        previous[j-1]+(a[i-1]===b[j-1]?0:1)
+      );
+      if(
+        beforePrevious&&i>1&&j>1&&
+        a[i-1]===b[j-2]&&a[i-2]===b[j-1]
+      ){
+        value=Math.min(value,beforePrevious[j-2]+1);
+      }
+      current[j]=value;
+    }
+    beforePrevious=previous.slice();
+    for(let j=0;j<=bl;j++)previous[j]=current[j];
+  }
+  return previous[bl];
+};
+
+const fuzzyTokenCost=(needle,haystack)=>{
+  if(!needle||!haystack)return Number.POSITIVE_INFINITY;
+  if(haystack.includes(needle))return 0;
+  if(needle.length>=3&&haystack.startsWith(needle))return .1;
+  const maxDistance=needle.length>=8?2:needle.length>=4?1:0;
+  if(!maxDistance)return Number.POSITIVE_INFINITY;
+  const distance=tokenDistance(needle,haystack);
+  return distance<=maxDistance?distance:Number.POSITIVE_INFINITY;
+};
+
+export const scoreRecords=(records,query)=>{
+  const q=normalizeSearch(query).replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
   const tokens=q.split(/\s+/).filter(Boolean);
+  if(!tokens.length)return [];
+
   return records
-    .filter(record=>tokens.every(token=>record.search.includes(token)))
     .map(record=>{
-      const road=normalizeSearch(record.road);
+      const road=normalizeSearch(record.road).replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+      const words=road.split(/\s+/).filter(Boolean);
+      let fuzzyCost=0;
+
+      for(const token of tokens){
+        let best=Number.POSITIVE_INFINITY;
+        for(const word of words){
+          best=Math.min(best,fuzzyTokenCost(token,word));
+          if(best===0)break;
+        }
+        if(!Number.isFinite(best))return null;
+        fuzzyCost+=best;
+      }
+
       const starts=road.startsWith(q);
-      const word=road.includes(' '+q);
-      return {record,score:starts?0:word?1:2};
+      const contains=road.includes(q);
+      const wordBoundary=road.includes(' '+q);
+      const exactBonus=starts?0:contains?0.15:wordBoundary?0.25:0.5;
+      return {record,score:fuzzyCost*2+exactBonus};
     })
+    .filter(Boolean)
     .sort((a,b)=>a.score-b.score||a.record.road.localeCompare(b.record.road,'sq'))
     .slice(0,8)
     .map(item=>item.record);
