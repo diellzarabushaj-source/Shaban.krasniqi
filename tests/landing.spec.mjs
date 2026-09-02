@@ -29,7 +29,7 @@ for(const viewport of viewports){
 
     const geometry=await page.evaluate(()=>{
       const root=document.documentElement;
-      const interactive=[...document.querySelectorAll('a[href],button,summary,input:not([type="hidden"]),textarea,.problem-choice')]
+      const interactive=[...document.querySelectorAll('a[href],button,summary,input:not([type="hidden"]),select,textarea,.problem-choice')]
         .filter(el=>{
           const s=getComputedStyle(el),r=el.getBoundingClientRect();
           return !el.classList.contains('skip-link')&&s.display!=='none'&&s.visibility!=='hidden'&&Number(s.opacity)>0.01&&s.pointerEvents!=='none'&&r.width>0&&r.height>0;
@@ -312,7 +312,8 @@ test('wizard personalized message contains structured patient context', async ({
   expect(decoded).toContain('Ora e preferuar: 14:00');
   expect(decoded).toContain('Rruga Test, Deçan');
   expect(decoded).toContain('Hyrja B, kati 2');
-  expect(decoded).toContain('maps.google.com/?q=42.659500,20.288700');
+  expect(decoded).toContain('google.com/maps/search/?api=1');
+  expect(decoded).toContain('Rruga%20Test%2C%20De%C3%A7an');
   expect(decoded).toContain('Dhimbja është më e fortë gjatë ecjes.');
 });
 
