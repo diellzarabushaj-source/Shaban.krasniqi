@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="sq">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Paneli im · Fizioterapia Shaban Krasniqi</title>
+  <style>
+    :root{color-scheme:dark;--bg:#07111f;--card:#0d1b2d;--line:rgba(255,255,255,.1);--text:#f5f7fb;--muted:#aab6c7;--accent:#8b7cff}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top right,rgba(139,124,255,.16),transparent 34%),var(--bg);color:var(--text);font-family:Manrope,system-ui,sans-serif}
+    .shell{width:min(1080px,calc(100% - 32px));margin:0 auto}.top{padding:24px 0;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-weight:800;text-decoration:none;color:inherit}.brand small{display:block;color:var(--muted);font-weight:500;margin-top:4px}.top-actions{display:flex;align-items:center;gap:16px}.back{color:var(--muted);text-decoration:none}.back:hover{color:var(--text)}
+    main{padding:56px 0}.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.75rem;color:#bcb4ff;font-weight:800}.hero h1{font-size:clamp(2rem,5vw,4rem);line-height:1.02;margin:12px 0}.hero p{color:var(--muted);max-width:650px;font-size:1.05rem;line-height:1.7}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:38px}.card{background:rgba(13,27,45,.88);border:1px solid var(--line);border-radius:22px;padding:24px}.card h2{font-size:1.05rem;margin:0 0 9px}.card p{color:var(--muted);line-height:1.6;margin:0}.card a{display:inline-block;margin-top:18px;color:#c9c4ff;text-decoration:none;font-weight:800}.profile{margin-top:22px;display:flex;align-items:center;gap:16px}.avatar{width:56px;height:56px;border-radius:50%;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}.status{color:#8ee7a4;font-size:.86rem}.gate{display:grid;place-items:center;min-height:60vh;text-align:center}.gate h1{margin-bottom:10px}.gate p{color:var(--muted)}
+    @media(max-width:760px){.grid{grid-template-columns:1fr}.top{align-items:flex-start}.top-actions{flex-direction:column;align-items:flex-end}.back{font-size:.9rem}}
+  </style>
+</head>
+<body>
+  <header class="shell top">
+    <a class="brand" href="/">Fizioterapia Shaban Krasniqi<small>Paneli i pacientit</small></a>
+    <div class="top-actions"><a class="back" href="/">← Faqja kryesore</a><div id="dashboard-user"></div></div>
+  </header>
+  <main class="shell">
+    <section id="gate" class="gate"><div><div class="eyebrow">Llogaria</div><h1>Po kontrollojmë sesionin…</h1><p>Clerk po verifikon llogarinë tënde.</p></div></section>
+    <section id="content" hidden>
+      <div class="hero"><div class="eyebrow">Paneli i pacientit</div><h1>Mirë se erdhe, <span id="first-name">pacient</span>.</h1><p>Këtu do të mund të menaxhosh profilin dhe, në fazën tjetër, terminet, planet e ushtrimeve dhe dokumentet e tua.</p></div>
+      <div class="profile card"><div class="avatar" id="avatar"></div><div><strong id="full-name"></strong><div class="status">● Llogaria aktive</div></div></div>
+      <div class="grid">
+        <article class="card"><h2>Profili</h2><p>Menaxho emrin, email-in, fotografinë dhe sigurinë e llogarisë.</p><a href="#" id="profile-link">Menaxho profilin →</a></article>
+        <article class="card"><h2>Termini</h2><p>Moduli për caktimin dhe menaxhimin e termineve do të lidhet këtu.</p><a href="/#ne-shtepi">Cakto termin →</a></article>
+        <article class="card" id="admin-card" hidden><h2>Admin</h2><p>Paneli administrativ i faqes është i disponueshëm për llogaritë me rolin admin.</p><a href="/admin.html">Hap Admin →</a></article>
+      </div>
+    </section>
+  </main>
+  <script src="site-auth.js" defer></script>
+  <script>
+    window.addEventListener('site-clerk-ready',()=>{},false);
+    (async()=>{
+      const gate=document.getElementById('gate'),content=document.getElementById('content');
+      try{
+        const r=await fetch('/api/clerk-config',{cache:'no-store'});const cfg=await r.json();
+        if(!r.ok||!cfg.publishableKey)throw new Error(cfg.error||'Clerk not configured');
+        const encoded=cfg.publishableKey.split('_').slice(2).join('_');
+        const domain=atob(encoded).replace(/\$$/,'');
+        const load=s=>new Promise((resolve,reject)=>{const x=document.createElement('script');x.src=s;x.async=true;x.crossOrigin='anonymous';x.onload=resolve;x.onerror=reject;document.head.append(x)});
+        await load(`https://${domain}/npm/@clerk/ui@1/dist/ui.browser.js`);await load(`https://${domain}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`);
+        await window.Clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor}});
+        const clerk=window.Clerk;
+        if(!clerk.isSignedIn){gate.innerHTML='<div><div class="eyebrow">Paneli</div><h1>Duhet të hysh në llogari.</h1><p>Hyr ose krijo llogari për të vazhduar.</p><button id="login" style="padding:12px 18px;border:0;border-radius:999px;font-weight:800;cursor:pointer">Hyr / Regjistrohu</button></div>';document.getElementById('login').onclick=()=>clerk.openSignIn({fallbackRedirectUrl:'/dashboard.html'});return}
+        const user=clerk.user;gate.hidden=true;content.hidden=false;
+        document.getElementById('first-name').textContent=user.firstName||'pacient';
+        document.getElementById('full-name').textContent=[user.firstName,user.lastName].filter(Boolean).join(' ')||user.primaryEmailAddress?.emailAddress||'Pacient';
+        if(user.imageUrl)document.getElementById('avatar').innerHTML=`<img src="${user.imageUrl}" alt="">`;
+        document.getElementById('profile-link').onclick=e=>{e.preventDefault();clerk.openUserProfile()};
+        if(user.publicMetadata?.role==='admin')document.getElementById('admin-card').hidden=false;
+        const node=document.getElementById('dashboard-user');clerk.mountUserButton(node,{showName:false});
+      }catch(error){gate.innerHTML=`<div><div class="eyebrow">Konfigurimi</div><h1>Clerk nuk është aktivizuar ende.</h1><p>${error.message||'Kontrollo konfigurimin e Clerk në Vercel.'}</p></div>`}
+    })();
+  </script>
+</body>
+</html>
