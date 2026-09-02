@@ -1,4 +1,4 @@
-const TARGET_CITIES=new Set(['Pejë','Deçan']);
+const TARGET_CITIES=new Set(['Pejë']);
 
 const normalize=(value)=>String(value||'')
   .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
