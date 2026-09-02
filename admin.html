@@ -2,17 +2,19 @@
 <html lang="sq">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>Admin · Fizioterapia Shaban Krasniqi</title><link rel="stylesheet" href="admin.css">
+<meta name="robots" content="noindex,nofollow"><title>Admin · Fizioterapia Shaban Krasniqi</title><link rel="stylesheet" href="admin.css">
 </head>
 <body>
 <div class="admin-shell">
   <header class="admin-top"><div><strong>Fizioterapia Shaban Krasniqi</strong><span>Website Admin · Sanity</span></div><div class="actions"><button id="importBtn" class="ghost">Importo tekstet</button><button id="saveBtn" class="primary">Ruaj në Sanity</button></div></header>
-  <div id="login" class="login"><div class="login-card"><h1>Admin</h1><p>Ky panel shkruan direkt në Sanity. Çelësi admin nuk ruhet në kod.</p><input id="key" type="password" placeholder="ADMIN_KEY" autocomplete="current-password"><button id="loginBtn" class="primary full">Hyr</button><small>Duhet të jetë i njëjtë me Vercel <code>ADMIN_KEY</code>.</small></div></div>
+  <div id="clerkGate" class="login"><div class="login-card"><h1>Qasje e mbrojtur</h1><p>Ky panel është vetëm për administratorin e autorizuar.</p><div id="clerkStatus">Po kontrollohet llogaria…</div></div></div>
+  <div id="login" class="login" hidden><div class="login-card"><h1>Admin</h1><p>Hyrja u verifikua me Clerk. Çelësi admin përdoret vetëm për shkrimin e përmbajtjes në Sanity.</p><input id="key" type="password" placeholder="ADMIN_KEY" autocomplete="current-password"><button id="loginBtn" class="primary full">Hyr në panel</button><small>Duhet të jetë i njëjtë me Vercel <code>ADMIN_KEY</code>.</small></div></div>
   <main id="app" hidden>
     <aside class="sidebar"><div class="status" id="status">Po ngarkohet…</div><input id="search" placeholder="Kërko tekst…"><label class="meta-label">Kontakt & Lokacion</label><input id="siteName" placeholder="Emri i biznesit"><input id="sitePhone" placeholder="Telefon / WhatsApp"><input id="siteEmail" type="email" placeholder="Email"><input id="siteAddress" placeholder="Adresa"><input id="siteMapUrl" placeholder="Google Maps URL"><label class="meta-label">SEO</label><input id="seoTitle" placeholder="SEO Title"><textarea id="seoDescription" placeholder="Meta Description"></textarea><input id="canonical" placeholder="Canonical URL"><label class="meta-label">Open Graph</label><input id="ogTitle" placeholder="OG Title"><textarea id="ogDescription" placeholder="OG Description"></textarea><label class="meta-label">Twitter</label><input id="twitterTitle" placeholder="Twitter Title"><textarea id="twitterDescription" placeholder="Twitter Description"></textarea></aside>
     <section class="editor"><div class="editor-head"><div><h2>Përmbajtja e faqes</h2><p>Ndrysho tekstin; preview përditësohet menjëherë.</p></div><span id="count"></span></div><div id="fields"></div></section>
     <section class="preview"><div class="preview-head">Live preview</div><iframe id="preview" src="index.html" title="Website preview"></iframe></section>
   </main>
-</div><script src="admin.js" defer></script>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" crossorigin="anonymous"></script>
+<script src="admin.js" defer></script>
 </body></html>
