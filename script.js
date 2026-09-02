@@ -122,6 +122,20 @@ if(homeForm){
   let currentStep=1;
   let saveTimer=0;
   let locationRequestId=0;
+  let reverseLocationAbortController=null;
+
+  const setLocationButtonBusy=(busy)=>{
+    if(!locationButton)return;
+    locationButton.disabled=Boolean(busy);
+    locationButton.setAttribute('aria-busy',String(Boolean(busy)));
+  };
+
+  const cancelPendingLocation=()=>{
+    locationRequestId++;
+    reverseLocationAbortController?.abort('superseded');
+    reverseLocationAbortController=null;
+    setLocationButtonBusy(false);
+  };
 
   const safeStorage={
     get(){try{return JSON.parse(sessionStorage.getItem(STORAGE_KEY)||'null')}catch{return null}},
@@ -199,6 +213,7 @@ if(homeForm){
 
   const chooseAddress=(record)=>{
     if(!record||!addressInput)return;
+    cancelPendingLocation();
     addressInput.value=record.road||record.label;
     if(cityInput)cityInput.value='Pejë';
     if(record.lat&&record.lng&&latInput&&lngInput){
@@ -498,7 +513,15 @@ if(homeForm){
   });
   dateInput?.addEventListener('change',()=>{clearError(dateInput,dateError);scheduleSave()});
   const clearResolvedLocationForManualEdit=()=>{
-    if(!latInput?.value&&!lngInput?.value)return;
+    cancelPendingLocation();
+    if(!latInput?.value&&!lngInput?.value){
+      locationButton?.classList.remove('is-loading','is-success');
+      if(locationButton?.classList.contains('is-manual')===false){
+        const label=locationButton?.querySelector('span');
+        if(label)label.textContent=smartMobileLocation?'Gjej ku jam':'Përdor lokacionin tim';
+      }
+      return;
+    }
     if(latInput)latInput.value='';
     if(lngInput)lngInput.value='';
     if(accuracyInput)accuracyInput.value='';
