@@ -100,6 +100,12 @@ for(const viewport of viewports){
     expect(phoneLinks).toBeGreaterThanOrEqual(2);
     console.log(viewport.name+' contact links '+JSON.stringify({whatsapp:contactLinks,phone:phoneLinks}));
 
+    await page.route('**/api/reverse-location**', async route => {
+      await route.fulfill({
+        status:200,contentType:'application/json',
+        json:{road:'Rruga Adem Jashari',city:'Pejë',locality:'Pejë',inServiceArea:true,source:'OpenStreetMap'}
+      });
+    });
     await page.context().grantPermissions(['geolocation']);
     await page.context().setGeolocation({latitude:42.6595,longitude:20.2887});
 
