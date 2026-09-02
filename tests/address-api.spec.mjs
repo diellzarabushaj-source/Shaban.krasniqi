@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 import handler,{extractOfficialRecord,normalizeSearch} from '../api/addresses.js';
 import reverseHandler,{parseReverseAddress} from '../api/reverse-location.js';
 
-test('official address parser keeps only Peja and Decan',()=>{
+test('official address parser keeps Peja municipality and rejects other municipalities',()=>{
   const peja=extractOfficialRecord({
     properties:{RoadName:'Rruga Mbretëresha Teutë',Municipality:'Pejë'},
     geometry:{type:'Point',coordinates:[20.2895,42.6601]}
@@ -17,7 +17,7 @@ test('official address parser keeps only Peja and Decan',()=>{
   });
 
   expect(peja?.city).toBe('Pejë');
-  expect(decan?.city).toBe('Deçan');
+  expect(decan).toBeNull();
   expect(istog).toBeNull();
   expect(normalizeSearch('Mbretëresha')).toBe('mbreteresha');
 });
@@ -75,7 +75,7 @@ test('reverse geocoder resolves Peja district and street',()=>{
   expect(parsed.inServiceArea).toBeTruthy();
 });
 
-test('reverse geocoder recognizes Decan municipality from district fields',()=>{
+test('reverse geocoder rejects Decan as outside the service area',()=>{
   const parsed=parseReverseAddress({
     display_name:'Carrabreg i Ulët, Deçan, Kosovo',
     address:{
@@ -86,7 +86,7 @@ test('reverse geocoder recognizes Decan municipality from district fields',()=>{
   });
   expect(parsed.road).toBe('Rruga e Dëshmorëve');
   expect(parsed.city).toBe('Deçan');
-  expect(parsed.inServiceArea).toBeTruthy();
+  expect(parsed.inServiceArea).toBeFalsy();
 });
 
 test('reverse location API validates coordinates and returns parsed address',async()=>{
