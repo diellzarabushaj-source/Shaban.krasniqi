@@ -1,6 +1,6 @@
 const OFFICIAL_WFS='https://geoportal.rks-gov.net/wms/ows';
 const OFFICIAL_LAYERS=['AR_DEV_WS:v_findAddresses','KG_DEV_WS:RoadNameView','KG_DEV_WS:Addresses_in_geopoertal'];
-const SERVICE_BBOX='20.08,42.44,20.55,42.82,EPSG:4326';
+const SERVICE_BBOX='20.05,42.55,20.50,42.82,EPSG:4326';
 const CACHE_TTL=15*60*1000;
 const cache=globalThis.__shabanAddressCache||(globalThis.__shabanAddressCache=new Map());
 
@@ -34,16 +34,18 @@ export const extractOfficialRecord=(feature)=>{
   const municipality=pick(/municip|komun|city|qytet/i);
   const settlement=pick(/settle|vendban|village|fshat|place/i);
   const number=pick(/house.?no|address.?no|num(ber|ri)?|nr[_-]?/i);
-  const city=targetCity(municipality)||targetCity(settlement);
-  if(!city)return null;
+  const city=targetCity(municipality);
+  if(city!=='Pejë')return null;
   const coord=featureCoordinate(feature.geometry);
   const roadText=String(road).trim();
   const numberText=String(number||'').trim();
-  const label=[roadText,numberText,city].filter(Boolean).join(', ');
+  const locality=String(settlement||'').trim();
+  const label=[roadText,numberText,locality&&normalizeSearch(locality)!=='peje'?locality:'',city].filter(Boolean).join(', ');
   return {
     label,
     road:roadText,
     city,
+    locality,
     lat:coord?.[0]||null,
     lng:coord?.[1]||null,
     search:normalizeSearch([roadText,numberText,city].filter(Boolean).join(' ')),
@@ -120,7 +122,7 @@ const officialSearch=async(query)=>{
 };
 
 const nominatimSearch=async(query)=>{
-  const cities=['Pejë','Deçan'];
+  const cities=['Pejë'];
   const tasks=cities.map(async city=>{
     const url=new URL('https://nominatim.openstreetmap.org/search');
     url.search=new URLSearchParams({
@@ -144,14 +146,15 @@ const nominatimSearch=async(query)=>{
       const payload=await response.json();
       return payload.flatMap(item=>{
         const address=item.address||{};
-        const detected=targetCity(address.city)||targetCity(address.town)||targetCity(address.municipality)||targetCity(address.county)||targetCity(city);
-        if(!detected)return [];
+        const detected=targetCity(address.municipality)||targetCity(address.county)||targetCity(address.city)||targetCity(address.town)||targetCity(city);
+        if(detected!=='Pejë')return [];
         const road=address.road||address.pedestrian||address.residential||address.neighbourhood||String(item.display_name||'').split(',')[0];
         if(!road)return [];
         return [{
-          label:[road,detected].join(', '),
+          label:[road,address.village||address.suburb||'',detected].filter(Boolean).join(', '),
           road:String(road).trim(),
           city:detected,
+          locality:String(address.village||address.suburb||'').trim(),
           lat:Number(item.lat)||null,
           lng:Number(item.lon)||null,
           search:normalizeSearch([road,detected].join(' ')),
