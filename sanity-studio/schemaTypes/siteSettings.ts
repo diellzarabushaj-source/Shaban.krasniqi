@@ -1,6 +1,7 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
 
 // Canonical website copy model. The public site and Admin Frontend both read/write this singleton.
+// Contact fields include phone, WhatsApp, email, address, and Google Maps destination.
 export default defineType({
   name: 'siteSettings',
   title: 'Website Content',
