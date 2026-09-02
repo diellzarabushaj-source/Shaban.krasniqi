@@ -159,7 +159,7 @@ export const scoreRecords=(records,query)=>{
       const starts=road.startsWith(q);
       const contains=road.includes(q);
       const wordBoundary=road.includes(' '+q);
-      const exactBonus=starts?0:contains?.15:wordBoundary?.25:.5;
+      const exactBonus=starts?0:contains?0.15:wordBoundary?0.25:0.5;
       return {record,score:fuzzyCost*2+exactBonus};
     })
     .filter(Boolean)
