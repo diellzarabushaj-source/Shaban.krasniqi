@@ -4059,3 +4059,431 @@ section[id]{
   }
   .contact-dock-call span{display:none!important}
 }
+/* ===== UI Motion + Premium Interaction v11 ===== */
+:root{
+  --ui-ease-out:cubic-bezier(.22,1,.36,1);
+  --ui-ease-soft:cubic-bezier(.2,.72,.2,1);
+  --ui-scroll-progress:0%;
+}
+
+/* Restore the floating glass navigation effect without changing nav geometry. */
+.site-header,
+.site-header.scrolled{
+  background:transparent!important;
+  border-bottom:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  pointer-events:none;
+}
+.nav-shell,
+.site-header.scrolled .nav-shell{
+  position:relative;
+  isolation:isolate;
+  pointer-events:auto;
+  overflow:visible;
+  transition:
+    margin-top .36s var(--ui-ease-out),
+    padding .36s var(--ui-ease-out),
+    border-color .32s ease,
+    border-radius .36s var(--ui-ease-out),
+    background .32s ease,
+    box-shadow .36s var(--ui-ease-out)!important;
+}
+.site-header:not(.scrolled) .nav-shell{
+  margin-top:0!important;
+  padding-inline:0!important;
+  border:1px solid transparent!important;
+  border-radius:0!important;
+  background:rgba(255,255,255,.94)!important;
+  box-shadow:0 1px 0 rgba(0,27,54,.07)!important;
+}
+.site-header.scrolled .nav-shell{
+  margin-top:8px!important;
+  padding:0 14px!important;
+  border:1px solid rgba(183,215,222,.84)!important;
+  border-radius:22px!important;
+  background:rgba(255,255,255,.86)!important;
+  box-shadow:
+    0 18px 54px rgba(0,27,54,.12),
+    0 2px 8px rgba(0,27,54,.04),
+    inset 0 1px 0 rgba(255,255,255,.92)!important;
+  backdrop-filter:saturate(165%) blur(22px)!important;
+  -webkit-backdrop-filter:saturate(165%) blur(22px)!important;
+}
+.nav-shell::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  left:10%;
+  right:10%;
+  top:-1px;
+  height:1px;
+  opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(57,169,188,.8),transparent);
+  transition:opacity .35s ease;
+  pointer-events:none;
+}
+.site-header.scrolled .nav-shell::before{opacity:.9}
+.nav-shell::after{
+  content:"";
+  position:absolute;
+  z-index:4;
+  left:18px;
+  bottom:-1px;
+  width:var(--ui-scroll-progress);
+  max-width:calc(100% - 36px);
+  height:2px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--brand-teal-bright,#1592ad),#76c4d1);
+  box-shadow:0 0 14px rgba(21,146,173,.22);
+  transition:width .08s linear;
+  pointer-events:none;
+}
+
+/* Keep logo geometry stable; make the state change feel intentional instead. */
+.brand-official,
+.brand-official .official-logo,
+.site-header.scrolled .brand-official,
+.site-header.scrolled .brand-official .official-logo{
+  transition:filter .3s ease,opacity .3s ease!important;
+}
+.site-header.scrolled .brand-official .official-logo{
+  filter:saturate(1.04) contrast(1.02);
+}
+
+/* Desktop navigation micro-interactions. */
+.site-nav>a:not(.nav-cta){
+  transition:color .22s ease,opacity .22s ease!important;
+}
+.site-nav>a:not(.nav-cta)::after{
+  left:50%!important;
+  right:50%!important;
+  bottom:7px!important;
+  height:2px!important;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--brand-teal-bright,#1592ad),#63b7c7)!important;
+  transition:left .3s var(--ui-ease-out),right .3s var(--ui-ease-out),opacity .2s ease!important;
+  opacity:.82;
+}
+.site-nav>a:not(.nav-cta):hover::after,
+.site-nav>a:not(.nav-cta):focus-visible::after,
+.site-nav>a:not(.nav-cta).is-active::after,
+.site-nav>a:not(.nav-cta)[aria-current="location"]::after{
+  left:4px!important;
+  right:4px!important;
+  opacity:1;
+}
+.site-nav>a:not(.nav-cta):hover{
+  color:var(--brand-teal,#147892)!important;
+}
+
+/* Premium CTA sheen and directional arrow. */
+.nav-cta,
+.button-primary,
+.package-cta,
+.contact-dock-primary{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+}
+.nav-cta::before,
+.button-primary::before,
+.package-cta::before,
+.contact-dock-primary::before{
+  content:"";
+  position:absolute;
+  z-index:1;
+  top:-60%;
+  bottom:-60%;
+  left:-45%;
+  width:34%;
+  opacity:0;
+  transform:skewX(-18deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
+  transition:left .55s var(--ui-ease-out),opacity .22s ease;
+  pointer-events:none;
+}
+.nav-cta:hover::before,
+.nav-cta:focus-visible::before,
+.button-primary:hover::before,
+.button-primary:focus-visible::before,
+.package-cta:hover::before,
+.package-cta:focus-visible::before,
+.contact-dock-primary:hover::before,
+.contact-dock-primary:focus-visible::before{
+  left:112%;
+  opacity:1;
+}
+.nav-cta svg,
+.button-primary svg,
+.card-whatsapp svg,
+.package-cta svg{
+  transition:transform .28s var(--ui-ease-out);
+}
+.nav-cta:hover svg,
+.button-primary:hover svg,
+.card-whatsapp:hover svg,
+.package-cta:hover svg{
+  transform:translateX(3px);
+}
+
+/* Refined entrance system — less generic than a plain translateY. */
+.reveal{
+  opacity:0;
+  filter:blur(4px);
+  transform:translate3d(0,24px,0);
+  transition:
+    opacity .72s var(--ui-ease-soft),
+    transform .78s var(--ui-ease-out),
+    filter .62s ease!important;
+}
+.reveal.is-visible{
+  opacity:1;
+  filter:none;
+  transform:translate3d(0,0,0);
+}
+.section-kicker::before{
+  transform:scaleX(.2);
+  transform-origin:left center;
+  transition:transform .7s var(--ui-ease-out);
+}
+.reveal.is-visible .section-kicker::before,
+.is-visible .section-kicker::before{
+  transform:scaleX(1);
+}
+
+/* Hero ambient motion: very slow and low amplitude. */
+.hero-orb-a{animation:uiOrbA 15s ease-in-out infinite alternate}
+.hero-orb-b{animation:uiOrbB 19s ease-in-out infinite alternate}
+.hero-portrait-halo{
+  animation:uiHaloBreath 7s ease-in-out infinite;
+}
+.hero-portrait-card,
+.hero-portrait{
+  transition:transform .55s var(--ui-ease-out),box-shadow .55s var(--ui-ease-out),filter .45s ease;
+}
+@media (hover:hover) and (pointer:fine){
+  .hero-portrait-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 42px 112px rgba(0,27,54,.19),0 6px 18px rgba(0,27,54,.07);
+  }
+  .hero-portrait-card:hover .hero-portrait{
+    transform:scale(1.012);
+  }
+}
+@keyframes uiOrbA{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(-18px,22px,0)}
+}
+@keyframes uiOrbB{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(16px,-12px,0)}
+}
+@keyframes uiHaloBreath{
+  0%,100%{opacity:.7;transform:scale(.985)}
+  50%{opacity:1;transform:scale(1.018)}
+}
+
+/* Card system: stronger depth hierarchy + image response on pointer devices. */
+.service-card,
+.treatment-card,
+.why-card,
+.home-blog-card,
+.package-card,
+.approach-panel,
+.home-booking-card{
+  transition:
+    transform .4s var(--ui-ease-out),
+    border-color .32s ease,
+    box-shadow .4s var(--ui-ease-out),
+    background .32s ease!important;
+}
+.service-art > img,
+.treatment-art > img,
+.service-art > .sanity-card-art,
+.treatment-art > .sanity-card-art,
+.home-blog-media img{
+  transition:transform .65s var(--ui-ease-out),filter .45s ease!important;
+}
+@media (hover:hover) and (pointer:fine){
+  .service-card:hover,
+  .treatment-card:hover,
+  .home-blog-card:hover{
+    transform:translateY(-6px)!important;
+    box-shadow:0 28px 68px rgba(0,27,54,.12)!important;
+  }
+  .service-card:hover .service-art > img,
+  .service-card:hover .service-art > .sanity-card-art,
+  .treatment-card:hover .treatment-art > img,
+  .treatment-card:hover .treatment-art > .sanity-card-art,
+  .home-blog-card:hover .home-blog-media img{
+    transform:scale(1.035);
+  }
+  .why-card:hover{transform:translateY(-5px)!important}
+  .approach-panel:hover{transform:translateY(-3px)}
+}
+
+/* Card action gets a crisp tactile state without becoming noisy. */
+.card-whatsapp,
+.button,
+.package-cta,
+.contact-dock-primary,
+.contact-dock-call{
+  transition:
+    transform .26s var(--ui-ease-out),
+    box-shadow .3s var(--ui-ease-out),
+    background .24s ease,
+    border-color .24s ease,
+    color .24s ease!important;
+}
+.card-whatsapp:active,
+.button:active,
+.package-cta:active,
+.contact-dock-primary:active,
+.contact-dock-call:active{
+  transform:translateY(1px) scale(.992)!important;
+  transition-duration:.08s!important;
+}
+
+/* Approach chart draws itself when revealed. */
+.plan-chart .trend{
+  stroke-dasharray:720;
+  stroke-dashoffset:720;
+  transition:stroke-dashoffset 1.35s .12s var(--ui-ease-out);
+}
+.approach-panel.is-visible .plan-chart .trend{
+  stroke-dashoffset:0;
+}
+.plan-chart circle{
+  opacity:0;
+  transform-box:fill-box;
+  transform-origin:center;
+  transform:scale(.65);
+  transition:opacity .32s .82s ease,transform .45s .82s var(--ui-ease-out);
+}
+.approach-panel.is-visible .plan-chart circle{
+  opacity:1;
+  transform:scale(1);
+}
+
+/* FAQ feels interactive before opening. */
+.faq-list summary{
+  transition:color .22s ease,background .22s ease!important;
+}
+.faq-list summary:hover{color:var(--brand-teal,#147892)}
+.faq-plus{
+  transition:transform .32s var(--ui-ease-out),border-color .24s ease,background .24s ease!important;
+}
+.faq-list summary:hover .faq-plus{
+  transform:scale(1.06);
+  border-color:#8fbfc9;
+  background:#fff;
+}
+.faq-list details[open] .faq-plus{
+  transform:rotate(90deg);
+}
+
+/* Mobile menu becomes a glass popover with staggered entries. */
+@media (max-width:860px){
+  .site-header:not(.scrolled) .nav-shell{
+    border-radius:0!important;
+  }
+  .site-header.scrolled .nav-shell{
+    margin-top:6px!important;
+    border-radius:20px!important;
+    box-shadow:
+      0 16px 42px rgba(0,27,54,.13),
+      inset 0 1px 0 rgba(255,255,255,.94)!important;
+  }
+  .site-nav{
+    transform:translate3d(0,-10px,0) scale(.985)!important;
+    transform-origin:top center;
+    opacity:0!important;
+    visibility:hidden;
+    transition:
+      transform .34s var(--ui-ease-out),
+      opacity .22s ease,
+      visibility .22s ease!important;
+  }
+  .site-nav.open{
+    transform:translate3d(0,0,0) scale(1)!important;
+    opacity:1!important;
+    visibility:visible;
+  }
+  .site-nav.open>a{
+    animation:uiNavItemIn .42s var(--ui-ease-out) both;
+  }
+  .site-nav.open>a:nth-child(2){animation-delay:.025s}
+  .site-nav.open>a:nth-child(3){animation-delay:.05s}
+  .site-nav.open>a:nth-child(4){animation-delay:.075s}
+  .site-nav.open>a:nth-child(5){animation-delay:.10s}
+  .site-nav.open>a:nth-child(6){animation-delay:.125s}
+  .site-nav.open>a:nth-child(7){animation-delay:.15s}
+  .site-nav.open>a:nth-child(8){animation-delay:.175s}
+  .site-nav.open>a:nth-child(9){animation-delay:.20s}
+
+  .menu-toggle{
+    border:1px solid rgba(174,208,216,.86)!important;
+    background:rgba(246,251,252,.88)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 8px 24px rgba(0,27,54,.06);
+    transition:transform .28s var(--ui-ease-out),background .24s ease,border-color .24s ease,box-shadow .28s ease!important;
+  }
+  .menu-toggle[aria-expanded="true"]{
+    transform:rotate(2deg);
+    border-color:#91bec8!important;
+    background:#fff!important;
+    box-shadow:0 10px 30px rgba(0,27,54,.11);
+  }
+  .menu-toggle span:not(.sr-only){
+    transition:transform .3s var(--ui-ease-out),background .22s ease!important;
+  }
+  @keyframes uiNavItemIn{
+    from{opacity:0;transform:translateY(-6px)}
+    to{opacity:1;transform:none}
+  }
+}
+
+/* Touch devices keep the depth cues but never fake hover movement. */
+@media (hover:none) and (pointer:coarse){
+  .service-card:hover,
+  .treatment-card:hover,
+  .home-blog-card:hover,
+  .why-card:hover,
+  .approach-panel:hover,
+  .hero-portrait-card:hover{
+    transform:none!important;
+  }
+  .service-card:hover .service-art > img,
+  .service-card:hover .service-art > .sanity-card-art,
+  .treatment-card:hover .treatment-art > img,
+  .treatment-card:hover .treatment-art > .sanity-card-art,
+  .home-blog-card:hover .home-blog-media img,
+  .hero-portrait-card:hover .hero-portrait{
+    transform:none!important;
+  }
+}
+
+/* Motion accessibility: preserve the polished static state. */
+@media (prefers-reduced-motion:reduce){
+  .hero-orb-a,
+  .hero-orb-b,
+  .hero-portrait-halo,
+  .site-nav.open>a{
+    animation:none!important;
+  }
+  .reveal{
+    opacity:1!important;
+    filter:none!important;
+    transform:none!important;
+  }
+  .plan-chart .trend{
+    stroke-dashoffset:0!important;
+  }
+  .plan-chart circle{
+    opacity:1!important;
+    transform:none!important;
+  }
+  .nav-shell::after{
+    transition:none!important;
+  }
+}

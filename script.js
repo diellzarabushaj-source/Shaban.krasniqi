@@ -906,3 +906,21 @@ if(contactDock&&'IntersectionObserver' in window){
   suppressors.forEach(el=>dockObserver.observe(el));
   window.addEventListener('resize',syncContactDock,{passive:true});
 }
+/* Premium nav progress: requestAnimationFrame keeps scroll work cheap. */
+{
+  const root=document.documentElement;
+  let uiMotionFrame=0;
+  const syncUiProgress=()=>{
+    uiMotionFrame=0;
+    const max=Math.max(1,root.scrollHeight-window.innerHeight);
+    const progress=Math.max(0,Math.min(100,(window.scrollY/max)*100));
+    root.style.setProperty('--ui-scroll-progress',progress.toFixed(2)+'%');
+  };
+  const requestUiProgress=()=>{
+    if(uiMotionFrame)return;
+    uiMotionFrame=requestAnimationFrame(syncUiProgress);
+  };
+  syncUiProgress();
+  window.addEventListener('scroll',requestUiProgress,{passive:true});
+  window.addEventListener('resize',requestUiProgress,{passive:true});
+}
