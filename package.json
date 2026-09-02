@@ -8,6 +8,9 @@
     "site:check":"node scripts/check-site.mjs",
     "e2e":"playwright test"
   },
+  "dependencies":{
+    "@clerk/backend":"latest"
+  },
   "devDependencies":{
     "@nizos/probity":"latest",
     "@playwright/test":"latest",
