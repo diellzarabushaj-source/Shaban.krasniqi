@@ -11,7 +11,7 @@ export const normalizeSearch=(value)=>String(value||'')
 const targetCity=(value)=>{
   const normalized=normalizeSearch(value).replace(/[._-]/g,' ');
   if(/\b(peje|peja|pec)\b/.test(normalized))return 'Pejë';
-  if(/\b(decan|decani|deq?n)\b/.test(normalized))return 'Deçan';
+  if(/\b(decan|decani|deqan|deqani)\b/.test(normalized))return 'Deçan';
   return '';
 };
 
