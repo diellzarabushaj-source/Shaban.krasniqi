@@ -1,23 +1,26 @@
 import type {StructureResolver} from 'sanity/structure'
 
 export const SITE_MEDIA_ID = 'siteMedia'
-export const singletonTypes = new Set(['siteMedia'])
+export const SITE_SETTINGS_ID = 'siteSettings'
+export const singletonTypes = new Set(['siteMedia', 'siteSettings'])
+
+const singleton = (S: any, type: string, id: string, title: string) =>
+  S.listItem().title(title).id(id).child(
+    S.document().schemaType(type).documentId(id).title(title)
+  )
 
 export const structure: StructureResolver = (S) =>
   S.list()
-    .title('Content')
+    .title('Website Content')
     .items([
-      S.listItem()
-        .title('Website Media')
-        .id(SITE_MEDIA_ID)
-        .child(
-          S.document()
-            .schemaType('siteMedia')
-            .documentId(SITE_MEDIA_ID)
-            .title('Website Media')
-        ),
+      singleton(S, 'siteSettings', SITE_SETTINGS_ID, 'Website Content'),
+      singleton(S, 'siteMedia', SITE_MEDIA_ID, 'Website Media'),
       S.divider(),
-      S.documentTypeListItem('post').title('Posts'),
-      S.documentTypeListItem('category').title('Categories'),
-      S.documentTypeListItem('author').title('Authors'),
+      S.listItem().title('Blog').child(
+        S.list().title('Blog').items([
+          S.documentTypeListItem('post').title('Posts'),
+          S.documentTypeListItem('category').title('Categories'),
+          S.documentTypeListItem('author').title('Authors'),
+        ])
+      ),
     ])
