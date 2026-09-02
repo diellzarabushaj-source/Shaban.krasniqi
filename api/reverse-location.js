@@ -23,7 +23,10 @@ export const parseReverseAddress=(payload)=>{
     address.town,
     address.municipality,
     address.village,
-    address.suburb
+    address.suburb,
+    address.city_district,
+    address.county,
+    address.state_district
   ].filter(Boolean);
   const city=primaryPlaces.map(targetCity).find(Boolean)||'';
   const road=address.road||address.pedestrian||address.residential||address.path||address.neighbourhood||'';
