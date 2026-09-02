@@ -152,11 +152,10 @@ if(homeForm){
   const addressBox=homeForm.querySelector('[data-address-autocomplete]');
   const addressSuggestions=homeForm.querySelector('[data-address-suggestions]');
   const addressSource=homeForm.querySelector('[data-address-source]');
-  const OFFICIAL_WFS='https://geoportal.rks-gov.net/wms/ows';
-  const SERVICE_BBOX='20.10,42.45,20.60,42.85,EPSG:4326';
-  const OFFICIAL_LAYERS=['KG_DEV_WS:RoadNameView','AR_DEV_WS:v_findAddresses','KG_DEV_WS:Addresses_in_geopoertal'];
-  let officialAddressPromise=null;
+  const ADDRESS_API='/api/addresses';
   let addressDebounce=0;
+  let addressAbortController=null;
+  let addressRequestId=0;
   let activeAddressIndex=-1;
   let currentAddressMatches=[];
 
@@ -164,88 +163,10 @@ if(homeForm){
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .toLocaleLowerCase('sq-AL').trim();
 
-  const featureCoordinate=(geometry)=>{
-    const coords=geometry?.coordinates;
-    if(!Array.isArray(coords))return null;
-    if(typeof coords[0]==='number'&&typeof coords[1]==='number')return [coords[1],coords[0]];
-    let node=coords;
-    while(Array.isArray(node)&&Array.isArray(node[0]))node=node[0];
-    return Array.isArray(node)&&typeof node[0]==='number'&&typeof node[1]==='number'?[node[1],node[0]]:null;
-  };
-
-  const extractOfficialRecord=(feature)=>{
-    const props=feature?.properties||{};
-    const entries=Object.entries(props)
-      .filter(([,value])=>['string','number'].includes(typeof value)&&String(value).trim());
-    const pick=(regex)=>entries.find(([key])=>regex.test(key))?.[1];
-    const road=pick(/road.?name|street|rrug|adresa|address|name/i);
-    if(!road)return null;
-    const municipality=pick(/municip|komun|city|qytet/i);
-    const settlement=pick(/settle|vendban|village|fshat|place/i);
-    const number=pick(/house.?no|address.?no|num(ber|ri)?|nr[_-]?/i);
-    const pieces=[road,number,settlement,municipality]
-      .map(value=>String(value||'').trim())
-      .filter(Boolean)
-      .filter((value,i,array)=>array.findIndex(other=>normalizeSearch(other)===normalizeSearch(value))===i);
-    const label=pieces.join(', ');
-    const coord=featureCoordinate(feature.geometry);
-    return {
-      label,
-      road:String(road).trim(),
-      city:String(municipality||settlement||'').trim(),
-      lat:coord?.[0]||null,
-      lng:coord?.[1]||null,
-      search:normalizeSearch(label)
-    };
-  };
-
-  const fetchOfficialLayer=async(layer)=>{
-    const url=new URL(OFFICIAL_WFS);
-    url.search=new URLSearchParams({
-      service:'WFS',
-      version:'1.0.0',
-      request:'GetFeature',
-      typeName:layer,
-      outputFormat:'application/json',
-      srsName:'EPSG:4326',
-      bbox:SERVICE_BBOX,
-      maxFeatures:'2500'
-    }).toString();
-    const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),6500);
-    try{
-      const response=await fetch(url,{signal:controller.signal,headers:{Accept:'application/json'}});
-      if(!response.ok)throw new Error('official-address-http-'+response.status);
-      const payload=await response.json();
-      const records=(payload.features||[]).map(extractOfficialRecord).filter(Boolean);
-      const unique=new Map();
-      records.forEach(record=>{
-        const key=normalizeSearch(record.label);
-        if(key&&!unique.has(key))unique.set(key,record);
-      });
-      if(!unique.size)throw new Error('official-address-empty');
-      return [...unique.values()];
-    }finally{
-      clearTimeout(timeout);
-    }
-  };
-
-  const ensureOfficialAddresses=()=>{
-    if(officialAddressPromise)return officialAddressPromise;
-    officialAddressPromise=(async()=>{
-      if(addressSource)addressSource.textContent='Po lidhemi me Geoportalin zyrtar të Kosovës…';
-      let lastError=null;
-      for(const layer of OFFICIAL_LAYERS){
-        try{
-          const records=await fetchOfficialLayer(layer);
-          if(addressSource)addressSource.textContent='Burim zyrtar: Geoportali i Kosovës (AKK) · fokus Pejë / Deçan';
-          return records;
-        }catch(error){lastError=error}
-      }
-      if(addressSource)addressSource.textContent='Shërbimi zyrtar i adresave nuk u përgjigj. Mund ta shkruash adresën manualisht pa u bllokuar.';
-      throw lastError||new Error('official-address-unavailable');
-    })();
-    return officialAddressPromise;
+  const setAddressSource=(text,state='idle')=>{
+    if(!addressSource)return;
+    addressSource.textContent=text;
+    addressSource.dataset.state=state;
   };
 
   const closeAddressSuggestions=()=>{
@@ -275,25 +196,37 @@ if(homeForm){
   const chooseAddress=(record)=>{
     if(!record||!addressInput)return;
     addressInput.value=record.road||record.label;
-    if(cityInput&&!cityInput.value.trim())cityInput.value=record.city||'Pejë';
+    if(cityInput&&record.city)cityInput.value=record.city;
     if(record.lat&&record.lng&&latInput&&lngInput){
       latInput.value=Number(record.lat).toFixed(6);
       lngInput.value=Number(record.lng).toFixed(6);
       if(accuracyInput)accuracyInput.value='';
       setMap(latInput.value,lngInput.value);
-      setLocationStatus('Adresa u zgjodh nga burimi zyrtar.','success');
     }
+    const source=record.source==='AKK'?'Geoportali AKK':'OpenStreetMap';
+    setAddressSource('Rruga u zgjodh · '+(record.city||'Pejë / Deçan')+' · '+source,'success');
+    setLocationStatus('Adresa u zgjodh. Lokacioni është gati për vizitë.','success');
+    locationButton?.classList.remove('is-loading','is-manual');
     clearError(addressInput,locationError);
+    clearError(cityInput,locationError);
     updateLocationActions();
     scheduleSave();
     closeAddressSuggestions();
   };
 
-  const renderAddressSuggestions=(records)=>{
+  const renderAddressSuggestions=(records,source)=>{
     if(!addressSuggestions||!addressInput)return;
-    currentAddressMatches=records.slice(0,7);
+    currentAddressMatches=records.slice(0,8);
     if(!currentAddressMatches.length){
-      closeAddressSuggestions();
+      addressSuggestions.replaceChildren();
+      const empty=document.createElement('div');
+      empty.className='wizard-address-empty';
+      empty.textContent='Nuk u gjet rrugë me këtë emër në Pejë ose Deçan.';
+      addressSuggestions.append(empty);
+      addressSuggestions.hidden=false;
+      addressInput.setAttribute('aria-expanded','true');
+      activeAddressIndex=-1;
+      setAddressSource('Provo 2–3 shkronjat e para të emrit të rrugës.','empty');
       return;
     }
     const fragment=document.createDocumentFragment();
@@ -304,8 +237,11 @@ if(homeForm){
       button.className='wizard-address-option';
       button.setAttribute('role','option');
       button.setAttribute('aria-selected','false');
-      button.innerHTML='<span></span><small>Geoportali AKK</small>';
-      button.querySelector('span').textContent=record.label;
+      const small=document.createElement('small');
+      const span=document.createElement('span');
+      span.textContent=record.road||record.label;
+      small.textContent=(record.city||'Pejë / Deçan')+' · '+(record.source==='AKK'?'AKK':'OSM');
+      button.append(span,small);
       button.addEventListener('pointerdown',event=>event.preventDefault());
       button.addEventListener('click',()=>chooseAddress(record));
       fragment.append(button);
@@ -314,42 +250,60 @@ if(homeForm){
     addressSuggestions.hidden=false;
     addressInput.setAttribute('aria-expanded','true');
     activeAddressIndex=-1;
+    setAddressSource(
+      source==='AKK'
+        ?'Sugjerime nga Geoportali zyrtar i Kosovës (AKK) · vetëm Pejë / Deçan'
+        :'Sugjerime rezervë · vetëm Pejë / Deçan',
+      source==='AKK'?'success':'fallback'
+    );
   };
 
   const searchOfficialAddresses=async()=>{
     const query=normalizeSearch(addressInput?.value);
-    if(query.length<2){closeAddressSuggestions();return}
-    try{
-      const records=await ensureOfficialAddresses();
-      const tokens=query.split(/\s+/).filter(Boolean);
-      const ranked=records
-        .filter(record=>tokens.every(token=>record.search.includes(token)))
-        .map(record=>({
-          record,
-          score:record.search.startsWith(query)?0:record.search.includes(' '+query)?1:2
-        }))
-        .sort((a,b)=>a.score-b.score||a.record.label.localeCompare(b.record.label,'sq'))
-        .slice(0,7)
-        .map(item=>item.record);
-      renderAddressSuggestions(ranked);
-    }catch{
+    if(query.length<2){
       closeAddressSuggestions();
+      setAddressSource('Shkruaj së paku 2 shkronja — dalin rrugët e Pejës dhe Deçanit.','idle');
+      return;
+    }
+
+    addressAbortController?.abort();
+    addressAbortController=new AbortController();
+    const requestId=++addressRequestId;
+    setAddressSource('Po kërkojmë rrugët në Pejë dhe Deçan…','loading');
+
+    try{
+      const url=ADDRESS_API+'?q='+encodeURIComponent(query);
+      const response=await fetch(url,{signal:addressAbortController.signal,headers:{Accept:'application/json'}});
+      if(!response.ok)throw new Error('address-api-'+response.status);
+      const payload=await response.json();
+      if(requestId!==addressRequestId)return;
+      const records=(payload.records||[]).filter(record=>['Pejë','Deçan'].includes(record.city));
+      renderAddressSuggestions(records,payload.source||'none');
+    }catch(error){
+      if(error?.name==='AbortError')return;
+      if(requestId!==addressRequestId)return;
+      closeAddressSuggestions();
+      setAddressSource('Kërkimi automatik nuk u përgjigj. Mund ta shkruash rrugën manualisht dhe të vazhdosh.','error');
     }
   };
 
   addressInput?.addEventListener('focus',()=>{
     if(addressInput.value.trim().length>=2)searchOfficialAddresses();
-    else ensureOfficialAddresses().catch(()=>{});
+    else setAddressSource('Shkruaj së paku 2 shkronja — dalin rrugët e Pejës dhe Deçanit.','idle');
   });
   addressInput?.addEventListener('input',()=>{
     clearTimeout(addressDebounce);
-    addressDebounce=setTimeout(searchOfficialAddresses,140);
+    addressDebounce=setTimeout(searchOfficialAddresses,180);
   });
   addressInput?.addEventListener('keydown',event=>{
     if(addressSuggestions?.hidden)return;
-    if(event.key==='ArrowDown'){event.preventDefault();setActiveSuggestion(activeAddressIndex+1)}
-    else if(event.key==='ArrowUp'){event.preventDefault();setActiveSuggestion(activeAddressIndex-1)}
-    else if(event.key==='Enter'&&activeAddressIndex>=0){
+    if(event.key==='ArrowDown'&&currentAddressMatches.length){
+      event.preventDefault();
+      setActiveSuggestion(activeAddressIndex+1);
+    }else if(event.key==='ArrowUp'&&currentAddressMatches.length){
+      event.preventDefault();
+      setActiveSuggestion(activeAddressIndex-1);
+    }else if(event.key==='Enter'&&activeAddressIndex>=0){
       event.preventDefault();
       chooseAddress(currentAddressMatches[activeAddressIndex]);
     }else if(event.key==='Escape'){
