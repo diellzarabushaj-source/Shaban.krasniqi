@@ -142,4 +142,9 @@
   contactScript.src='/site-contact.js';
   contactScript.defer=true;
   document.head.append(contactScript);
+
+  const authScript=document.createElement('script');
+  authScript.src='/site-auth.js';
+  authScript.defer=true;
+  document.head.append(authScript);
 })();
