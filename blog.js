@@ -2,7 +2,7 @@ const SANITY_PROJECT_ID='a1lswl1z';
 const SANITY_DATASET='production';
 const SANITY_API=`https://${SANITY_PROJECT_ID}.api.sanity.io/v2026-08-31/data/query/${SANITY_DATASET}`;
 
-const BLOG_QUERY=`*[_type == "post"] | order(publishedAt desc)[0...3]{
+const BLOG_QUERY=`*[_type == "post"] | order(publishedAt desc){
   _id,
   title,
   slug,
