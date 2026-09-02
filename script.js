@@ -123,6 +123,7 @@ if(homeForm){
   let saveTimer=0;
   let locationRequestId=0;
   let reverseLocationAbortController=null;
+  let pendingStoredGps=null;
 
   const setLocationButtonBusy=(busy)=>{
     if(!locationButton)return;
@@ -132,6 +133,7 @@ if(homeForm){
 
   const cancelPendingLocation=()=>{
     locationRequestId++;
+    pendingStoredGps=null;
     reverseLocationAbortController?.abort('superseded');
     reverseLocationAbortController=null;
     setLocationButtonBusy(false);
@@ -382,12 +384,21 @@ if(homeForm){
     if(cityInput)cityInput.value='Pejë';
     if(locationNoteInput)locationNoteInput.value=state.locationNote||'';
     if(noteInput)noteInput.value=state.note||'';
-    if(latInput)latInput.value=state.lat||'';
-    if(lngInput)lngInput.value=state.lng||'';
-    if(accuracyInput)accuracyInput.value=state.accuracy||'';
+    pendingStoredGps=state.lat&&state.lng?{
+      lat:String(state.lat),
+      lng:String(state.lng),
+      accuracy:Math.max(0,Math.round(Number(state.accuracy)||0))
+    }:null;
+    if(latInput)latInput.value='';
+    if(lngInput)lngInput.value='';
+    if(accuracyInput)accuracyInput.value='';
+    if(mapFrame){
+      mapFrame.hidden=true;
+      mapFrame.removeAttribute('src');
+    }
+    if(mapPlaceholder)mapPlaceholder.hidden=false;
     problemInputs.forEach(input=>input.checked=(state.problems||[]).includes(input.value));
     timePresets.forEach(input=>input.checked=Boolean(state.timePreset&&input.value===state.timePreset));
-    if(state.lat&&state.lng)setMap(state.lat,state.lng);
     updateLocationActions();
     return Number(state.step)||1;
   };
@@ -716,7 +727,7 @@ if(homeForm){
     }
   };
 
-  const verifyPosition=async(position,label,requestId,{quiet=false}={})=>{
+  const verifyPosition=async(position,label,requestId,{quiet=false,commit=true}={})=>{
     const resolved=readPosition(position);
     if(!quiet){
       const accuracyText=resolved.accuracy?' · ±'+resolved.accuracy+' m':'';
@@ -725,7 +736,7 @@ if(homeForm){
       locationButton?.classList.add('is-loading');
     }
     const result=await checkPejaCandidate(resolved,requestId,{quiet});
-    if(result.status==='verified'){
+    if(result.status==='verified'&&commit){
       commitVerifiedPosition(resolved,result.location,label);
     }
     return result;
@@ -766,7 +777,7 @@ if(homeForm){
         if(requestId!==locationRequestId)return;
         const preciseAccuracy=Math.max(0,Math.round(Number(precise?.coords?.accuracy)||0));
         if(!preciseAccuracy||preciseAccuracy>=currentAccuracy)return;
-        const result=await verifyPosition(precise,'Lokacioni u përmirësua',requestId,{quiet:true});
+        const result=await verifyPosition(precise,'Lokacioni u përmirësua',requestId,{quiet:true,commit:false});
         if(result.status!=='verified'||requestId!==locationRequestId)return;
         commitVerifiedPosition(result.resolved,result.location,'Lokacioni u përmirësua');
       })
@@ -914,11 +925,50 @@ if(homeForm){
     }
   });
 
+  const verifyStoredGps=async(stored)=>{
+    const requestId=++locationRequestId;
+    reverseLocationAbortController?.abort('superseded');
+    reverseLocationAbortController=null;
+    setLocationButtonBusy(true);
+    setLocationStatus('Po riverifikojmë lokacionin e ruajtur në Pejë…','loading');
+
+    try{
+      const result=await checkPejaCandidate(stored,requestId);
+      if(requestId!==locationRequestId)return false;
+      pendingStoredGps=null;
+      if(result.status==='verified'){
+        commitVerifiedPosition(result.resolved,result.location,'Lokacioni u riverifikua');
+        return true;
+      }
+      return resolveVerificationResult(result);
+    }finally{
+      if(requestId===locationRequestId)setLocationButtonBusy(false);
+    }
+  };
+
   async function prepareLocationStep(){
     updateLocationActions();
+
     if(latInput?.value&&lngInput?.value){
-      const stored={lat:latInput.value,lng:lngInput.value,accuracy:Number(accuracyInput?.value)||0};
-      reverseVerifyPejaLocation(stored,locationRequestId);
+      setMap(latInput.value,lngInput.value);
+      setLocationStatus(
+        'Lokacioni është gati'+(accuracyInput?.value?' · ±'+accuracyInput.value+' m':''),
+        'success'
+      );
+      return;
+    }
+
+    if(pendingStoredGps){
+      const stored=pendingStoredGps;
+      verifyStoredGps(stored);
+      return;
+    }
+
+    if(addressInput?.value.trim()&&VALID_HOME_CITIES.has(cityInput?.value)){
+      locationButton?.classList.add('is-manual');
+      const label=locationButton?.querySelector('span');
+      if(label)label.textContent='Ndrysho adresën';
+      setLocationStatus('Adresa manuale është gati · Pejë dhe rrethinë.','manual');
       return;
     }
 
@@ -942,11 +992,8 @@ if(homeForm){
       }else{
         locationButton?.classList.remove('is-manual','is-success');
         const label=locationButton?.querySelector('span');
-        if(label)label.textContent=smartMobileLocation?'Gjej ku jam':'Përdor lokacionin tim';
-        setLocationStatus(
-          smartMobileLocation?'Një prekje — gjejmë GPS-in, rrugën dhe verifikojmë që je në Pejë.':'Prek butonin për GPS, ose shkruaj rrugën poshtë.',
-          'idle'
-        );
+        if(label)label.textContent='Përdor lokacionin tim';
+        setLocationStatus('Prek butonin për GPS, ose shkruaj rrugën poshtë.','idle');
       }
     }catch{}
   }
