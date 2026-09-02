@@ -519,6 +519,21 @@ if(homeForm){
     if(box)box.dataset.state=state;
   };
 
+  const activateManualLocation=(message='Shkruaj rrugën — sugjerimet dalin automatikisht për Pejë dhe Deçan.',{focus=false}={})=>{
+    locationButton?.classList.remove('is-loading','is-success');
+    locationButton?.classList.add('is-manual');
+    const label=locationButton?.querySelector('span');
+    if(label)label.textContent='Shkruaj adresën';
+    setLocationStatus(message,'manual');
+    setAddressSource('Shkruaj së paku 2 shkronja — dalin rrugët e Pejës dhe Deçanit.','idle');
+    if(focus){
+      window.setTimeout(()=>{
+        addressInput?.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});
+        addressInput?.focus({preventScroll:true});
+      },120);
+    }
+  };
+
   const setMap=(lat,lng)=>{
     const latitude=Number(lat),longitude=Number(lng),delta=.006;
     if(!Number.isFinite(latitude)||!Number.isFinite(longitude))return;
@@ -549,7 +564,7 @@ if(homeForm){
     clearError(addressInput,locationError);
     clearError(cityInput,locationError);
     setLocationStatus(label+(accuracy?' · saktësi rreth '+accuracy+' m':''),'success');
-    locationButton?.classList.remove('is-loading');
+    locationButton?.classList.remove('is-loading','is-manual');
     locationButton?.classList.add('is-success');
     const labelEl=locationButton?.querySelector('span');
     if(labelEl)labelEl.textContent='Lokacioni u shtua';
@@ -565,23 +580,28 @@ if(homeForm){
     const requestId=++locationRequestId;
     clearError(addressInput,locationError);
     clearError(cityInput,locationError);
+
+    if(!window.isSecureContext){
+      activateManualLocation('GPS kërkon lidhje të sigurt HTTPS. Shkruaj rrugën dhe zgjidhe nga sugjerimet.',{focus:!silent});
+      return false;
+    }
     if(!navigator.geolocation){
-      setLocationStatus('GPS nuk mbështetet në këtë pajisje. Shkruaj adresën.','error');
+      activateManualLocation('Ky browser nuk e ofron GPS. Shkruaj rrugën dhe zgjidhe nga sugjerimet.',{focus:!silent});
       return false;
     }
 
     if(!silent){
-      locationButton?.classList.remove('is-success');
+      locationButton?.classList.remove('is-success','is-manual');
       locationButton?.classList.add('is-loading');
       const label=locationButton?.querySelector('span');
       if(label)label.textContent='Duke marrë lokacionin…';
     }
-    setLocationStatus('Po provojmë lokacionin më të shpejtë…','loading');
+    setLocationStatus('Po marrim lokacionin nga telefoni…','loading');
 
     try{
-      const quick=await geoAttempt({enableHighAccuracy:false,timeout:6000,maximumAge:120000});
+      const quick=await geoAttempt({enableHighAccuracy:false,timeout:6500,maximumAge:120000});
       if(requestId!==locationRequestId)return false;
-      applyPosition(quick,'Lokacioni u mor shpejt');
+      applyPosition(quick,'Lokacioni u mor');
 
       if(Number(quick.coords.accuracy)>120){
         geoAttempt({enableHighAccuracy:true,timeout:10000,maximumAge:0})
@@ -595,7 +615,16 @@ if(homeForm){
       return true;
     }catch(firstError){
       if(requestId!==locationRequestId)return false;
-      setLocationStatus('Po provojmë GPS me saktësi më të lartë…','loading');
+
+      if(firstError?.code===1){
+        activateManualLocation(
+          'GPS nuk ka leje në browser. Shkruaj rrugën — do të dalin opsionet vetëm për Pejë dhe Deçan.',
+          {focus:!silent}
+        );
+        return false;
+      }
+
+      setLocationStatus('GPS po merr pak më shumë kohë — po provojmë me saktësi më të lartë…','loading');
       try{
         const precise=await geoAttempt({enableHighAccuracy:true,timeout:10000,maximumAge:0});
         if(requestId!==locationRequestId)return false;
@@ -603,23 +632,26 @@ if(homeForm){
         return true;
       }catch(error){
         if(requestId!==locationRequestId)return false;
-        locationButton?.classList.remove('is-loading','is-success');
-        const label=locationButton?.querySelector('span');
-        if(label)label.textContent='Provo GPS përsëri';
-
-        const denied=error?.code===1;
-        setLocationStatus(
-          denied
-            ?'Lokacioni është i bllokuar. Aktivizo Location për browser-in ose shkruaj adresën.'
-            :'GPS nuk u përgjigj. Shkruaj adresën ose hape hartën — mund të vazhdosh normalisht.',
-          'error'
+        activateManualLocation(
+          error?.code===1
+            ?'GPS nuk ka leje në browser. Shkruaj rrugën — do të dalin opsionet vetëm për Pejë dhe Deçan.'
+            :'GPS nuk u përgjigj. Shkruaj rrugën — sugjerimet për Pejë dhe Deçan funksionojnë pa GPS.',
+          {focus:!silent}
         );
         return false;
       }
     }
   };
 
-  locationButton?.addEventListener('click',()=>requestLocation());
+  locationButton?.addEventListener('click',()=>{
+    if(locationButton.classList.contains('is-manual')){
+      addressInput?.scrollIntoView({block:'center',behavior:reduceMotion?'auto':'smooth'});
+      addressInput?.focus({preventScroll:true});
+      if(addressInput?.value.trim().length>=2)searchOfficialAddresses();
+      return;
+    }
+    requestLocation();
+  });
 
   shareLocationButton?.addEventListener('click',async()=>{
     const link=mapLink();
@@ -659,7 +691,12 @@ if(homeForm){
         setLocationStatus('Leja e GPS është aktive. Po marrim lokacionin…','loading');
         requestLocation({silent:true});
       }else if(permission.state==='denied'){
-        setLocationStatus('GPS është i bllokuar për këtë faqe. Shkruaj adresën ose aktivizo Location.','error');
+        activateManualLocation('GPS nuk ka leje në browser. Shkruaj rrugën — sugjerimet dalin automatikisht për Pejë dhe Deçan.');
+      }else{
+        locationButton?.classList.remove('is-manual','is-success');
+        const label=locationButton?.querySelector('span');
+        if(label)label.textContent='Përdor lokacionin tim';
+        setLocationStatus('Prek butonin për GPS, ose shkruaj rrugën poshtë.','idle');
       }
     }catch{}
   }
