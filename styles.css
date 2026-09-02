@@ -4642,3 +4642,20 @@ section[id]{
   }
   .wizard-service-area strong{font-size:12px}
 }
+/* GPS core hardening v16 */
+.wizard-location-button[aria-busy="true"],
+.wizard-location-button:disabled{
+  cursor:progress;
+  opacity:1;
+  pointer-events:none;
+}
+.wizard-location-button[aria-busy="true"] svg{
+  animation:wizardGpsPulse .9s ease-in-out infinite alternate;
+}
+@keyframes wizardGpsPulse{
+  from{transform:scale(.92);opacity:.65}
+  to{transform:scale(1.05);opacity:1}
+}
+@media(prefers-reduced-motion:reduce){
+  .wizard-location-button[aria-busy="true"] svg{animation:none}
+}

@@ -414,6 +414,151 @@ test('mobile one tap GPS fills street and city automatically', async ({page,cont
 });
 
 
+
+test('GPS stays atomic until Peja verification completes', async ({page,context}) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({latitude:42.6595,longitude:20.2887});
+  await page.route('**/api/reverse-location**', async route => {
+    await new Promise(resolve=>setTimeout(resolve,420));
+    await route.fulfill({
+      status:200,contentType:'application/json',
+      json:{road:'Rruga Adem Jashari',city:'Pejë',locality:'Pejë',inServiceArea:true,source:'OpenStreetMap'}
+    });
+  });
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+
+  const gps=page.locator('[data-use-location]');
+  await gps.click();
+
+  await expect(gps).toHaveAttribute('aria-busy','true');
+  await expect(gps).toBeDisabled();
+  await expect(page.locator('[data-home-lat]')).toHaveValue('');
+  await expect(page.locator('[data-home-lng]')).toHaveValue('');
+  await expect(page.locator('[data-home-map]')).toBeHidden();
+
+  await expect(page.locator('[data-home-lat]')).toHaveValue('42.659500');
+  await expect(page.locator('[data-home-map]')).toBeVisible();
+  await expect(gps).toHaveAttribute('aria-busy','false');
+  await expect(gps).toBeEnabled();
+});
+
+test('inaccurate outside fix retries before rejecting and accepts precise Peja fix', async ({page}) => {
+  await page.route('**/api/reverse-location**', async route => {
+    const url=new URL(route.request().url());
+    const lat=Number(url.searchParams.get('lat'));
+    const inside=lat>42.6;
+    await route.fulfill({
+      status:200,contentType:'application/json',
+      json:inside
+        ?{road:'Rruga Mbretëresha Teutë',city:'Pejë',locality:'Pejë',inServiceArea:true,source:'OpenStreetMap'}
+        :{road:'Rruga Luan Haradinaj',city:'Deçan',locality:'Deçan',inServiceArea:false,source:'OpenStreetMap'}
+    });
+  });
+  await page.addInitScript(()=>{
+    let calls=0;
+    Object.defineProperty(navigator,'geolocation',{
+      configurable:true,
+      value:{
+        getCurrentPosition(success){
+          calls++;
+          window.__gpsAttemptCount=calls;
+          const coords=calls===1
+            ?{latitude:42.5400,longitude:20.2870,accuracy:420}
+            :{latitude:42.6595,longitude:20.2887,accuracy:18};
+          setTimeout(()=>success({coords}),20);
+        }
+      }
+    });
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+
+  await page.locator('[data-use-location]').click();
+
+  await expect(page.locator('[data-home-lat]')).toHaveValue('42.659500');
+  await expect(page.locator('[data-home-lng]')).toHaveValue('20.288700');
+  await expect(page.locator('[data-home-accuracy]')).toHaveValue('18');
+  await expect(page.locator('[data-home-address]')).toHaveValue('Rruga Mbretëresha Teutë');
+  await expect(page.locator('[data-location-status]')).toContainText('Je këtu:');
+  expect(await page.evaluate(()=>window.__gpsAttemptCount)).toBeGreaterThanOrEqual(2);
+});
+
+test('manual typing cancels a slow GPS result so it cannot overwrite the address', async ({page,context}) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({latitude:42.6595,longitude:20.2887});
+  await page.route('**/api/reverse-location**', async route => {
+    await new Promise(resolve=>setTimeout(resolve,500));
+    await route.fulfill({
+      status:200,contentType:'application/json',
+      json:{road:'Rruga Nga GPS',city:'Pejë',locality:'Pejë',inServiceArea:true,source:'OpenStreetMap'}
+    });
+  });
+  await page.route('**/api/addresses**', async route => {
+    await route.fulfill({status:200,contentType:'application/json',json:{records:[],source:'none'}});
+  });
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+
+  const gps=page.locator('[data-use-location]');
+  const address=page.locator('[data-home-address]');
+  await gps.click();
+  await expect(gps).toHaveAttribute('aria-busy','true');
+
+  await address.fill('Rruga Manuale');
+  await expect(gps).toHaveAttribute('aria-busy','false');
+  await expect(page.locator('[data-home-lat]')).toHaveValue('');
+
+  await page.waitForTimeout(650);
+  await expect(address).toHaveValue('Rruga Manuale');
+  await expect(page.locator('[data-home-lat]')).toHaveValue('');
+  await expect(page.locator('[data-home-lng]')).toHaveValue('');
+  await expect(page.locator('[data-home-map]')).toBeHidden();
+});
+
+test('stored GPS is not exposed until it is reverified', async ({page}) => {
+  await page.route('**/api/reverse-location**', async route => {
+    await new Promise(resolve=>setTimeout(resolve,350));
+    await route.fulfill({
+      status:200,contentType:'application/json',
+      json:{road:'Rruga Adem Jashari',city:'Pejë',locality:'Pejë',inServiceArea:true,source:'OpenStreetMap'}
+    });
+  });
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve'],
+      lat:'42.659500',lng:'20.288700',accuracy:'24'
+    }));
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+
+  await expect(page.locator('[data-home-lat]')).toHaveValue('');
+  await expect(page.locator('[data-home-lng]')).toHaveValue('');
+  await expect(page.locator('[data-home-map]')).toBeHidden();
+
+  await expect(page.locator('[data-home-lat]')).toHaveValue('42.659500');
+  await expect(page.locator('[data-home-lng]')).toHaveValue('20.288700');
+  await expect(page.locator('[data-home-map]')).toBeVisible();
+});
+
 test('desktop GPS keeps existing UX but verifies Peja service area', async ({page,context}) => {
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({latitude:42.6595,longitude:20.2887});
