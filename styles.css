@@ -4487,3 +4487,71 @@ section[id]{
     transition:none!important;
   }
 }
+/* ===== GPS + Peja/Decan street autocomplete v12 ===== */
+.wizard-location-state[data-state="manual"]{
+  border-color:#bcdbe2;
+  background:#f3fafb;
+  color:#426d7b;
+}
+.wizard-location-state[data-state="manual"] .wizard-location-dot{
+  background:#1592ad;
+  box-shadow:0 0 0 4px rgba(21,146,173,.11);
+}
+.wizard-location-button.is-manual{
+  border-color:#9fc9d2;
+  background:linear-gradient(180deg,#f8fcfd,#edf7f9);
+  color:var(--brand-teal,#147892);
+}
+.wizard-location-button.is-manual svg{
+  stroke:currentColor;
+}
+.wizard-address-source{
+  min-height:18px;
+  transition:color .2s ease,opacity .2s ease;
+}
+.wizard-address-source[data-state="loading"]{color:#147892}
+.wizard-address-source[data-state="success"]{color:#397264}
+.wizard-address-source[data-state="fallback"]{color:#6e7f89}
+.wizard-address-source[data-state="error"]{color:#9a5b38}
+.wizard-address-empty{
+  padding:14px 13px;
+  color:#607d8a;
+  font-size:11px;
+  line-height:1.55;
+}
+.wizard-address-option{
+  transition:background .18s ease,border-color .18s ease,transform .18s ease;
+}
+.wizard-address-option span{
+  flex:1 1 auto;
+}
+.wizard-address-option small{
+  color:#668895;
+  font-weight:800;
+}
+.wizard-address-option:hover,
+.wizard-address-option.is-active{
+  transform:translateY(-1px);
+}
+@media(max-width:620px){
+  .wizard-address-suggestions{
+    padding-bottom:max(8px,env(safe-area-inset-bottom));
+  }
+  .wizard-address-option{
+    align-items:center;
+    gap:10px;
+  }
+  .wizard-address-option span{
+    font-size:13px;
+  }
+  .wizard-address-option small{
+    max-width:108px;
+    white-space:normal;
+    text-align:right;
+    line-height:1.3;
+  }
+  .wizard-address-empty{
+    padding:16px 14px;
+    font-size:12px;
+  }
+}
