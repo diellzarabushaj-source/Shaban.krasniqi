@@ -24,7 +24,8 @@ export default async function handler(req, res) {
     const payload = await response.json()
     if (!response.ok) throw new Error(payload?.message || 'Sanity request failed')
 
-    res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=300')
+    res.setHeader('Cache-Control', 'no-store, max-age=0, must-revalidate')
+    res.setHeader('CDN-Cache-Control', 'no-store')
     return res.status(200).json(payload.result || null)
   } catch (error) {
     return res.status(500).json({error: 'Unable to load website content'})
