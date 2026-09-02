@@ -4555,3 +4555,61 @@ section[id]{
     font-size:12px;
   }
 }
+/* ===== Location final polish v13 ===== */
+.wizard-input select{
+  width:100%;
+  min-height:52px;
+  padding:0 42px 0 0;
+  border:0;
+  border-bottom:1px solid #b9d1d7;
+  border-radius:0;
+  background:
+    linear-gradient(45deg,transparent 50%,#4b6f7c 50%) calc(100% - 14px) 50%/6px 6px no-repeat,
+    linear-gradient(135deg,#4b6f7c 50%,transparent 50%) calc(100% - 9px) 50%/6px 6px no-repeat,
+    transparent;
+  color:var(--brand-navy);
+  appearance:none;
+  -webkit-appearance:none;
+  font:700 16px/1.25 "Manrope","Montserrat",sans-serif;
+  outline:none;
+  transition:border-color .2s ease,box-shadow .2s ease;
+}
+.wizard-input select:focus{
+  border-bottom-color:var(--brand-teal,#147892);
+  box-shadow:0 1px 0 var(--brand-teal,#147892);
+}
+.wizard-input select:invalid,
+.wizard-input select[aria-invalid="true"]{
+  border-bottom-color:#c56b43;
+}
+.wizard-input select option{
+  color:#001b36;
+  background:#fff;
+}
+.wizard-address-source[data-state="loading"]::before{
+  content:"";
+  display:inline-block;
+  width:8px;
+  height:8px;
+  margin-right:7px;
+  border:1.5px solid currentColor;
+  border-right-color:transparent;
+  border-radius:50%;
+  vertical-align:-1px;
+  animation:wizardAddressSpin .65s linear infinite;
+}
+@keyframes wizardAddressSpin{to{transform:rotate(360deg)}}
+@media(max-width:620px){
+  .wizard-input select{
+    min-height:52px;
+    font-size:18px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .wizard-address-source[data-state="loading"]::before{animation:none}
+}
+/* Hidden map states must override component display rules. */
+.home-map[hidden],
+.map-placeholder[hidden]{
+  display:none!important;
+}

@@ -158,6 +158,8 @@ if(homeForm){
   let addressRequestId=0;
   let activeAddressIndex=-1;
   let currentAddressMatches=[];
+  const addressCache=new Map();
+  const VALID_HOME_CITIES=new Set(['Pejë','Deçan']);
 
   const normalizeSearch=(value)=>String(value||'')
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
@@ -266,9 +268,16 @@ if(homeForm){
       return;
     }
 
+    const cached=addressCache.get(query);
+    if(cached){
+      renderAddressSuggestions(cached.records,cached.source);
+      return;
+    }
+
     addressAbortController?.abort();
     addressAbortController=new AbortController();
     const requestId=++addressRequestId;
+    const timeout=window.setTimeout(()=>addressAbortController?.abort('timeout'),6500);
     setAddressSource('Po kërkojmë rrugët në Pejë dhe Deçan…','loading');
 
     try{
@@ -277,13 +286,22 @@ if(homeForm){
       if(!response.ok)throw new Error('address-api-'+response.status);
       const payload=await response.json();
       if(requestId!==addressRequestId)return;
-      const records=(payload.records||[]).filter(record=>['Pejë','Deçan'].includes(record.city));
-      renderAddressSuggestions(records,payload.source||'none');
+      const records=(payload.records||[]).filter(record=>VALID_HOME_CITIES.has(record.city));
+      const result={records,source:payload.source||'none'};
+      addressCache.set(query,result);
+      if(addressCache.size>30)addressCache.delete(addressCache.keys().next().value);
+      renderAddressSuggestions(result.records,result.source);
     }catch(error){
-      if(error?.name==='AbortError')return;
       if(requestId!==addressRequestId)return;
+      if(error?.name==='AbortError'){
+        closeAddressSuggestions();
+        setAddressSource('Kërkimi po zgjat. Mund ta shkruash rrugën manualisht dhe të zgjedhësh Pejë/Deçan.','error');
+        return;
+      }
       closeAddressSuggestions();
       setAddressSource('Kërkimi automatik nuk u përgjigj. Mund ta shkruash rrugën manualisht dhe të vazhdosh.','error');
+    }finally{
+      window.clearTimeout(timeout);
     }
   };
 
@@ -303,9 +321,9 @@ if(homeForm){
     }else if(event.key==='ArrowUp'&&currentAddressMatches.length){
       event.preventDefault();
       setActiveSuggestion(activeAddressIndex-1);
-    }else if(event.key==='Enter'&&activeAddressIndex>=0){
+    }else if(event.key==='Enter'&&currentAddressMatches.length){
       event.preventDefault();
-      chooseAddress(currentAddressMatches[activeAddressIndex]);
+      chooseAddress(currentAddressMatches[activeAddressIndex>=0?activeAddressIndex:0]);
     }else if(event.key==='Escape'){
       closeAddressSuggestions();
     }
@@ -344,7 +362,7 @@ if(homeForm){
     if(dateInput&&(!state.date||state.date>=localDateString()))dateInput.value=state.date||'';
     if(timeInput)timeInput.value=state.time||'';
     if(addressInput)addressInput.value=state.address||'';
-    if(cityInput)cityInput.value=state.city||'';
+    if(cityInput)cityInput.value=VALID_HOME_CITIES.has(state.city)?state.city:'';
     if(locationNoteInput)locationNoteInput.value=state.locationNote||'';
     if(noteInput)noteInput.value=state.note||'';
     if(latInput)latInput.value=state.lat||'';
@@ -455,11 +473,15 @@ if(homeForm){
       if(timeError)timeError.hidden=false;
       return false;
     }
-    if(currentStep===6&&!latInput?.value&&!lngInput?.value&&!addressInput?.value.trim()&&!cityInput?.value.trim()){
-      addressInput?.setAttribute('aria-invalid','true');
-      cityInput?.setAttribute('aria-invalid','true');
-      if(locationError)locationError.hidden=false;
-      return false;
+    if(currentStep===6){
+      const hasGps=Boolean(latInput?.value&&lngInput?.value);
+      const hasManual=Boolean(addressInput?.value.trim()&&VALID_HOME_CITIES.has(cityInput?.value));
+      if(!hasGps&&!hasManual){
+        if(!addressInput?.value.trim())addressInput?.setAttribute('aria-invalid','true');
+        if(!VALID_HOME_CITIES.has(cityInput?.value))cityInput?.setAttribute('aria-invalid','true');
+        if(locationError)locationError.hidden=false;
+        return false;
+      }
     }
     return true;
   };
@@ -473,12 +495,36 @@ if(homeForm){
     scheduleSave();
   });
   dateInput?.addEventListener('change',()=>{clearError(dateInput,dateError);scheduleSave()});
-  [addressInput,cityInput].forEach(input=>input?.addEventListener('input',()=>{
+  const clearResolvedLocationForManualEdit=()=>{
+    if(!latInput?.value&&!lngInput?.value)return;
+    if(latInput)latInput.value='';
+    if(lngInput)lngInput.value='';
+    if(accuracyInput)accuracyInput.value='';
+    if(mapFrame){
+      mapFrame.hidden=true;
+      mapFrame.removeAttribute('src');
+    }
+    if(mapPlaceholder)mapPlaceholder.hidden=false;
+    locationButton?.classList.remove('is-success');
+    const label=locationButton?.querySelector('span');
+    if(label&&!locationButton.classList.contains('is-manual'))label.textContent='Përdor lokacionin tim';
+    setLocationStatus('Po përdorim adresën e shkruar. Zgjidh rrugën dhe Pejë/Deçan.','manual');
+  };
+
+  addressInput?.addEventListener('input',()=>{
+    clearResolvedLocationForManualEdit();
     clearError(addressInput,locationError);
     clearError(cityInput,locationError);
     updateLocationActions();
     scheduleSave();
-  }));
+  });
+  cityInput?.addEventListener('change',()=>{
+    clearResolvedLocationForManualEdit();
+    clearError(addressInput,locationError);
+    clearError(cityInput,locationError);
+    updateLocationActions();
+    scheduleSave();
+  });
   locationNoteInput?.addEventListener('input',scheduleSave);
   noteInput?.addEventListener('input',scheduleSave);
 

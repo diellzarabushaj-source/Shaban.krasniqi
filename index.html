@@ -331,7 +331,11 @@
                 </div>
                 <label class="wizard-input">
                   <span>Qyteti</span>
-                  <input type="text" name="city" autocomplete="address-level2" autocapitalize="words" enterkeyhint="next" placeholder="p.sh. Deçan" data-home-city>
+                  <select name="city" autocomplete="address-level2" data-home-city aria-label="Zgjidh qytetin">
+                    <option value="">Zgjidh Pejë ose Deçan</option>
+                    <option value="Pejë">Pejë</option>
+                    <option value="Deçan">Deçan</option>
+                  </select>
                 </label>
               </div>
 
@@ -364,7 +368,7 @@
               <input type="hidden" name="latitude" data-home-lat>
               <input type="hidden" name="longitude" data-home-lng>
               <input type="hidden" name="accuracy" data-home-accuracy>
-              <p class="field-error" data-location-error hidden>Shto lokacionin me GPS ose shkruaj së paku adresën/qytetin.</p>
+              <p class="field-error" data-location-error hidden>Përdor GPS-in ose shkruaj rrugën dhe zgjidh Pejë/Deçan.</p>
             </section>
 
             <section class="wizard-step" data-wizard-step="7" hidden>
