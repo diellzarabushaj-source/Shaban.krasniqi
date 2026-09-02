@@ -46,6 +46,7 @@ test('mobile menu uses polished visible state and remains accessible',async({pag
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-expanded','true');
   await expect(nav).toHaveClass(/open/);
+  await expect(nav).toHaveCSS('opacity','1');
 
   const css=await nav.evaluate(el=>{
     const s=getComputedStyle(el);
