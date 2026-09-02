@@ -27,9 +27,12 @@ export default defineType({
       type: 'object',
       fields: [
         defineField({name: 'name', title: 'Business Name', type: 'string'}),
-        defineField({name: 'phone', title: 'Phone', type: 'string'}),
+        defineField({name: 'phone', title: 'Phone / WhatsApp', type: 'string'}),
         defineField({name: 'whatsappUrl', title: 'WhatsApp URL', type: 'url'}),
+        defineField({name: 'email', title: 'Email', type: 'string'}),
+        defineField({name: 'address', title: 'Address', type: 'string'}),
         defineField({name: 'location', title: 'Location', type: 'string'}),
+        defineField({name: 'mapUrl', title: 'Google Maps URL', type: 'url'}),
         defineField({name: 'language', title: 'Language', type: 'string', initialValue: 'sq-XK'}),
       ],
     }),
