@@ -22,8 +22,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Validate schema
-        run: npx sanity@latest schemas validate --workspace default
+      - name: Build and validate Studio
+        run: npm run build
       - name: Deploy Studio and schema
         env:
           SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
