@@ -146,7 +146,7 @@ const nominatimSearch=async(query)=>{
       const payload=await response.json();
       return payload.flatMap(item=>{
         const address=item.address||{};
-        const detected=targetCity(address.municipality)||targetCity(address.county)||targetCity(address.city)||targetCity(address.town)||targetCity(city);
+        const detected=targetCity(address.municipality)||targetCity(address.county)||targetCity(address.city)||targetCity(address.town)||targetCity(address.state_district);
         if(detected!=='Pejë')return [];
         const road=address.road||address.pedestrian||address.residential||address.neighbourhood||String(item.display_name||'').split(',')[0];
         if(!road)return [];
