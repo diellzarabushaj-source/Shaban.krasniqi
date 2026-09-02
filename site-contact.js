@@ -2,9 +2,10 @@
   const API='/api/site-settings';
   const DEFAULTS={
     name:'Fizioterapia Shaban Krasniqi',
-    phone:'+38649884785',
+    phone:'+386 49 884 785',
     whatsappUrl:'https://wa.me/38649884785',
     email:'shabankrasniqifizioterapi@gmail.com',
+    address:'Hoxhë Tasini, Pejë 30000, Kosovë',
     location:'Hoxhë Tasini, Pejë 30000, Kosovë',
     mapUrl:'https://www.google.com/maps?q=Hoxh%C3%AB+Tasini,+Pej%C3%AB+30000&ftid=0x1352fdb84e7dcd75:0x8e522ef058f180e3&entry=gps&shh=CAE'
   };
@@ -17,9 +18,12 @@
     if(!document.body||document.querySelector('.sanity-contact'))return;
     css();
     const site={...DEFAULTS,...(settings?.site||{})};
-    const phone=String(site.phone||DEFAULTS.phone);const wa=safeUrl(site.whatsappUrl||`https://wa.me/${phone.replace(/\\D/g,'')}`,DEFAULTS.whatsappUrl);const map=safeUrl(site.mapUrl,DEFAULTS.mapUrl);const email=String(site.email||DEFAULTS.email);const address=String(site.address||site.location||DEFAULTS.location);
-    const section=document.createElement('section');section.className='sanity-contact';section.id='kontakt';section.innerHTML=`<div class="shell"><div class="sanity-contact-card"><span class="sanity-contact-kicker">${icon.pin}<span>Na gjeni në Pejë</span></span><h2 class="sanity-contact-title">Kontakt & lokacion</h2><p class="sanity-contact-lede">Na kontakto direkt për termin ose na gjej në lokacionin e fizioterapisë.</p><div class="sanity-contact-list"><a class="sanity-contact-item" href="${wa}" target="_blank" rel="noopener noreferrer"><span class="sanity-contact-icon">${icon.phone}</span><span><strong>WhatsApp / Telefon</strong><small>${phone}</small></span></a><a class="sanity-contact-item" href="mailto:${email}"><span class="sanity-contact-icon">${icon.mail}</span><span><strong>Email</strong><small>${email}</small></span></a><a class="sanity-contact-item" href="${map}" target="_blank" rel="noopener noreferrer"><span class="sanity-contact-icon">${icon.pin}</span><span><strong>Adresa</strong><small>${address}</small></span></a></div><a class="sanity-contact-maplink" href="${map}" target="_blank" rel="noopener noreferrer">Hape lokacionin në Google Maps ${icon.arrow}</a><p class="sanity-contact-note"><b>Fizioterapia Shaban Krasniqi</b> · Pejë, Kosovë</p></div><div class="sanity-map-card"><iframe src="https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed" title="Lokacioni i Fizioterapisë Shaban Krasniqi në Pejë" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe><div class="sanity-map-overlay"><div><strong>Lokacioni</strong><small>${address}</small></div><a class="sanity-map-button" href="${map}" target="_blank" rel="noopener noreferrer">Google Maps ${icon.arrow}</a></div></div></div>`;
-    const footer=document.querySelector('footer.site-footer');footer?.parentNode?.insertBefore(section,footer);
+    const phone=String(site.phone||DEFAULTS.phone);const digits=phone.replace(/\D/g,'');const wa=safeUrl(site.whatsappUrl||`https://wa.me/${digits}`,DEFAULTS.whatsappUrl);const map=safeUrl(site.mapUrl,DEFAULTS.mapUrl);const email=String(site.email||DEFAULTS.email);const address=String(site.address||site.location||DEFAULTS.address);
+    const section=document.createElement('section');section.className='sanity-contact';section.id='kontakt';section.innerHTML=`<div class="shell"><div class="sanity-contact-card"><span class="sanity-contact-kicker">${icon.pin}<span>Na gjeni në Pejë</span></span><h2 class="sanity-contact-title">Kontakt & lokacion</h2><p class="sanity-contact-lede">Na kontakto direkt për termin ose na gjej në lokacionin e fizioterapisë.</p><div class="sanity-contact-list"><a class="sanity-contact-item" href="tel:${digits}"><span class="sanity-contact-icon">${icon.phone}</span><span><strong>Telefon</strong><small>${phone}</small></span></a><a class="sanity-contact-item" href="${wa}" target="_blank" rel="noopener noreferrer"><span class="sanity-contact-icon">${icon.phone}</span><span><strong>WhatsApp</strong><small>${phone}</small></span></a><a class="sanity-contact-item" href="mailto:${email}"><span class="sanity-contact-icon">${icon.mail}</span><span><strong>Email</strong><small>${email}</small></span></a><a class="sanity-contact-item" href="${map}" target="_blank" rel="noopener noreferrer"><span class="sanity-contact-icon">${icon.pin}</span><span><strong>Adresa</strong><small>${address}</small></span></a></div><a class="sanity-contact-maplink" href="${map}" target="_blank" rel="noopener noreferrer">Hape lokacionin në Google Maps ${icon.arrow}</a><p class="sanity-contact-note"><b>Fizioterapia Shaban Krasniqi</b> · Pejë, Kosovë</p></div><div class="sanity-map-card"><iframe src="https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed" title="Lokacioni i Fizioterapisë Shaban Krasniqi në Pejë" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe><div class="sanity-map-overlay"><div><strong>Lokacioni</strong><small>${address}</small></div><a class="sanity-map-button" href="${map}" target="_blank" rel="noopener noreferrer">Google Maps ${icon.arrow}</a></div></div></div>`;
+    const footer=document.querySelector('footer.site-footer');
+    const parent=footer?.parentNode||document.body;
+    parent.insertBefore(section,footer||null);
   }
-  fetch(API,{headers:{Accept:'application/json'},cache:'no-store'}).then(r=>r.ok?r.json():null).then(settings=>render(settings)).catch(()=>render(null));
+  const start=()=>fetch(API,{headers:{Accept:'application/json'},cache:'no-store'}).then(r=>r.ok?r.json():null).then(settings=>render(settings)).catch(()=>render(null));
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
