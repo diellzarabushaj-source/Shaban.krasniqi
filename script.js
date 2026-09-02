@@ -799,6 +799,16 @@ if(homeForm){
       setLocationStatus('Lokacioni është gati'+(accuracyInput?.value?' · saktësi rreth '+accuracyInput.value+' m':''),'success');
       return;
     }
+
+    if(smartMobileLocation){
+      locationButton?.setAttribute('data-smart-location','true');
+      locationButton?.classList.remove('is-manual','is-success');
+      const label=locationButton?.querySelector('span');
+      if(label)label.textContent='Gjej ku jam';
+      setLocationStatus('Një prekje — gjejmë automatikisht GPS-in, rrugën dhe qytetin.','idle');
+      return;
+    }
+
     if(!navigator.permissions?.query)return;
     try{
       const permission=await navigator.permissions.query({name:'geolocation'});
