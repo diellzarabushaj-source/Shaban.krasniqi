@@ -710,11 +710,10 @@ if(homeForm){
     );
 
     try{
-      const quick=await geoAttempt({
-        enableHighAccuracy:smartMobileLocation,
-        timeout:smartMobileLocation?8500:6500,
-        maximumAge:smartMobileLocation?30000:120000
-      });
+      const primaryGeoOptions=smartMobileLocation
+        ?{enableHighAccuracy:true,timeout:8500,maximumAge:30000}
+        :{enableHighAccuracy:false,timeout:6500,maximumAge:120000};
+      const quick=await geoAttempt(primaryGeoOptions);
       if(requestId!==locationRequestId)return false;
       await applySmartPosition(quick,'Lokacioni u mor',requestId);
 
