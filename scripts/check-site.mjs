@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const files=['index.html','styles.css','script.js','api/addresses.js','site-media.js','blog.html','blog.css','blog.js','post.html','post.js','author.html','author.js','page-shell.js','assets/branding/logo-site-primary-clean.webp','assets/branding/logo-site-dark.webp','assets/branding/favicon-64.png','docs/sanity-siteMedia.schema.ts','docs/sanity-siteMedia.singleton.ts'];
+const files=['index.html','styles.css','script.js','api/addresses.js','api/reverse-location.js','site-media.js','blog.html','blog.css','blog.js','post.html','post.js','author.html','author.js','page-shell.js','assets/branding/logo-site-primary-clean.webp','assets/branding/logo-site-dark.webp','assets/branding/favicon-64.png','docs/sanity-siteMedia.schema.ts','docs/sanity-siteMedia.singleton.ts'];
 const missing=files.filter(file=>!fs.existsSync(file));
 const failures=missing.map(file=>'Missing file: '+file);
 
@@ -15,6 +15,7 @@ if(!missing.length){
   const author=fs.readFileSync('author.html','utf8');
   const authorJs=fs.readFileSync('author.js','utf8');
   const addressesApi=fs.readFileSync('api/addresses.js','utf8');
+  const reverseLocationApi=fs.readFileSync('api/reverse-location.js','utf8');
   const sanityCode=script+'\n'+blogJs+'\n'+postJs+'\n'+authorJs;
 
   for(const needle of ['id="trajtimet"','wa.me/38649884785','tel:+38649884785','id="sherbimet"','id="qasja"','id="pse-ne"','id="pyetje"','data-home-blog','href="blog.html"']){
@@ -84,6 +85,12 @@ if(!missing.length){
   }
   for(const needle of ['/api/addresses','data-address-suggestions','Pejë','Deçan']){
     if(!(script+index).includes(needle))failures.push('Peja/Decan address autocomplete missing: '+needle);
+  }
+  for(const needle of ['/api/reverse-location','smartMobileLocation','Gjej ku jam']){
+    if(!script.includes(needle))failures.push('Smart mobile location missing: '+needle);
+  }
+  for(const needle of ['nominatim.openstreetmap.org/reverse','parseReverseAddress','inServiceArea']){
+    if(!reverseLocationApi.includes(needle))failures.push('Reverse geocoding API missing: '+needle);
   }
   for(const needle of ['geoportal.rks-gov.net/wms/ows','KG_DEV_WS:RoadNameView','AR_DEV_WS:v_findAddresses','OpenStreetMap']){
     if(!addressesApi.includes(needle))failures.push('Server-side address source missing: '+needle);

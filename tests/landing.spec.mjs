@@ -360,6 +360,92 @@ test('Peja and Decan street autocomplete is keyboard and mobile friendly', async
   expect(overflow).toBe(0);
 });
 
+
+test('mobile one tap GPS fills street and city automatically', async ({page,context}) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({latitude:42.6595,longitude:20.2887});
+  await page.route('**/api/reverse-location**', async route => {
+    await route.fulfill({
+      status:200,
+      contentType:'application/json',
+      json:{
+        road:'Rruga Mbretëresha Teutë',
+        city:'Pejë',
+        locality:'Pejë',
+        displayName:'Rruga Mbretëresha Teutë, Pejë, Kosovo',
+        inServiceArea:true,
+        source:'OpenStreetMap'
+      }
+    });
+  });
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+
+  const gps=page.locator('[data-use-location]');
+  await expect(gps).toContainText('Gjej ku jam');
+  await expect(page.locator('[data-location-status]')).toContainText('Një prekje');
+
+  await gps.click();
+
+  await expect(page.locator('[data-home-address]')).toHaveValue('Rruga Mbretëresha Teutë');
+  await expect(page.locator('[data-home-city]')).toHaveValue('Pejë');
+  await expect(page.locator('[data-home-lat]')).toHaveValue('42.659500');
+  await expect(page.locator('[data-home-lng]')).toHaveValue('20.288700');
+  await expect(page.locator('[data-home-map]')).toBeVisible();
+  await expect(page.locator('[data-location-status]')).toContainText('Je këtu:');
+  await expect(page.locator('[data-address-source]')).toContainText('automatikisht nga GPS');
+  await expect(gps).toHaveClass(/is-success/);
+});
+
+test('desktop GPS keeps existing behavior and skips reverse lookup', async ({page,context}) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({latitude:42.6595,longitude:20.2887});
+  let reverseCalls=0;
+  await page.route('**/api/reverse-location**', async route => {
+    reverseCalls++;
+    await route.abort();
+  });
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.setViewportSize({width:1440,height:900});
+  await page.goto('/#ne-shtepi');
+
+  await expect(page.locator('[data-use-location]')).not.toHaveAttribute('data-smart-location','true');
+  await expect(page.locator('[data-home-lat]')).toHaveValue('42.659500');
+  expect(reverseCalls).toBe(0);
+});
+
+test('mobile keeps GPS coordinates when reverse address lookup fails', async ({page,context}) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({latitude:42.6595,longitude:20.2887});
+  await page.route('**/api/reverse-location**', async route => {
+    await route.fulfill({status:504,contentType:'application/json',json:{error:'reverse_lookup_timeout'}});
+  });
+  await page.addInitScript(()=>{
+    sessionStorage.setItem('shaban-home-visit-v3',JSON.stringify({
+      step:6,name:'Test',phone:'049 111 222',date:'2099-09-09',
+      timePreset:'14:00',problems:['Dhimbje të nyjeve']
+    }));
+  });
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/#ne-shtepi');
+
+  await page.locator('[data-use-location]').click();
+  await expect(page.locator('[data-home-lat]')).toHaveValue('42.659500');
+  await expect(page.locator('[data-home-map]')).toBeVisible();
+  await expect(page.locator('[data-location-status]')).toContainText('Harta është gati');
+});
+
 test('denied GPS falls through to street search instead of a dead end', async ({page}) => {
   await page.route('**/api/addresses**', async route => {
     await route.fulfill({
