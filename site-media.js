@@ -72,13 +72,7 @@
       img.loading='lazy';
     }
     img.dataset.sanityBound='true';
-    if(
-      img.classList.contains('official-logo') ||
-      img.classList.contains('official-footer-logo') ||
-      img.classList.contains('official-closing-logo')
-    ){
-      img.parentElement?.setAttribute('data-sanity-bound','true');
-    }
+    if(img.classList.contains('official-logo')||img.classList.contains('official-footer-logo')||img.classList.contains('official-closing-logo'))img.parentElement?.setAttribute('data-sanity-bound','true');
   }
 
   function bindArt(container,image){
@@ -98,15 +92,8 @@
     const image=media?.branding?.favicon||media?.branding?.logoMark;
     if(!image?.asset?.url)return;
     let link=document.querySelector('link[rel="icon"]');
-    if(!link){
-      link=document.createElement('link');
-      link.rel='icon';
-      document.head.append(link);
-    }
-    link.href=optimized(image,128);
-    link.type='';
-    link.sizes='any';
-    link.dataset.sanityBound='true';
+    if(!link){link=document.createElement('link');link.rel='icon';document.head.append(link)}
+    link.href=optimized(image,128);link.type='';link.sizes='any';link.dataset.sanityBound='true';
   }
 
   function bindOg(media){
@@ -119,70 +106,35 @@
   function hasAsset(image){return Boolean(image?.asset?.url)}
 
   function apply(media){
-    if(!media||typeof media!=='object'){
-      document.documentElement.dataset.siteMedia='fallback';
-      return;
-    }
-
+    if(!media||typeof media!=='object'){document.documentElement.dataset.siteMedia='fallback';return}
     let boundCount=0;
-
     document.querySelectorAll('[data-site-media]').forEach(node=>{
       const image=get(media,node.dataset.siteMedia);
       if(!hasAsset(image))return;
-
-      if(node.tagName==='IMG'){
-        bindImg(node,image,{eager:node.classList.contains('hero-portrait')||node.classList.contains('official-logo')});
-        boundCount+=1;
-      }else if(node.classList.contains('service-art')||node.classList.contains('treatment-art')){
-        bindArt(node,image);
-        boundCount+=1;
-      }
+      if(node.tagName==='IMG'){bindImg(node,image,{eager:node.classList.contains('hero-portrait')||node.classList.contains('official-logo')});boundCount+=1}
+      else if(node.classList.contains('service-art')||node.classList.contains('treatment-art')){bindArt(node,image);boundCount+=1}
     });
-
     const faviconBefore=document.querySelector('link[rel="icon"]')?.href||'';
     bindFavicon(media);
     const faviconAfter=document.querySelector('link[rel="icon"]')?.href||'';
     if(faviconAfter&&faviconAfter!==faviconBefore)boundCount+=1;
-
     bindOg(media);
-
-    const required=[
-      media.branding?.logoPrimary,
-      media.branding?.logoWhite,
-      media.branding?.logoMark,
-      media.branding?.favicon,
-      media.hero?.mainImage,
-      media.services?.fizioterapi,
-      media.services?.elektroterapi,
-      media.services?.ultraze,
-      media.services?.limfodrenazh,
-      media.services?.shockwave,
-      media.services?.hixhame,
-      media.treatments?.qafeShpine,
-      media.treatments?.nyje,
-      media.treatments?.ortopedike,
-      media.treatments?.reumatike,
-      media.treatments?.pediatrike
-    ];
-
+    const required=[media.branding?.logoPrimary,media.branding?.logoWhite,media.branding?.logoMark,media.branding?.favicon,media.hero?.mainImage,media.services?.fizioterapi,media.services?.elektroterapi,media.services?.ultraze,media.services?.limfodrenazh,media.services?.shockwave,media.services?.hixhame,media.treatments?.qafeShpine,media.treatments?.nyje,media.treatments?.ortopedike,media.treatments?.reumatike,media.treatments?.pediatrike];
     const complete=required.every(hasAsset);
-    document.documentElement.dataset.siteMedia=boundCount
-      ?(complete?'ready':'partial')
-      :'fallback';
-
-    if(boundCount){
-      document.dispatchEvent(new CustomEvent('site-media:ready',{detail:{id:media._id||null,complete}}));
-    }
+    document.documentElement.dataset.siteMedia=boundCount?(complete?'ready':'partial'):'fallback';
+    if(boundCount)document.dispatchEvent(new CustomEvent('site-media:ready',{detail:{id:media._id||null,complete}}));
   }
 
   const controller=new AbortController();
   const timeout=setTimeout(()=>controller.abort(),4500);
-  fetch(API+'?query='+encodeURIComponent(QUERY),{
-    signal:controller.signal,
-    headers:{Accept:'application/json'}
-  })
+  fetch(API+'?query='+encodeURIComponent(QUERY),{signal:controller.signal,headers:{Accept:'application/json'}})
     .then(response=>response.ok?response.json():Promise.reject(new Error('siteMedia request failed')))
     .then(payload=>apply(payload?.result))
     .catch(()=>{})
     .finally(()=>clearTimeout(timeout));
+
+  const contentScript=document.createElement('script');
+  contentScript.src='/site-content.js';
+  contentScript.defer=true;
+  document.head.append(contentScript);
 })();
