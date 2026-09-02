@@ -83,9 +83,12 @@ if(!missing.length){
   for(const needle of ['Fizioterapi në Pejë','rel="canonical"','sq-XK','LocalBusiness','MedicalBusiness','areaServed']){
     if(!index.includes(needle))failures.push('Local SEO missing: '+needle);
   }
-  for(const needle of ['/api/addresses','data-address-suggestions','Pejë','Deçan']){
-    if(!(script+index).includes(needle))failures.push('Peja/Decan address autocomplete missing: '+needle);
+  for(const needle of ['/api/addresses','data-address-suggestions','Pejë','Pejë dhe rrethinë']){
+    if(!(script+index).includes(needle))failures.push('Peja-only address autocomplete missing: '+needle);
   }
+  if(/Deçan|Deqan|Decan/.test(index))failures.push('Public site must not advertise Deçan in the service area');
+  if(!index.includes('name="city" value="Pejë" data-home-city'))failures.push('Home-visit city must be fixed to Pejë');
+  if(!script.includes("const VALID_HOME_CITIES=new Set(['Pejë'])"))failures.push('Frontend service area must be Peja-only');
   for(const needle of ['/api/reverse-location','smartMobileLocation','Gjej ku jam']){
     if(!script.includes(needle))failures.push('Smart mobile location missing: '+needle);
   }
