@@ -77,7 +77,7 @@ const fetchOfficialLayer=async(layer)=>{
   }).toString();
 
   const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),7000);
+  const timeout=setTimeout(()=>controller.abort(),4200);
   try{
     const response=await fetch(url,{
       signal:controller.signal,
@@ -111,22 +111,17 @@ const scoreRecords=(records,query)=>{
 };
 
 const officialSearch=async(query)=>{
-  let lastError=null;
-  for(const layer of OFFICIAL_LAYERS){
-    try{
-      const records=await fetchOfficialLayer(layer);
-      const matches=scoreRecords(records,query);
-      if(matches.length)return matches;
-    }catch(error){lastError=error}
-  }
-  if(lastError)throw lastError;
+  const settled=await Promise.allSettled(OFFICIAL_LAYERS.map(layer=>fetchOfficialLayer(layer)));
+  const records=uniqueRecords(settled.flatMap(result=>result.status==='fulfilled'?result.value:[]));
+  if(records.length)return scoreRecords(records,query);
+  const failure=settled.find(result=>result.status==='rejected');
+  if(failure)throw failure.reason;
   return [];
 };
 
 const nominatimSearch=async(query)=>{
   const cities=['Pejë','Deçan'];
-  const results=[];
-  for(const city of cities){
+  const tasks=cities.map(async city=>{
     const url=new URL('https://nominatim.openstreetmap.org/search');
     url.search=new URLSearchParams({
       format:'jsonv2',
@@ -136,7 +131,7 @@ const nominatimSearch=async(query)=>{
       q:query+', '+city+', Kosovo'
     }).toString();
     const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),5000);
+    const timeout=setTimeout(()=>controller.abort(),3500);
     try{
       const response=await fetch(url,{
         signal:controller.signal,
@@ -145,15 +140,15 @@ const nominatimSearch=async(query)=>{
           'User-Agent':'ShabanKrasniqiFizioterapi/1.0 (address autocomplete)'
         }
       });
-      if(!response.ok)continue;
+      if(!response.ok)return [];
       const payload=await response.json();
-      payload.forEach(item=>{
+      return payload.flatMap(item=>{
         const address=item.address||{};
         const detected=targetCity(address.city)||targetCity(address.town)||targetCity(address.municipality)||targetCity(address.county)||targetCity(city);
-        if(!detected)return;
+        if(!detected)return [];
         const road=address.road||address.pedestrian||address.residential||address.neighbourhood||String(item.display_name||'').split(',')[0];
-        if(!road)return;
-        results.push({
+        if(!road)return [];
+        return [{
           label:[road,detected].join(', '),
           road:String(road).trim(),
           city:detected,
@@ -161,12 +156,16 @@ const nominatimSearch=async(query)=>{
           lng:Number(item.lon)||null,
           search:normalizeSearch([road,detected].join(' ')),
           source:'OpenStreetMap'
-        });
+        }];
       });
-    }catch{}
-    finally{clearTimeout(timeout)}
-  }
-  return scoreRecords(uniqueRecords(results),query);
+    }catch{
+      return [];
+    }finally{
+      clearTimeout(timeout);
+    }
+  });
+  const settled=await Promise.all(tasks);
+  return scoreRecords(uniqueRecords(settled.flat()),query);
 };
 
 export default async function handler(req,res){
@@ -174,7 +173,7 @@ export default async function handler(req,res){
     res.setHeader('Allow','GET');
     return res.status(405).json({error:'method_not_allowed'});
   }
-  const query=String(req.query?.q||'').trim();
+  const query=String(req.query?.q||'').trim().slice(0,80);
   if(query.length<2)return res.status(200).json({records:[],source:'none'});
 
   res.setHeader('Cache-Control','s-maxage=300, stale-while-revalidate=1800');
