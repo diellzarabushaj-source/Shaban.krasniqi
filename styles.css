@@ -4231,7 +4231,7 @@ section[id]{
 .reveal{
   opacity:0;
   filter:blur(4px);
-  transform:translate3d(0,24px,0) scale(.987);
+  transform:translate3d(0,24px,0);
   transition:
     opacity .72s var(--ui-ease-soft),
     transform .78s var(--ui-ease-out),
@@ -4240,7 +4240,7 @@ section[id]{
 .reveal.is-visible{
   opacity:1;
   filter:none;
-  transform:translate3d(0,0,0) scale(1);
+  transform:translate3d(0,0,0);
 }
 .section-kicker::before{
   transform:scaleX(.2);
