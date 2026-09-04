@@ -82,7 +82,7 @@ function setMeta(selector,value,attribute='content'){
 function setSeo(author,slug){
   const title=author.seo?.title||author.name||'';
   const description=author.seo?.description||author.shortBio||'';
-  const canonical=new URL('author.html?slug='+encodeURIComponent(slug),location.href).href;
+  const canonical='https://shabankrasniqi.com/author/'+encodeURIComponent(slug);
   const image=imageUrl(author.image,1200);
   document.title=title;
   setMeta('meta[name="description"]',description);
@@ -122,7 +122,7 @@ function renderEducation(items=[]){
 function postCard(post){
   const cover=imageUrl(post.coverImage,900);
   const slug=post.slug?.current||'';
-  const href=slug?'post.html?slug='+encodeURIComponent(slug):'#';
+  const href=slug?'blog/'+encodeURIComponent(slug):'#';
   return `<article class="blog-card">
     <a class="blog-card-media" href="${href}">
       ${cover?`<img src="${escapeHtml(cover)}" alt="${escapeHtml(post.coverImage?.alt||'')}" loading="lazy" decoding="async">`:'<span class="blog-card-placeholder" aria-hidden="true"></span>'}

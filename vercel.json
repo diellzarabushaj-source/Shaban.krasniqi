@@ -7,6 +7,14 @@
     {
       "source": "/robots.txt",
       "destination": "/api/robots"
+    },
+    {
+      "source": "/blog/:slug",
+      "destination": "/post.html?slug=:slug"
+    },
+    {
+      "source": "/author/:slug",
+      "destination": "/author.html?slug=:slug"
     }
   ],
   "headers": [

@@ -71,7 +71,7 @@ function setMeta(selector,value,attribute='content'){
 function setSeo(post,slug){
   const title=post.seo?.title||post.title||'';
   const description=post.seo?.description||post.excerpt||'';
-  const canonical=new URL('post.html?slug='+encodeURIComponent(slug),location.href).href;
+  const canonical=new URL('blog/'+encodeURIComponent(slug),location.href).href;
   const ogImage=imageUrl(post.seo?.image||post.coverImage,1600);
   document.title=title;
   setMeta('meta[name="description"]',description);
@@ -88,6 +88,22 @@ function setSeo(post,slug){
   if(canonicalEl)canonicalEl.href=canonical;
   const robots=document.querySelector('meta[name="robots"]');
   if(robots)robots.content=post.seo?.noIndex?'noindex,nofollow':'index,follow';
+
+  const jsonLd={
+    '@context':'https://schema.org',
+    '@type':'Article',
+    headline:title,
+    description:description||undefined,
+    image:ogImage?[ogImage]:undefined,
+    datePublished:post.publishedAt||undefined,
+    dateModified:post._updatedAt||post.publishedAt||undefined,
+    author:post.author?.name?{ '@type':'Person', name:post.author.name, url:post.author.slug?.current?'https://shabankrasniqi.com/author/'+encodeURIComponent(post.author.slug.current):undefined }:undefined,
+    mainEntityOfPage:{ '@type':'WebPage', '@id':canonical },
+    publisher:{ '@type':'Organization', name:'Fizioterapia Shaban Krasniqi', url:'https://shabankrasniqi.com/' }
+  };
+  let jsonLdNode=document.querySelector('[data-article-jsonld]');
+  if(!jsonLdNode){jsonLdNode=document.createElement('script');jsonLdNode.type='application/ld+json';jsonLdNode.setAttribute('data-article-jsonld','');document.head.appendChild(jsonLdNode)}
+  jsonLdNode.textContent=JSON.stringify(jsonLd);
 }
 
 function marks(text,markDefs=[],marks=[]){
@@ -137,7 +153,7 @@ function renderPortableText(blocks=[]){
 
 function authorMarkup(author){
   if(!author?.name||!author.slug?.current)return '';
-  const href='author.html?slug='+encodeURIComponent(author.slug.current);
+  const href='author/'+encodeURIComponent(author.slug.current);
   const authorImage=imageUrl(author.image,160);
   const initials=author.name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join('').toUpperCase();
   return `<a class="article-author-compact" href="${href}" aria-label="Rreth autorit ${escapeHtml(author.name)}">
@@ -149,7 +165,7 @@ function authorMarkup(author){
 function relatedCard(post){
   const cover=imageUrl(post.coverImage,900);
   const slug=post.slug?.current||'';
-  const href=slug?'post.html?slug='+encodeURIComponent(slug):'#';
+  const href=slug?'blog/'+encodeURIComponent(slug):'#';
   return `<article class="blog-card">
     <a class="blog-card-media" href="${href}">
       ${cover?`<img src="${escapeHtml(cover)}" alt="${escapeHtml(post.coverImage?.alt||'')}" loading="lazy" decoding="async">`:'<span class="blog-card-placeholder" aria-hidden="true"></span>'}

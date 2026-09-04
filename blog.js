@@ -44,7 +44,7 @@ const formatDate=(date)=>date
   :'';
 
 const authorHref=(author)=>author?.slug?.current
-  ?'author.html?slug='+encodeURIComponent(author.slug.current)
+  ?'author/'+encodeURIComponent(author.slug.current)
   :'';
 
 function authorBadge(author,variant='compact'){
@@ -68,7 +68,7 @@ async function loadPosts(){
 function card(post){
   const cover=imageUrl(post.coverImage,1000);
   const slug=post.slug?.current||'';
-  const href=slug?'post.html?slug='+encodeURIComponent(slug):'#';
+  const href=slug?'blog/'+encodeURIComponent(slug):'#';
   const categorySlug=post.category?.slug?.current||'';
   return `<article class="blog-card" data-category="${escapeHtml(categorySlug)}">
     <a class="blog-card-media" href="${href}" aria-label="Lexo: ${escapeHtml(post.title||'')}">
@@ -89,7 +89,7 @@ function featured(post){
   if(!post){root.hidden=true;return}
   const cover=imageUrl(post.coverImage,1800);
   const slug=post.slug?.current||'';
-  const href=slug?'post.html?slug='+encodeURIComponent(slug):'#';
+  const href=slug?'blog/'+encodeURIComponent(slug):'#';
   root.hidden=false;
   root.innerHTML=`<article class="featured-card">
     <a class="featured-media" href="${href}" aria-label="Lexo: ${escapeHtml(post.title||'')}">
