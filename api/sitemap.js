@@ -5,11 +5,11 @@ const API = `https://${PROJECT_ID}.api.sanity.io/v2026-08-31/data/query/${DATASE
 
 const QUERY = `{
   "posts": *[_type == "post" && defined(slug.current) && defined(publishedAt) && publishedAt <= now() && seo.noIndex != true] | order(publishedAt desc) {
-    "path": "/post.html?slug=" + slug.current,
+    "path": "/blog/" + slug.current,
     "lastModified": _updatedAt
   },
   "authors": *[_type == "author" && defined(slug.current) && seo.noIndex != true] {
-    "path": "/author.html?slug=" + slug.current,
+    "path": "/author/" + slug.current,
     "lastModified": _updatedAt
   }
 }`
