@@ -30,8 +30,44 @@
 <div class="card security"><div><strong>Privatësia e llogarisë</strong><div class="muted">Ky panel nuk indeksohet nga motorët e kërkimit dhe përmbajtja jote lidhet me llogarinë tënde.</div></div><span class="badge">Private</span></div>
 </section></main>
 <script>
-async function loadClerk(){const r=await fetch('/api/clerk-config',{cache:'no-store'}),cfg=await r.json();if(!r.ok||!cfg.publishableKey)throw Error(cfg.error||'Clerk nuk është konfiguruar');const parts=cfg.publishableKey.split('_');if(!parts[2])throw Error('Clerk Publishable Key është i pavlefshëm');const domain=atob(parts[2]).slice(0,-1);const load=s=>new Promise((ok,no)=>{const x=document.createElement('script');x.src=s;x.async=true;x.crossOrigin='anonymous';x.onload=ok;x.onerror=no;document.head.append(x)});await load('https://'+domain+'/npm/@clerk/ui@1/dist/ui.browser.js');await load('https://'+domain+'/npm/@clerk/clerk-js@6/dist/clerk.browser.js');if(!window.Clerk)throw Error('ClerkJS nuk u ngarkua');await Clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor}})}
-(async()=>{const gate=document.getElementById('gate'),content=document.getElementById('content');try{await loadClerk();if(!Clerk.isSignedIn){gate.innerHTML='<div class="gate-box"><div class="eyebrow">Paneli personal</div><h1>Hyr për të vazhduar.</h1><p>Hyr ose krijo llogari për të parë hapësirën tënde të pacientit.</p><button id="login" class="login-btn">Hyr / Regjistrohu</button></div>';document.getElementById('login').onclick=()=>Clerk.openSignIn({fallbackRedirectUrl:'/dashboard.html'});return}const user=Clerk.user;gate.hidden=true;content.hidden=false;document.getElementById('first-name').textContent=user.firstName||'pacient';document.getElementById('full-name').textContent=[user.firstName,user.lastName].filter(Boolean).join(' ')||user.primaryEmailAddress?.emailAddress||'Pacient';if(user.imageUrl)document.getElementById('avatar').innerHTML='<img src="'+user.imageUrl.replace(/"/g,'&quot;')+'" alt="">';document.getElementById('profile-link').onclick=e=>{e.preventDefault();Clerk.openUserProfile()};if((user.primaryEmailAddress?.emailAddress||'').toLowerCase()==='shabankrasniqifizoterapi@gmail.com')document.getElementById('admin-card').hidden=false;Clerk.mountUserButton(document.getElementById('user'),{showName:false})}catch(e){gate.innerHTML='<div class="gate-box"><div class="eyebrow">Konfigurimi</div><h1>Clerk nuk është aktivizuar.</h1><p class="error">'+(e.message||'Kontrollo konfigurimin në Vercel.')+'</p></div>'}})();
+(()=>{
+const ADMIN_EMAIL='shabankrasniqifizoterapi@gmail.com';
+const gate=document.getElementById('gate'),content=document.getElementById('content'),userMount=document.getElementById('user');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const loadScript=src=>new Promise((resolve,reject)=>{if(document.querySelector(`script[src="${src}"]`))return resolve();const s=document.createElement('script');s.src=src;s.async=true;s.crossOrigin='anonymous';s.onload=resolve;s.onerror=()=>reject(new Error('ClerkJS nuk u ngarkua'));document.head.append(s)});
+const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function getClerk(){
+ if(window.Clerk?.session)return window.Clerk;
+ if(window.__clinicClerkPromise)return window.__clinicClerkPromise;
+ window.__clinicClerkPromise=(async()=>{
+  const r=await fetch('/api/clerk-config',{cache:'no-store'});let cfg={};try{cfg=await r.json()}catch{}
+  if(!r.ok||!cfg.publishableKey)throw Error(cfg.error||'Clerk nuk është konfiguruar në Vercel.');
+  const key=cfg.publishableKey,encoded=key.split('_')[2];
+  if(!encoded)throw Error('Clerk Publishable Key është i pavlefshëm.');
+  let domain;try{domain=atob(encoded).slice(0,-1)}catch{throw Error('Clerk Publishable Key është i pavlefshëm.')}
+  await loadScript(`https://${domain}/npm/@clerk/ui@1/dist/ui.browser.js`);
+  await loadScript(`https://${domain}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`);
+  if(!window.Clerk)throw Error('ClerkJS nuk u inicializua.');
+  if(!window.Clerk.loaded)await window.Clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor}});
+  return window.Clerk;
+ })();
+ try{return await window.__clinicClerkPromise}catch(e){window.__clinicClerkPromise=null;throw e}
+}
+function showError(message){gate.hidden=false;gate.innerHTML=`<div class="gate-box"><div class="eyebrow">Konfigurimi</div><h1>Nuk mund të hapet paneli.</h1><p class="error">${esc(message)}</p><button id="retry-clerk" class="login-btn" type="button">Provo përsëri</button></div>`;document.getElementById('retry-clerk')?.addEventListener('click',()=>location.reload())}
+function render(clerk){
+ if(!clerk.isSignedIn){content.hidden=true;gate.hidden=false;gate.innerHTML='<div class="gate-box"><div class="eyebrow">Paneli personal</div><h1>Hyr për të vazhduar.</h1><p>Hyr ose krijo llogari për të parë hapësirën tënde të pacientit.</p><button id="login" class="login-btn" type="button">Hyr / Regjistrohu</button></div>';document.getElementById('login').onclick=()=>clerk.openSignIn({fallbackRedirectUrl:'/dashboard.html'});userMount.replaceChildren();return}
+ const u=clerk.user||{};gate.hidden=true;content.hidden=false;
+ document.getElementById('first-name').textContent=u.firstName||'pacient';
+ document.getElementById('full-name').textContent=[u.firstName,u.lastName].filter(Boolean).join(' ')||u.primaryEmailAddress?.emailAddress||'Pacient';
+ const avatar=document.getElementById('avatar');avatar.replaceChildren();if(u.imageUrl){const img=document.createElement('img');img.src=u.imageUrl;img.alt='';avatar.append(img)}
+ document.getElementById('profile-link').onclick=e=>{e.preventDefault();clerk.openUserProfile()};
+ const email=(u.primaryEmailAddress?.emailAddress||'').toLowerCase();document.getElementById('admin-card').hidden=email!==ADMIN_EMAIL;
+ userMount.replaceChildren();clerk.mountUserButton(userMount,{showName:false,afterSignOutUrl:'/'});
+ window.dispatchEvent(new CustomEvent('clinic-clerk-ready',{detail:{clerk,user:u}}));
+}
+async function start(){try{const clerk=await getClerk();render(clerk);clerk.addListener?.(()=>render(clerk))}catch(e){console.warn('[Clerk dashboard]',e);showError(e.message||'Kontrollo konfigurimin e Clerk në Vercel.')}}
+start();
+})();
 </script>
 <script src="/clinic-dashboard.js" defer></script>
 </body></html>
