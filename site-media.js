@@ -143,8 +143,6 @@
   contactScript.defer=true;
   document.head.append(contactScript);
 
-  const authScript=document.createElement('script');
-  authScript.src='/site-auth.js';
-  authScript.defer=true;
-  document.head.append(authScript);
+  // Authentication is intentionally not injected into the public homepage.
+  // Clerk remains available on the dedicated auth/dashboard pages only.
 })();
