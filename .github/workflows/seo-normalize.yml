@@ -1,0 +1,130 @@
+name: SEO normalization
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '.github/workflows/seo-normalize.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Normalize SEO URLs and metadata
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import json, re
+
+          ROOT = Path('.')
+          OLD = 'https://diellzarabushaj-source.github.io/Shaban.krasniqi'
+          NEW = 'https://shabankrasniqi.com'
+
+          # Move all hard-coded GitHub Pages SEO references to the production domain.
+          for path in list(ROOT.glob('*.html')) + list(ROOT.glob('*.js')) + [ROOT/'vercel.json', ROOT/'api'/'sitemap.js']:
+              if not path.exists() or path.name == 'seo-normalize.yml':
+                  continue
+              text = path.read_text(encoding='utf-8')
+              updated = text.replace(OLD, NEW)
+              if path.name in {'post.html', 'author.html'}:
+                  updated = re.sub(r'\s*<link rel="canonical" href="">', '', updated)
+              path.write_text(updated, encoding='utf-8')
+
+          # Blog listing: give Google a real canonical and social metadata in the source HTML.
+          blog = ROOT/'blog.html'
+          text = blog.read_text(encoding='utf-8')
+          if 'rel="canonical"' not in text:
+              text = text.replace(
+                  '  <title>Blog | Fizioterapia Shaban Krasniqi</title>',
+                  '  <title>Blog | Fizioterapia Shaban Krasniqi</title>\n'
+                  '  <link rel="canonical" href="https://shabankrasniqi.com/blog.html">\n'
+                  '  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">\n'
+                  '  <meta property="og:locale" content="sq_XK">\n'
+                  '  <meta property="og:site_name" content="Fizioterapia Shaban Krasniqi">\n'
+                  '  <meta property="og:title" content="Blog | Fizioterapia Shaban Krasniqi">\n'
+                  '  <meta property="og:description" content="Këshilla praktike për dhimbjen, rehabilitimin, ushtrimet dhe rikthimin në aktivitet nga Fizioterapia Shaban Krasniqi.">\n'
+                  '  <meta property="og:url" content="https://shabankrasniqi.com/blog.html">'
+              )
+          blog.write_text(text, encoding='utf-8')
+
+          # Pretty, stable URLs for articles/authors while keeping the existing query pages working.
+          replacements = {
+              'post.html?slug=\\'+"'"+'+encodeURIComponent(slug)': 'blog/\\'+"'"+'+encodeURIComponent(slug)',
+              'author.html?slug=\\'+"'"+'+encodeURIComponent(author.slug.current)': 'author/\\'+"'"+'+encodeURIComponent(author.slug.current)',
+          }
+
+          for name in ['blog.js','post.js','author.js']:
+              path = ROOT/name
+              if not path.exists():
+                  continue
+              s = path.read_text(encoding='utf-8')
+              s = s.replace("'post.html?slug='+encodeURIComponent(slug)", "'blog/'+encodeURIComponent(slug)")
+              s = s.replace("'author.html?slug='+encodeURIComponent(author.slug.current)", "'author/'+encodeURIComponent(author.slug.current)")
+              s = s.replace("'author.html?slug='+encodeURIComponent(author.slug.current)", "'author/'+encodeURIComponent(author.slug.current)")
+              path.write_text(s, encoding='utf-8')
+
+          # Canonicals on client-rendered article/author pages must use the production pretty URL.
+          postjs = ROOT/'post.js'
+          if postjs.exists():
+              s = postjs.read_text(encoding='utf-8')
+              s = s.replace(
+                  "const canonical=new URL('post.html?slug='+encodeURIComponent(slug),location.href).href;",
+                  "const canonical='https://shabankrasniqi.com/blog/'+encodeURIComponent(slug);"
+              )
+              marker = "  const robots=document.querySelector('meta[name=\"robots\"]');\n  if(robots)robots.content=post.seo?.noIndex?'noindex,nofollow':'index,follow';"
+              if marker in s and 'data-article-jsonld' not in s:
+                  block = marker + "\n\n  const jsonLd={\n    '@context':'https://schema.org',\n    '@type':'Article',\n    headline:title,\n    description:description||undefined,\n    image:ogImage?[ogImage]:undefined,\n    datePublished:post.publishedAt||undefined,\n    dateModified:post._updatedAt||post.publishedAt||undefined,\n    author:post.author?.name?{ '@type':'Person', name:post.author.name, url:post.author.slug?.current?'https://shabankrasniqi.com/author/'+encodeURIComponent(post.author.slug.current):undefined }:undefined,\n    mainEntityOfPage:{ '@type':'WebPage', '@id':canonical },\n    publisher:{ '@type':'Organization', name:'Fizioterapia Shaban Krasniqi', url:'https://shabankrasniqi.com/' }\n  };\n  let jsonLdNode=document.querySelector('[data-article-jsonld]');\n  if(!jsonLdNode){jsonLdNode=document.createElement('script');jsonLdNode.type='application/ld+json';jsonLdNode.setAttribute('data-article-jsonld','');document.head.appendChild(jsonLdNode)}\n  jsonLdNode.textContent=JSON.stringify(jsonLd);"
+                  s = s.replace(marker, block)
+              postjs.write_text(s, encoding='utf-8')
+
+          authorjs = ROOT/'author.js'
+          if authorjs.exists():
+              s = authorjs.read_text(encoding='utf-8')
+              s = s.replace(
+                  "const canonical=new URL('author.html?slug='+encodeURIComponent(slug),location.href).href;",
+                  "const canonical='https://shabankrasniqi.com/author/'+encodeURIComponent(slug);"
+              )
+              authorjs.write_text(s, encoding='utf-8')
+
+          # Sitemap: only published, indexable content and pretty canonical URLs.
+          sm = ROOT/'api'/'sitemap.js'
+          if sm.exists():
+              s = sm.read_text(encoding='utf-8')
+              s = s.replace('"/post.html?slug=" + slug.current', '"/blog/" + slug.current')
+              s = s.replace('"/author.html?slug=" + slug.current', '"/author/" + slug.current')
+              sm.write_text(s, encoding='utf-8')
+
+          # Vercel rewrites make the pretty URLs resolve to the existing static renderer.
+          vc = ROOT/'vercel.json'
+          if vc.exists():
+              data = json.loads(vc.read_text(encoding='utf-8'))
+              rewrites = data.setdefault('rewrites', [])
+              existing = {item.get('source') for item in rewrites}
+              additions = [
+                  {'source':'/blog/:slug','destination':'/post.html?slug=:slug'},
+                  {'source':'/author/:slug','destination':'/author.html?slug=:slug'},
+              ]
+              # Keep sitemap/robots first; append content rewrites once.
+              for item in additions:
+                  if item['source'] not in existing:
+                      rewrites.append(item)
+              vc.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+
+      - name: Commit SEO fixes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .
+          if git diff --cached --quiet; then
+            echo 'SEO already normalized.'
+          else
+            git commit -m 'chore: normalize production SEO and canonical URLs'
+            git push
+          fi
